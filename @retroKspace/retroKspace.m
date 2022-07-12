@@ -774,7 +774,7 @@ classdef retroKspace
         % ---------------------------------------------------------------------------------
         % Fill K-space 2D real-time
         % ---------------------------------------------------------------------------------
-        function objKspace = fillKspace2D_RT(objKspace, objNav, objData, app)
+        function objKspace = fillKspace2Drealtime(objKspace, objNav, objData, app)
             
             share = app.SharingEditField.Value;
             objKspace.kSpace = cell(objData.nr_coils);
@@ -865,7 +865,7 @@ classdef retroKspace
                 if (share > 0) && (nrDynamics > 1)
                     
                     % determine share range
-                    maxShare = 20;                                          % maximum number of shares
+                    maxShare = 20;    % maximum number of shares
                     share(share > maxShare) = maxShare;
                     
                     % define ellipsoid regions
@@ -1049,9 +1049,11 @@ classdef retroKspace
                 
                 % report back
                 objKspace.kSpace{coilnr} = sortedKspace;
-                objKspace.kSpaceAvg = sortedAverages;
                 
             end
+
+            % report back
+            objKspace.kSpaceAvg = sortedAverages;
             
         end
         
@@ -1083,8 +1085,7 @@ classdef retroKspace
                 spoke(1,1,cnt,1,:,1,1) = (-floor(dimx/2):floor(dimx/2)-1)*cos(objKspace.trajectory(cnt)*pi/180);
                 spoke(1,1,cnt,1,:,1,2) = (-floor(dimx/2):floor(dimx/2)-1)*sin(objKspace.trajectory(cnt)*pi/180);
             end
-            % Note to self: should this be normalized to max / min ?
-
+       
             for coilnr = 1:objData.nr_coils
                 
                 rawData = objKspace.raw{coilnr};
@@ -1199,7 +1200,11 @@ classdef retroKspace
                 sortedAverages = zeros(app.nrRespFrames,app.nrCardFrames,objData.nrKlines,1,dimx,app.nrDynamics);
                 sortedTraj = zeros(app.nrRespFrames,app.nrCardFrames,objData.nrKlines,1,dimx,app.nrDynamics,3);            % fill temp trajectory with zeros
                 unsortedKspace = reshape(rawData,[1,size(rawData),1]);
-               
+
+                % Check if offset does not lead to index larger than available
+                offset(offset < 0) = 0;
+                offset(offset > (size(unsortedKspace,5)-dimx)) = size(unsortedKspace,5)-dimx;
+
                 % Loop over acquired 3D spokes
                 for cnt = 1:objData.nrKlines                
 
@@ -1208,6 +1213,7 @@ classdef retroKspace
                         sortedKspace(respBinAss(cnt),cardBinAss(cnt),cnt,1,:,dynBinAss(cnt)) = unsortedKspace(1,cnt,1,1,1+offset:dimx+offset,1);
                         sortedAverages(respBinAss(cnt),cardBinAss(cnt),cnt,1,:,dynBinAss(cnt)) = sortedAverages(respBinAss(cnt),cardBinAss(cnt),cnt,1,:,dynBinAss(cnt)) + 1;
                         sortedTraj(respBinAss(cnt),cardBinAss(cnt),cnt,1,:,dynBinAss(cnt),:) = spoke(1,1,cnt,1,:,1,:);
+
                     end
 
                 end

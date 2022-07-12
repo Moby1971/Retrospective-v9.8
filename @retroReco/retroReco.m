@@ -700,9 +700,9 @@ classdef retroReco
         
         % ---------------------------------------------------------------------------------
         % 2D radial reconstruction with the Bart toolbox 
-        % ---------------------------------------------------------------------------------
+        % ---------------------------------------------------------------------------------         
         function objReco = reco2Dradial(objReco, objData, objKspace, app)
-                    
+      
             if app.bartDetectedFlag
 
                 app.TextMessage('Reconstructing 2D radial data with the BART toolbox ...');
@@ -969,7 +969,7 @@ classdef retroReco
                 onesDense = ones(size(kSpacePics));
                 tmpDense = bart(app,strcat('nufft -d',num2str(dimx),':',num2str(dimx),':1 -a'),trajPics,onesDense);
                 density = bart(app,'nufft ',trajPics,tmpDense);
-                density = density.^(-1/4); % not clear why this number, needs to be tuned
+                density = abs(density).^(-1/4); % not clear why this fraction, needs to be tuned
                 density(isnan(density)) = 0;
                 density(isinf(density)) = 0;
 
@@ -1358,13 +1358,13 @@ classdef retroReco
                 denseOnes = ones(size(kSpacePics));
                 denseTmp = bart(app,strcat('nufft -d',num2str(dimx),':',num2str(dimx),':',num2str(dimx),' -a'),trajPics,denseOnes);
                 density = bart(app,'nufft ',trajPics,denseTmp);
-                density = density.^(-1/5);
+                density = abs(density).^(-1/5);
                 density(isnan(density)) = 0;
                 density(isinf(density)) = 0;
 
                 % PICS reconstruction
                 app.TextMessage('PICS reconstruction ...');
-                picsCommand = 'pics -i20 ';
+                picsCommand = 'pics -i10 ';
                 if Wavelet>0
                     picsCommand = [picsCommand,' -RW:7:0:',num2str(Wavelet)];
                 end
@@ -1980,7 +1980,7 @@ classdef retroReco
 
             repX = repmat([0:(calibSize(1)/2-1), 0, -calibSize(1)/2+1:-1]'/calibSize(1),[1 calibSize(1) calibSize(1) nCoils]);
             repY = permute(repX,[2 1 3]);
-            repZ = permute(repX,[3 2 1]);
+            repZ = permute(repX,[3 1 2]);
 
             tmp = xNewFFT.*repX;
             tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize nCoils]));
