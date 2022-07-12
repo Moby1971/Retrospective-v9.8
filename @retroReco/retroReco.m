@@ -12,6 +12,7 @@ classdef retroReco
         rescaleIntercept                % Dicom info RescaleIntercept for image scaling
         multiSliceFlag = false          % multi-slice true or false
         multiDynamicFlag = false        % mutli-dynamic true or false
+        totalVariation = text           % total variation (T) or total generalized variation (G)
         
     end
     
@@ -275,7 +276,7 @@ classdef retroReco
                 % total variation in spatial dimensions 2^1+2^2=6
                 % total variation in cine dimension 2^10 = 1024
                 % total variation in dynamic dimension 2^11 = 2048
-                
+
                 if ESPIRiT && nrCoils>1
                     
                     % ESPIRiT reconstruction
@@ -290,18 +291,19 @@ classdef retroReco
                         picsCommand = [picsCommand,' -RW:6:0:',num2str(Wavelet)];
                     end
                     if TVxy>0
-                        picsCommand = [picsCommand,' -RT:6:0:',num2str(TVxy)];
+                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':6:0:',num2str(TVxy)];
                     end
                     if LR>0
                         % Locally low-rank in the spatial domain
                         blocksize = round(dimx/16);  % Block size
+                        blocksize(blocksize < 8) = 8;
                         picsCommand = [picsCommand,' -RL:6:6:',num2str(LR),' -b',num2str(blocksize)];
                     end
                     if TVt>0
-                        picsCommand = [picsCommand,' -RT:1024:0:',num2str(TVt)];
+                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':1024:0:',num2str(TVt)];
                     end
                     if TVd>0
-                        picsCommand = [picsCommand,' -RT:2048:0:',num2str(TVd)];
+                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':2048:0:',num2str(TVd)];
                     end
                     imageReg = bart(app,picsCommand,kspacePics,sensitivities);
                     
@@ -322,16 +324,18 @@ classdef retroReco
                         picsCommand = [picsCommand,' -RW:6:0:',num2str(Wavelet)];
                     end
                     if TVxy>0
-                        picsCommand = [picsCommand,' -RT:6:0:',num2str(TVxy)];
+                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':6:0:',num2str(TVxy)];
                     end
                     if LR>0
-                        picsCommand = [picsCommand,' -b20 -RL:6:6:',num2str(LR)];
+                        blocksize = round(dimx/16);  % Block size
+                        blocksize(blocksize < 8) = 8;
+                        picsCommand = [picsCommand,' -RL:6:6:',num2str(LR),' -b',num2str(blocksize)];
                     end
                     if TVt>0
-                        picsCommand = [picsCommand,' -RT:1024:0:',num2str(TVt)];
+                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':1024:0:',num2str(TVt)];
                     end
                     if TVd>0
-                        picsCommand = [picsCommand,' -RT:2048:0:',num2str(TVd)];
+                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':2048:0:',num2str(TVd)];
                     end
                     imageReg = bart(app,picsCommand,kspacePics,sensitivities);
 
@@ -621,18 +625,19 @@ classdef retroReco
                         picsCommand = [picsCommand,' -RW:7:0:',num2str(Wavelet)];
                     end
                     if TVxyz>0
-                        picsCommand = [picsCommand,' -RT:7:0:',num2str(TVxyz)];
+                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':7:0:',num2str(TVxyz)];
                     end
                     if LR>0
                         % Locally low-rank in the spatial domain
                         blocksize = round(dimx/16);  % Block size
+                        blocksize(blocksize < 8) = 8;
                         picsCommand = [picsCommand,' -RL:7:7:',num2str(LR),' -b',num2str(blocksize)];
                     end
                     if TVt>0
-                        picsCommand = [picsCommand,' -RT:1024:0:',num2str(TVt)];
+                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':1024:0:',num2str(TVt)];
                     end
                     if TVd>0
-                        picsCommand = [picsCommand,' -RT:2048:0:',num2str(TVd)];
+                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':2048:0:',num2str(TVd)];
                     end
                     imageReg = bart(app,picsCommand,kspace_pics,sensitivities);
                     
@@ -651,16 +656,18 @@ classdef retroReco
                         picsCommand = [picsCommand,' -RW:7:0:',num2str(Wavelet)];
                     end
                     if TVxyz>0
-                        picsCommand = [picsCommand,' -RT:7:0:',num2str(TVxyz)];
+                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':7:0:',num2str(TVxyz)];
                     end
                     if LR>0
-                        picsCommand = [picsCommand,' -RL:7:7:',num2str(LR)];
+                        blocksize = round(dimx/16);  % Block size
+                        blocksize(blocksize < 8) = 8;
+                        picsCommand = [picsCommand,' -RL:7:7:',num2str(LR),' -b',num2str(blocksize)];
                     end
                     if TVt>0
-                        picsCommand = [picsCommand,' -RT:1024:0:',num2str(TVt)];
+                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':1024:0:',num2str(TVt)];
                     end
                     if TVd>0
-                        picsCommand = [picsCommand,' -RT:2048:0:',num2str(TVd)];
+                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':2048:0:',num2str(TVd)];
                     end
                     
                     imageReg = abs(bart(app,picsCommand,kspace_pics,sensitivities));
@@ -864,8 +871,8 @@ classdef retroReco
 
                             % Prepare for manual stop
                             app.stopMovieFlag = false;
-                            app.StartButton.Enable = 'off';
-                            app.StopButton.Enable = 'on';
+                            app.MovieStartButton.Enable = 'off';
+                            app.MovieStopButton.Enable = 'on';
 
                             % Iterative method with Bart
                             while  (iteration<300) && (incre>0.001) && ~app.stopMovieFlag
@@ -948,8 +955,8 @@ classdef retroReco
                     end
 
                     % Hide stop button
-                    app.StartButton.Enable = 'off';
-                    app.StopButton.Enable = 'off';
+                    app.MovieStartButton.Enable = 'off';
+                    app.MovieStopButton.Enable = 'off';
                     app.GradDelayCalibrationCheckBox.Value = 0;
 
                 end % Gradient calibration
@@ -989,19 +996,19 @@ classdef retroReco
                     picsCommand = [picsCommand,' -RW:6:0:',num2str(Wavelet)];
                 end
                 if TVxyz>0
-                    picsCommand = [picsCommand,' -RT:6:0:',num2str(TVxyz)];
+                    picsCommand = [picsCommand,' -R',objReco.totalVariation,':6:0:',num2str(TVxyz)];
                 end
                 if LR>0
                     % Locally low-rank in the spatial domain
                     blockSize = round(dimx/16);  % Block size
-                    blockSize(blockSize<4) = 4;
+                    blockSize(blockSize<8) = 8;
                     picsCommand = [picsCommand,' -RL:6:6:',num2str(LR),' -b',num2str(blockSize),' -N '];
                 end
                 if TVt>0
-                    picsCommand = [picsCommand,' -RT:1024:0:',num2str(TVt)];
+                    picsCommand = [picsCommand,' -R',objReco.totalVariation,':1024:0:',num2str(TVt)];
                 end
                 if TVd>0
-                    picsCommand = [picsCommand,' -RT:2048:0:',num2str(TVd)];
+                    picsCommand = [picsCommand,' -R',objReco.totalVariation,':2048:0:',num2str(TVd)];
                 end
 
                 igrid = bart(app,picsCommand,'-t',trajPics,'-p',density,kSpacePics,sensitivities);
@@ -1180,10 +1187,10 @@ classdef retroReco
                 % 	AVG_DIM,        14      15
              
                 % Rearrange for BART         1  2  3  4  5  6  7  8  9 10 11 12 13 14
-                kSpacePics = permute(kSpace,[7, 3, 2, 6, 4, 8, 9,10,11,12,1, 5, 13,14]);
+                kSpacePics = permute(kSpace,[7, 2, 3, 6,14, 8, 9,10,11,12,1, 5, 13, 4]);
                 
                 % Rearrange for BART     1  2  3  4  5  6  7  8  9 10 11 12 13 14
-                trajPics = permute(traj,[6, 3, 2, 4, 7, 8, 9,10,11,12, 1, 5,13,14]);
+                trajPics = permute(traj,[6, 2, 3,14, 7, 8, 9,10,11,12, 1, 5,13, 4]);
 
                 % Sum of k-space and trajectory over all frames and dynamics
                 % This is the same as the originally acquired data with ommission of the resipratory windows
@@ -1253,8 +1260,8 @@ classdef retroReco
 
                     % Prepare for manual stop
                     app.stopMovieFlag = false;
-                    app.StartButton.Enable = 'off';
-                    app.StopButton.Enable = 'on';
+                    app.MovieStartButton.Enable = 'off';
+                    app.MovieStopButton.Enable = 'on';
 
                     % Calibration
                     while  (iteration<300)  && (incre>0.001) && ~app.stopMovieFlag
@@ -1322,8 +1329,8 @@ classdef retroReco
                     end
 
                     % Hide stop button
-                    app.StartButton.Enable = 'off';
-                    app.StopButton.Enable = 'off';
+                    app.MovieStartButton.Enable = 'off';
+                    app.MovieStopButton.Enable = 'off';
 
                 end % Gradient calibration
 
@@ -1362,19 +1369,19 @@ classdef retroReco
                     picsCommand = [picsCommand,' -RW:7:0:',num2str(Wavelet)];
                 end
                 if TVxyz>0
-                    picsCommand = [picsCommand,' -RT:7:0:',num2str(TVxyz)];
+                    picsCommand = [picsCommand,' -R',objReco.totalVariation,':7:0:',num2str(TVxyz)];
                 end
                 if LR>0
                     % Locally low-rank in the spatial domain
                     blockSize = round(dimx/16);  % Block size
-                    blockSize(blockSize<4) = 4;
+                    blockSize(blockSize<8) = 8;
                     picsCommand = [picsCommand,' -RL:7:7:',num2str(LR),' -b',num2str(blockSize)];
                 end
                 if TVt>0
-                    picsCommand = [picsCommand,' -RT:1024:0:',num2str(TVt)];
+                    picsCommand = [picsCommand,' -R',objReco.totalVariation,':1024:0:',num2str(TVt)];
                 end
                 if TVd>0
-                    picsCommand = [picsCommand,' -RT:2048:0:',num2str(TVd)];
+                    picsCommand = [picsCommand,' -R',objReco.totalVariation,':2048:0:',num2str(TVd)];
                 end
                 igrid = bart(app,picsCommand,'-t',trajPics,'-p',density,kSpacePics,sensitivities);    
     

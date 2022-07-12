@@ -46,7 +46,9 @@ if ispc
 
     [ERR,cmdout] = system(['wsl bart ',cmd,in_strWSL,out_strWSL]);
 
-    app.TextMessage(cmdout);
+    if ~contains(cmd,"-Rh")
+       app.TextMessage(cmdout);
+    end
 
     for i=1:nargin - 2
         if (exist(strcat(in{i}, '.cfl'),'file'))
@@ -60,7 +62,7 @@ if ispc
 
     for i=1:nargout
         if ERR==0
-            if contains(cmd,"estdelay")
+            if contains(cmd,"estdelay") || contains(cmd,"-Rh")
                 varargout{1} = cmdout;
             else
                 varargout{i} = readcfl(out{i});
@@ -138,7 +140,9 @@ if ismac
 
     [ERR,cmdout] = system([bart_path, '/bart ', cmd, ' ', in_str, ' ', out_str]);
 
-    app.TextMessage(cmdout);
+    if ~contains(cmd,"-Rh")
+       app.TextMessage(cmdout);
+    end
 
     for i=1:nargin - 2
         if (exist(strcat(in{i}, '.cfl'),'file'))
@@ -152,7 +156,7 @@ if ismac
 
     for i=1:nargout
         if ERR==0
-            if contains(cmd,"estdelay")
+            if contains(cmd,"estdelay") || contains(cmd,"-Rh")
                 varargout{1} = cmdout;
             else
                 varargout{i} = readcfl(out{i});
