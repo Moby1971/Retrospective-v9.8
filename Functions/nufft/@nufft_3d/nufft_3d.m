@@ -33,7 +33,7 @@ classdef nufft_3d
     
     % behind the scenes parameters
     properties (SetAccess = private, Hidden = true)
-        gpu(1,1) logical      = 0  % use gpu/gpuSparse if possible (0=no 1=yes)
+        gpu(1,1) logical      = 1  % use gpu/gpuSparse if possible (0=no 1=yes)
         low(1,1) double       = 5  % lowpass filter: h = exp(-(-low:low).^2/low)
         K(3,1) double = zeros(3,1) % oversampled image dimensions   
         d(:,1)                     % density weighting vector 

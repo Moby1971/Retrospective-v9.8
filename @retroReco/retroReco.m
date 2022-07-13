@@ -725,9 +725,9 @@ classdef retroReco
                 % nCoils = number of RF receiver coils
 
                 dimf = size(objKspace.kSpace{1},1);
-                dimz = size(objKspace.kSpace{1},4);
                 dimx = size(objKspace.kSpace{1},2);
                 dimy = dimx;
+                dimz = size(objKspace.kSpace{1},4);
                 dimd = size(objKspace.kSpace{1},5);
 
                 kSpace = zeros(size(objKspace.kSpace{1}));
@@ -962,8 +962,10 @@ classdef retroReco
                 end % Gradient calibration
 
                 % Final gradient delay correction from optimization or values from app
+                trajPics = permute(trajPics,[1 2 3 4 11 12 5 6 7 8 9 10]);
                 trajPics = objReco.trajInterpolation(trajPics,dTotal);
-
+                trajPics = ipermute(trajPics,[1 2 3 4 11 12 5 6 7 8 9 10]);
+            
                 % Density correction
                 app.TextMessage('Calculating density correction ...');
                 onesDense = ones(size(kSpacePics));
@@ -1042,10 +1044,10 @@ classdef retroReco
                 app.TextMessage('2D radial reconstruction using NUFFT ...');
                 app.ProgressGauge.Value = 0;
                 
-                dimx = size(objKspace.kSpace{1},4);
-                dimy = dimx;
-                dimz = size(objKspace.kSpace{1},3);
                 dimf = size(objKspace.kSpace{1},1);
+                dimx = size(objKspace.kSpace{1},2);
+                dimy = dimx;
+                dimz = size(objKspace.kSpace{1},4);
                 dimd = size(objKspace.kSpace{1},5);
                 nrCoils = objData.nr_coils;
                 loops = dimz*dimf*dimd*nrCoils;
@@ -1054,23 +1056,26 @@ classdef retroReco
                 
                 traj = objKspace.kSpaceTraj;
                 image = zeros(dimf,dimz,dimy,dimx,dimd,nrCoils);
-                sensitivities = ones(1,dimy,dimx,1,1,1,1,1,1,1,1,1,1,dimz);
+                sensitivities = ones(1,dimy,dimx,1,1,1,1,1,1,1,1,1,14);
 
                 % Gradient delays from app
                 dTotal(1) = app.GxDelayEditField.Value;
                 dTotal(2) = app.GyDelayEditField.Value;
                 dTotal(3) = app.GzDelayEditField.Value;
                 app.DataOffsetRadialEditField.Value = 0;
-                trajPics = permute(traj,[6, 4, 2,14, 7, 8, 9,10,11,12, 1, 5,13, 3]);
-                trajPics = objReco.trajInterpolation(trajPics,dTotal);
-                traj = ipermute(trajPics,[6, 4, 2,14, 7, 8, 9,10,11,12, 1, 5,13, 3]);
-              
+
+                % Prepare the trajectory
+                traj = permute(traj,[6,2,3,4,1,5]);
+                traj = objReco.trajInterpolation(traj,dTotal);
+                traj = permute(traj,[5,3,2,4,6,1]);
+                % frames, spokes, readout, slices, dynamics, 3 coordinates
+             
                 % Initialization
-                maxit = 10;     % 0 or 1 for gridding, higher values for conjugate gradient
+                maxit = 5;     % 0 or 1 for gridding, higher values for conjugate gradient
                 damp = 0;       % Tikhonov penalty on ||x||
                 weight = [];    % data weighting (optional)
                 partial = 0.5;  % Tikhobov penalty on ||imag(x))||
-      
+
                 cnt = 0;
 
                 for slice = 1:dimz
@@ -1079,16 +1084,16 @@ classdef retroReco
 
                         for frame = 1:dimf
 
+                            % NOTE: coils can be incorporated in the NUFFT, need data first
                             for coil = 1:nrCoils
 
                                 app.ProgressGauge.Value = round(100*cnt/loops);
                                 drawnow;
 
-                                om = permute(squeeze(traj(frame,:,slice,:,dynamic,:)),[3,2,1]);
+                                om = permute(squeeze(traj(frame,:,:,slice,dynamic,:)),[3 2 1]);
                                 obj = nufft_3d(om,dimx);
 
-                                data = squeeze(objKspace.kSpace{coil}(frame,:,slice,:,dynamic));
-                                data = permute(data,[2 1]);
+                                data = squeeze(objKspace.kSpace{coil}(frame,:,:,slice,dynamic));
                                 data = data(:);
 
                                 reco = squeeze(obj.iNUFT(data,maxit,damp,weight,'phase-constraint',partial));
@@ -1334,9 +1339,11 @@ classdef retroReco
 
                 end % Gradient calibration
 
-                % Gradient delay correction from optimization or values from app
+                % Final gradient delay correction from optimization or values from app
+                trajPics = permute(trajPics,[1 2 3 4 11 12 5 6 7 8 9 10]);
                 trajPics = objReco.trajInterpolation(trajPics,dTotal);
-
+                trajPics = ipermute(trajPics,[1 2 3 4 11 12 5 6 7 8 9 10]);
+            
                 % Coil sensitivities from sum of all frames and dynamics
                 if nCoils > 1
                     kSpacePicsSum = sum(kSpacePics,[11,12]);
@@ -1414,11 +1421,11 @@ classdef retroReco
                 app.TextMessage('BART toolbox not available ...');
                 app.TextMessage('3D UTE reconstruction using 3D NUFFT ...');
                 app.ProgressGauge.Value = 0;
-                
-                dimx = size(objKspace.kSpace{1},4);
+
+                dimf = size(objKspace.kSpace{1},1);
+                dimx = size(objKspace.kSpace{1},2);
                 dimy = dimx;
                 dimz = dimx;
-                dimf = size(objKspace.kSpace{1},1);
                 dimd = size(objKspace.kSpace{1},5);
                 nCoils = objData.nr_coils;
                 loops = dimf*dimd*nCoils;
@@ -1433,6 +1440,8 @@ classdef retroReco
                 damp = 0;       % Tikhonov penalty on ||x||
                 weight = [];    % data weighting (optional)
                 partial = 0.5;  % Tikhobov penalty on ||imag(x))||
+
+                disp('*')
       
                 cnt = 0;
 
@@ -1440,15 +1449,16 @@ classdef retroReco
 
                     for frame = 1:dimf
 
-                        for coil = 1:nCoils
+                        % NOTE: coils can be incorporated in the NUFFT, need data first
+                        for coil = 1:nCoils 
 
                             app.ProgressGauge.Value = round(100*cnt/loops);
                             drawnow;
 
-                            om = permute(squeeze(traj(frame,:,1,:,dynamic,:)),[3,2,1]);
+                            om = permute(squeeze(traj(frame,:,:,1,dynamic,:)),[3,2,1]);
                             obj = nufft_3d(om,dimx);
 
-                            data = squeeze(objKspace.kSpace{coil}(frame,:,1,:,dynamic));
+                            data = squeeze(objKspace.kSpace{coil}(frame,:,:,1,dynamic));
                             data = permute(data,[2 1]);
                             data = data(:);
                        
@@ -2099,37 +2109,49 @@ classdef retroReco
 
             kSpaceUpdate = zeros(size(kSpaceOld));
 
-            for idx = 1:size(kSpaceOld,3)
+            for idx6 = 1:size(kSpaceOld,6) % dynamics
 
-                kx = interp1((1:size(kSpaceOld,2))+dShift(1),kSpaceOld(1,:,idx),1:size(kSpaceOld,2),'linear'); %Kx
-                ky = interp1((1:size(kSpaceOld,2))+dShift(2),kSpaceOld(2,:,idx),1:size(kSpaceOld,2),'linear'); %Ky
-                kz = interp1((1:size(kSpaceOld,2))+dShift(3),kSpaceOld(3,:,idx),1:size(kSpaceOld,2),'linear'); %Kz
+                for idx5 = 1:size(kSpaceOld,5) % frames
 
-                if dShift(1) > 0
-                    kx(isnan(kx)) = 0;
-                else
-                    kx(isnan(kx)) = kSpaceOld(1,isnan(kx),idx);
+                    for idx4 = 1:size(kSpaceOld,4) % slices
+
+                        for idx3 = 1:size(kSpaceOld,3) % spokes
+
+                            kx = interp1((1:size(kSpaceOld,2))+dShift(1),kSpaceOld(1,:,idx3,idx4,idx5,idx6),1:size(kSpaceOld,2),'linear'); %Kx
+                            ky = interp1((1:size(kSpaceOld,2))+dShift(2),kSpaceOld(2,:,idx3,idx4,idx5,idx6),1:size(kSpaceOld,2),'linear'); %Ky
+                            kz = interp1((1:size(kSpaceOld,2))+dShift(3),kSpaceOld(3,:,idx3,idx4,idx5,idx6),1:size(kSpaceOld,2),'linear'); %Kz
+
+                            if dShift(1) > 0
+                                kx(isnan(kx)) = 0;
+                            else
+                                kx(isnan(kx)) = kSpaceOld(1,isnan(kx),idx3,idx4,idx5,idx6);
+                            end
+
+                            if dShift(2) > 0
+                                ky(isnan(ky)) = 0;
+                            else
+                                ky(isnan(ky)) = kSpaceOld(2,isnan(ky),idx3,idx4,idx5,idx6);
+                            end
+
+                            if dShift(3) > 0
+                                kz(isnan(kz)) = 0;
+                            else
+                                kz(isnan(kz)) = kSpaceOld(3,isnan(kz),idx3,idx4,idx5,idx6);
+                            end
+
+                            kSpaceUpdate(1,:,idx3,idx4,idx5,idx6) = kx(:);
+                            kSpaceUpdate(2,:,idx3,idx4,idx5,idx6) = ky(:);
+                            kSpaceUpdate(3,:,idx3,idx4,idx5,idx6) = kz(:);
+
+                        end
+
+                    end
+
                 end
-
-                if dShift(2) > 0
-                    ky(isnan(ky)) = 0;
-                else
-                    ky(isnan(ky)) = kSpaceOld(2,isnan(ky),idx);
-                end
-
-                if dShift(3) > 0
-                    kz(isnan(kz)) = 0;
-                else
-                    kz(isnan(kz)) = kSpaceOld(3,isnan(kz),idx);
-                end
-
-                kSpaceUpdate(1,:,idx) = kx(:);
-                kSpaceUpdate(2,:,idx) = ky(:);
-                kSpaceUpdate(3,:,idx) = kz(:);
 
             end
 
-        end % kSpaceInterpolation3Dute
+        end % kSpaceInterpolation
 
 
 
