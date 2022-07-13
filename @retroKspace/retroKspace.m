@@ -226,38 +226,30 @@ classdef retroKspace
             %     12345 1 23 45 12345 1 2 3 4 5  <- bins
             %
 
-            try
-                % Use MEX function if available
-                [cardAssignments,respAssignments] = assignBinFramesFnc_mex(binTimesCard,binTimesResp,respWindow,nrKlines,nrCardFrames,nrRespFrames);
-            catch
+            startPoint = round(binTimesResp(2)+1);                          % first measurement to be considered
+            endPoint = round(binTimesResp(length(binTimesResp))-1);         % last measurement to be considered
+            locMaxCard = length(binTimesCard);                              % last bin border
+            locMaxResp = length(binTimesResp);
 
-                % Otherwise use Matlab code, somewhat slower
-                startPoint = round(binTimesResp(2)+1);                          % first measurement to be considered
-                endPoint = round(binTimesResp(length(binTimesResp))-1);         % last measurement to be considered
-                locMaxCard = length(binTimesCard);                              % last bin border
-                locMaxResp = length(binTimesResp);
-
-                cardAssignments = zeros(nrKlines,1);                          % zero = no assignment (breathing, begin/end of data)
-                parfor i=startPoint:endPoint                                    % start search to which heartbeat the measurement belongs
-                    j=locMaxCard;
-                    while j>1 && i<binTimesCard(j)  %#ok<*PFBNS>
-                        j=j-1;
-                    end
-                    cardAssignments(i) = mod(j-1,nrCardFrames)+1;            % assign to bin frame number = j modulus nr_frames
-                    if nrRespFrames==1 && respWindow(i)==1                   % if measurement is during respiration and only 1 resp state, put back to 0 to discard this k-line
-                        cardAssignments(i) = 0;
-                    end
+            cardAssignments = zeros(nrKlines,1);                            % zero = no assignment (breathing, begin/end of data)
+            parfor i=startPoint:endPoint                                    % start search to which heartbeat the measurement belongs
+                j=locMaxCard;
+                while j>1 && i<binTimesCard(j)  %#ok<*PFBNS>
+                    j=j-1;
                 end
-
-                respAssignments = zeros(nrKlines,1);                        % zero = no assignment (breathing, begin/end of data)
-                parfor i=startPoint:endPoint                                % start search to which respiration the measurement belongs
-                    j=locMaxResp;
-                    while j>1 && i<binTimesResp(j)
-                        j=j-1;
-                    end
-                    respAssignments(i) = mod(j-1,nrRespFrames)+1;        % assign to bin frame number = j modulus nr_frames
+                cardAssignments(i) = mod(j-1,nrCardFrames)+1;            % assign to bin frame number = j modulus nr_frames
+                if nrRespFrames==1 && respWindow(i)==1                   % if measurement is during respiration and only 1 resp state, put back to 0 to discard this k-line
+                    cardAssignments(i) = 0;
                 end
+            end
 
+            respAssignments = zeros(nrKlines,1);                        % zero = no assignment (breathing, begin/end of data)
+            parfor i=startPoint:endPoint                                % start search to which respiration the measurement belongs
+                j=locMaxResp;
+                while j>1 && i<binTimesResp(j)
+                    j=j-1;
+                end
+                respAssignments(i) = mod(j-1,nrRespFrames)+1;        % assign to bin frame number = j modulus nr_frames
             end
             
             % Report back
@@ -311,7 +303,7 @@ classdef retroKspace
             %     12345 1234567 12345 123456789  <- frames/bins
             %
            
-            cardAssignments = zeros(nrKlines,1);                          % zero = no assignment (breathing, begin/end of data)
+            cardAssignments = zeros(nrKlines,1);                            % zero = no assignment (breathing, begin/end of data)
             parfor i=startPoint:endPoint                                    % start search to which heartbeat the measurement belongs
                 j=locMaxCard;
                 
@@ -399,28 +391,22 @@ classdef retroKspace
                 dynBinAss = round(linspace(0.5, nrDynamics+0.49, totalk));       % list of increasing integer number 1 .. nr_dynamics evenly spaced over the entire acquistion time
 
                 % Sorting
-                try
-                    % Use mex file if possible
-                    [sortedKspace,sortedAverages] = sort2DdataFnc_mex(nrRespFrames,nrCardFrames,dimz,dimy,dimx,nrDynamics,nrReps,nrKsteps,traj,unsortedKspace,cardBinAss,includeWindow,respBinAss,dynBinAss);
-                catch
-                    % Otherwise sort in Matlab
-                    sortedKspace = complex(zeros(nrRespFrames,nrCardFrames,dimz,dimy,dimx,nrDynamics));   % fill temp k-space with zeros
-                    sortedAverages = zeros(nrRespFrames,nrCardFrames,dimz,dimy,dimx,nrDynamics);          % fill temp nr averages array with zeros
-                    cnt = 0;
-                    for slice=1:dimz                    % loop over slices
-                        for i=1:nrReps                 % loop through all repetitions
-                            for j=1:nrKsteps            % loop through all the phase-encoding steps
-                                cnt = cnt + 1;
-                                if (cardBinAss(cnt) > 0) && (includeWindow(cnt) == 1)         % if assigment = 0, this acquisition is discarded
-                                    kline = traj(mod(cnt - 1,nrKsteps) + 1);             % the phase-encoding step using the trajectory info
-                                    sortedKspace(respBinAss(cnt),cardBinAss(cnt),slice,kline,:,dynBinAss(cnt)) = sortedKspace(respBinAss(cnt),cardBinAss(cnt),slice,kline,:,dynBinAss(cnt)) + unsortedKspace(1,i,slice,j,:,1);   % add the data to the correct k-position
-                                    sortedAverages(respBinAss(cnt),cardBinAss(cnt),slice,kline,:,dynBinAss(cnt)) = sortedAverages(respBinAss(cnt),cardBinAss(cnt),slice,kline,:,dynBinAss(cnt)) + 1;        % increase the number of averages with 1
-                                end
+                sortedKspace = complex(zeros(nrRespFrames,nrCardFrames,dimz,dimy,dimx,nrDynamics));   % fill temp k-space with zeros
+                sortedAverages = zeros(nrRespFrames,nrCardFrames,dimz,dimy,dimx,nrDynamics);          % fill temp nr averages array with zeros
+                cnt = 0;
+                for slice=1:dimz                    % loop over slices
+                    for i=1:nrReps                 % loop through all repetitions
+                        for j=1:nrKsteps            % loop through all the phase-encoding steps
+                            cnt = cnt + 1;
+                            if (cardBinAss(cnt) > 0) && (includeWindow(cnt) == 1)         % if assigment = 0, this acquisition is discarded
+                                kline = traj(mod(cnt - 1,nrKsteps) + 1);             % the phase-encoding step using the trajectory info
+                                sortedKspace(respBinAss(cnt),cardBinAss(cnt),slice,kline,:,dynBinAss(cnt)) = sortedKspace(respBinAss(cnt),cardBinAss(cnt),slice,kline,:,dynBinAss(cnt)) + unsortedKspace(1,i,slice,j,:,1);   % add the data to the correct k-position
+                                sortedAverages(respBinAss(cnt),cardBinAss(cnt),slice,kline,:,dynBinAss(cnt)) = sortedAverages(respBinAss(cnt),cardBinAss(cnt),slice,kline,:,dynBinAss(cnt)) + 1;        % increase the number of averages with 1
                             end
                         end
                     end
                 end
-                
+
                 % Temp k-space
                 tmpKspace = sortedKspace;
                 tmpAverages = sortedAverages;
@@ -1153,6 +1139,19 @@ classdef retroKspace
             % Show typical radial filling for frame 1, dynamic 1, slice 1
             xc = squeeze(sortedTraj(1,1,:,1,:,1,1));
             yc = squeeze(sortedTraj(1,1,:,1,:,1,2));
+
+            % Remove all zero entries
+            ze = ~((xc(:,end)==0) & (yc(:,end)==0));
+            xc = xc(ze,:);
+            yc = yc(ze,:);
+
+            % Restrict number of spokes to 1000
+            trajSize = size(xc,1);
+            skip = ceil(trajSize/1000);
+            xc = xc(1:skip:end,[1 end])';
+            yc = yc(1:skip:end,[1 end])';
+
+            % Plot the initial trajectory
             app.PlotTrajectoryMovieFrameFcn(xc,yc,[],dimx,true);
 
             % Report back averages and trajectory
@@ -1244,6 +1243,21 @@ classdef retroKspace
             xc = squeeze(sortedTraj(1,1,:,1,:,1,1));
             yc = squeeze(sortedTraj(1,1,:,1,:,1,2));
             zc = squeeze(sortedTraj(1,1,:,1,:,1,3));
+
+            % Remove all zero entries
+            ze = ~((xc(:,end)==0) & (yc(:,end)==0) & (zc(:,end)==0));
+            xc = xc(ze,:);
+            yc = yc(ze,:);
+            zc = zc(ze,:);
+
+            % Restrict number of spokes to 1000
+            trajSize = size(xc,1);
+            skip = ceil(trajSize/1000);
+            xc = xc(1:skip:end,[1 end])';
+            yc = yc(1:skip:end,[1 end])';
+            zc = zc(1:skip:end,[1 end])';
+
+            % Plot the initial trajectory
             app.PlotTrajectoryMovieFrameFcn(xc,yc,zc,dimx,true);
 
             % Report back k-space trajectory and averages

@@ -45,7 +45,7 @@ classdef retroData
         TR
         ti = 1000
         VFA_angles = []
-        VFA_size = 1
+        VFA_size = 0
         frame_loop_on
         radial_on = 0
         slice_nav = 0
@@ -221,9 +221,6 @@ classdef retroData
                 
                 if isfield(parameter,'VFA_size')
                     obj.VFA_size = parameter.VFA_size;
-                    if obj.VFA_size == 0 
-                        obj.VFA_size = 1;
-                    end
                 end
                 
                 if isfield(parameter,'frame_loop_on')
@@ -340,7 +337,7 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         function obj = checkForVFA(obj, app)
             
-            if strcmp(obj.dataType,'3D') && obj.VFA_size > 1
+            if strcmp(obj.dataType,'3D') && obj.VFA_size > 0
                 obj.vfaDataFlag = true;
                 obj = setVariableFlipAngles(obj);
                 app.TextMessage(strcat('INFO:',{' '},num2str(obj.VFA_size),{' '},'flip angles detected ...'));
