@@ -1064,6 +1064,7 @@ classdef retroKspace
             nrCardFrames = app.nrCardFrames;
             nrRespFrames = app.nrRespFrames;
             nrDynamics = app.nrDynamics;
+            interpFactor = 16;
 
             % Create spokes from trajectory list of angles
             spoke = zeros(1,1,objData.nrKlines,1,dimx,1,3);
@@ -1096,23 +1097,30 @@ classdef retroKspace
 
                     if (cardBinAss(cnt) > 0) && (includeWindow(cnt) == 1)
 
-                        sortedKspace(respBinAss(cnt),cardBinAss(cnt),cnt,sliceAss(cnt),:,dynBinAss(cnt)) = unsortedKspace(1,1,cnt,1,:,1);
+                        tmpKline1 = squeeze(unsortedKspace(1,1,cnt,1,:,1));
+
+                        % Center echo
+                        if app.CenterEchoCheckBox.Value
+                            tmpKline2 = interp(tmpKline1,interpFactor);
+                            [~,kCenter] = max(abs(tmpKline2));
+                            kShift = floor(dimx/2)-kCenter/interpFactor;
+                            tmpKline1 = fraccircshift(tmpKline1,kShift);
+                        end
+
+                        % Phase correction for k-space center
+                        if app.PhaseCorrectCheckBox.Value
+                            kCenterPhase = angle(tmpKline1(floor(dimx/2)+1));
+                            tmpKline1 = tmpKline1.*exp(-1j.*kCenterPhase);
+                        end
+
+                        % Assign the k-line to respiratory, cardiac, slice, and dynamic bins
+                        sortedKspace(respBinAss(cnt),cardBinAss(cnt),cnt,sliceAss(cnt),:,dynBinAss(cnt)) = tmpKline1;
                         sortedAverages(respBinAss(cnt),cardBinAss(cnt),cnt,sliceAss(cnt),:,dynBinAss(cnt)) = sortedAverages(respBinAss(cnt),cardBinAss(cnt),cnt,sliceAss(cnt),:,dynBinAss(cnt)) + 1;
                         sortedTraj(respBinAss(cnt),cardBinAss(cnt),cnt,sliceAss(cnt),:,dynBinAss(cnt),:) = spoke(1,1,cnt,1,:,1,:);
 
                     end
 
                 end
-
-                % Phase correction for echo maximum 
-                sortedKspaceSum = squeeze(sum(abs(sortedKspace),[1,2,3,4,6]));
-                [~,kCenter] = max(sortedKspaceSum);
-                kCenterPhase = angle(sortedKspace(:,:,:,:,kCenter,:));
-                sortedKspace = sortedKspace.*exp(-1j.*kCenterPhase);
-
-                % Roughly center echo in middle of k-space
-                kShift = floor(dimx/2)+1-kCenter;
-                sortedKspace = circshift(sortedKspace,kShift,5);
 
                 % Apply 1-D Tukey filter
                 filterWidth = 0.25;
@@ -1209,7 +1217,16 @@ classdef retroKspace
 
                     if (cardBinAss(cnt) > 0) && (includeWindow(cnt) == 1)
 
-                        sortedKspace(respBinAss(cnt),cardBinAss(cnt),cnt,1,:,dynBinAss(cnt)) = unsortedKspace(1,cnt,1,1,1+offset:dimx+offset,1);
+                        tmpKline = squeeze(unsortedKspace(1,cnt,1,1,1+offset:dimx+offset,1));
+
+                        % Phase correction for k-space center
+                        if app.PhaseCorrectCheckBox.Value
+                            kCenterPhase = angle(tmpKline(1));
+                            tmpKline = tmpKline.*exp(-1j.*kCenterPhase);
+                        end
+
+                        % Assign the k-line to respiratory, cardiac, slice, and dynamic bins
+                        sortedKspace(respBinAss(cnt),cardBinAss(cnt),cnt,1,:,dynBinAss(cnt)) = tmpKline;
                         sortedAverages(respBinAss(cnt),cardBinAss(cnt),cnt,1,:,dynBinAss(cnt)) = sortedAverages(respBinAss(cnt),cardBinAss(cnt),cnt,1,:,dynBinAss(cnt)) + 1;
                         sortedTraj(respBinAss(cnt),cardBinAss(cnt),cnt,1,:,dynBinAss(cnt),:) = spoke(1,1,cnt,1,:,1,:);
 
@@ -1726,7 +1743,30 @@ classdef retroKspace
         end % fft3r
 
 
-        
+
+        % ---------------------------------------------------------------------------------
+        % Fractional circshift
+        % ---------------------------------------------------------------------------------
+        function output = fracCircShift(input,shiftsize)
+
+            int = floor(shiftsize);     %integer portions of shiftsize
+            fra = shiftsize - int;      %fractional portions of shiftsize
+            dim = numel(shiftsize);
+            output = input;
+            for n = 1:numel(shiftsize)  %The dimensions are treated one after another.
+                intn = int(n);
+                fran = fra(n);
+                shift1 = zeros(dim,1);
+                shift1(n) = intn;
+                shift2 = zeros(dim,1);
+                shift2(n) = intn+1;
+                %Linear intepolation:
+                output = (1-fran)*circshift(output,shift1) + fran*circshift(output,shift2);
+            end
+
+        end % fracCircShift
+
+
 
 
     end % Methods
