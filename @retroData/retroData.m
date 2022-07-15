@@ -400,6 +400,7 @@ classdef retroData
                 obj.validDataFlag = true;
 
                 obj.dataType = '2Dradial';
+
                 for i=1:obj.nr_coils
                     if ismatrix(obj.data{i})
                         %                                  1 1 Y X
@@ -1580,7 +1581,7 @@ classdef retroData
                     "Gx delay = ",num2str(app.GxDelayEditField.Value),"\n",...
                     "Gy delay = ",num2str(app.GyDelayEditField.Value),"\n",...
                     "Gz delay = ",num2str(app.GzDelayEditField.Value),"\n",...
-                    "trajectory = ",num2st(trajType)...
+                    "trajectory = ",num2str(trajType)...
                     );
             end
 

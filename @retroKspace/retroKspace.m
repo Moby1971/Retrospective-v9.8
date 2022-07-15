@@ -1069,18 +1069,17 @@ classdef retroKspace
             % Create spokes from trajectory list of angles
             spoke = zeros(1,1,objData.nrKlines,1,dimx,1,3);
             for cnt = 1:objData.nrKlines
-                spoke(1,1,cnt,1,:,1,1) = (-floor(dimx/2):floor(dimx/2)-1)*cos(objKspace.trajectory(cnt)*pi/180);
-                spoke(1,1,cnt,1,:,1,2) = (-floor(dimx/2):floor(dimx/2)-1)*sin(objKspace.trajectory(cnt)*pi/180);
+                spoke(1,1,cnt,1,:,1,1) = (-floor(dimx/2)+0.5:floor(dimx/2)-0.5)*cos(objKspace.trajectory(cnt)*pi/180);
+                spoke(1,1,cnt,1,:,1,2) = (-floor(dimx/2)+0.5:floor(dimx/2)-0.5)*sin(objKspace.trajectory(cnt)*pi/180);
             end
        
             for coilnr = 1:objData.nr_coils
                 
-                rawData = objKspace.raw{coilnr};
-         
+                rawData = permute(objKspace.raw{coilnr},[3 2 1 4]); % needed to be able to rearrange according to spokes, readout
                 sortedKspace = complex(zeros(nrRespFrames,nrCardFrames,objData.nrKlines,dimz,dimx,nrDynamics));   % fill temp k-space with zeros
                 sortedAverages = zeros(nrRespFrames,nrCardFrames,objData.nrKlines,dimz,dimx,nrDynamics);
                 sortedTraj = zeros(nrRespFrames,nrCardFrames,objData.nrKlines,dimz,dimx,nrDynamics,3);
-                unsortedKspace = reshape(rawData,[1,1,objData.nrKlines,1,dimx,1]);
+                unsortedKspace = reshape(rawData,[1,1,objData.nrKlines,1,dimx]);
       
                 % Dynamics and slice assignment
                 if dimz > 1
@@ -1097,7 +1096,7 @@ classdef retroKspace
 
                     if (cardBinAss(cnt) > 0) && (includeWindow(cnt) == 1)
 
-                        tmpKline1 = squeeze(unsortedKspace(1,1,cnt,1,:,1));
+                        tmpKline1 = squeeze(unsortedKspace(1,1,cnt,1,:));
 
                         % Center echo
                         if app.CenterEchoCheckBox.Value
@@ -1248,7 +1247,6 @@ classdef retroKspace
                         end
                     end
                 end
-
                 sortedKspace = sortedKspace.*tukeyWindow;
 
                 % Report back k-space per coil
@@ -1314,13 +1312,14 @@ classdef retroKspace
                     % Reshape to either cardiac or respiratory CINE
         
                     [s1,s2,s3,s4,s5,s6] = size(objKspace.kSpace{1});
+
                     s = max([s1,s2]);
                     nrCoils = length(objKspace.kSpace);
                     for i = 1:nrCoils
                         objKspace.kSpace{i} = reshape(objKspace.kSpace{i},[s,s3,s4,s5,s6]);
                         objKspace.kSpace{i} = permute(objKspace.kSpace{i},[1,4,2,3,5,6]);
                     end
-               
+
                     objKspace.kSpaceTraj = reshape(objKspace.kSpaceTraj,[s,s3,s4,s5,s6,3]);
                     objKspace.kSpaceTraj = permute(objKspace.kSpaceTraj,[1,4,2,3,5,6]);
                     objKspace.kSpaceAvg = reshape(objKspace.kSpaceAvg,[s,s3,s4,s5,s6]);

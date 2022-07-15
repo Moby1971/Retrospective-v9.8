@@ -699,7 +699,7 @@ classdef retroReco
                 
         
         % ---------------------------------------------------------------------------------
-        % 2D radial reconstruction with the Bart toolbox 
+        % 2D radial reconstruction with the Bart toolbox or Matlab
         % ---------------------------------------------------------------------------------         
         function objReco = reco2Dradial(objReco, objData, objKspace, app)
       
@@ -783,7 +783,8 @@ classdef retroReco
                     % and dynamics, remove all zero values
                     kSpacePicsSum = sum(kSpacePics(:,:,:,:,:,:,:,:,:,:,:,:,:,floor(dimz/2)+1),[11,12]);
                     trajPicsSum = sum(trajPics(:,:,:,:,:,:,:,:,:,:,:,:,:,floor(dimz/2)+1),[11,12]);
-                    ze = squeeze(abs(kSpacePicsSum(1,end/2,:))) > 0;
+
+                    ze = squeeze(abs(kSpacePicsSum(1,floor(end/2),:))) > 0;
                     kSpacePicsSum = kSpacePicsSum(:,:,ze);
                     trajPicsSum = trajPicsSum(:,:,ze);
 
@@ -796,7 +797,7 @@ classdef retroReco
 
                         % Ring method using estdelay in Bart
                         try
-                            delaysBart = bart(app,'estdelay -r6 ',trajPicsSum,kSpacePicsSum);
+                            delaysBart = bart(app,'estdelay -r4',trajPicsSum,kSpacePicsSum);
                         catch ME
                             app.TextMessage(ME.message);
                             app.TextMessage('Ring gradient delay estimation failed ...');
@@ -967,13 +968,13 @@ classdef retroReco
                 trajPics = ipermute(trajPics,[1 2 3 4 11 12 5 6 7 8 9 10]);
             
                 % Density correction
-                app.TextMessage('Calculating density correction ...');
-                onesDense = ones(size(kSpacePics));
-                tmpDense = bart(app,strcat('nufft -d',num2str(dimx),':',num2str(dimx),':1 -a'),trajPics,onesDense);
-                density = bart(app,'nufft ',trajPics,tmpDense);
-                density = abs(density).^(-1/4); % not clear why this fraction, needs to be tuned
-                density(isnan(density)) = 0;
-                density(isinf(density)) = 0;
+                % app.TextMessage('Calculating density correction ...');
+                % onesDense = ones(size(kSpacePicsSum));
+                % tmpDense = bart(app,strcat('nufft -d',num2str(dimx),':',num2str(dimx),':1 -a'),trajPicsSum,onesDense);
+                % density = bart(app,'nufft ',trajPicsSum,tmpDense);
+                % density = density.^(-1/2);
+                % density(isnan(density)) = 0;
+                % density(isinf(density)) = 0;
 
                 % Sensitivity maps
                 if nrCoils > 1 && ESPIRiT
@@ -988,7 +989,7 @@ classdef retroReco
                     kSpaceZeroFilled = bart(app,['resize -c 0 ',num2str(dimy),' 1 ',num2str(dimx)], lowResKspace);
                     sensitivities = bart(app,'ecalib -t0.002 -m1', kSpaceZeroFilled);
                 else
-                    sensitivities = ones(dimy,dimx,1,nrCoils,1,1,1,1,1,1,1,1,1,dimz);
+                    sensitivities = ones(dimx,dimy,1,nrCoils,1,1,1,1,1,1,1,1,1,dimz);
                 end
 
                 % 2D radial PICS reconstruction
@@ -1013,7 +1014,8 @@ classdef retroReco
                     picsCommand = [picsCommand,' -R',objReco.totalVariation,':2048:0:',num2str(TVd)];
                 end
 
-                igrid = bart(app,picsCommand,'-t',trajPics,'-p',density,kSpacePics,sensitivities);
+                %igrid = bart(app,picsCommand,'-t',trajPics,'-p',density,kSpacePics,sensitivities);
+                igrid = bart(app,picsCommand,'-t',trajPics,kSpacePics,sensitivities);
             
                 % Root sum of squares over all coils
                 recoImage = bart(app,'rss 8', igrid);
@@ -1039,7 +1041,7 @@ classdef retroReco
 
             else
 
-                % Reconstruction without Bart
+                % Reconstruction with NUFFT in Matlab
                 app.TextMessage('BART toolbox not available ...');
                 app.TextMessage('2D radial reconstruction using NUFFT ...');
                 app.ProgressGauge.Value = 0;
@@ -1069,14 +1071,14 @@ classdef retroReco
                 traj = objReco.trajInterpolation(traj,dTotal);
                 traj = permute(traj,[5,3,2,4,6,1]);
                 % frames, spokes, readout, slices, dynamics, 3 coordinates
-             
+
                 % Initialization
                 maxit = 5;     % 0 or 1 for gridding, higher values for conjugate gradient
                 damp = 0;       % Tikhonov penalty on ||x||
                 weight = [];    % data weighting (optional)
                 partial = 0.5;  % Tikhobov penalty on ||imag(x))||
 
-                cnt = 0;
+                cnt = 1;
 
                 for slice = 1:dimz
 
@@ -1101,9 +1103,9 @@ classdef retroReco
 
                                 image(frame,slice,:,:,dynamic,coil) = reco;
 
-                                cnt = cnt + 1;
-
                             end
+
+                            cnt = cnt + 1;
 
                         end
 
@@ -1208,7 +1210,7 @@ classdef retroReco
                 dTotal(3) = app.GzDelayEditField.Value;
 
                 % Calibration and density correction size
-                kdim = round(dimx/4);
+                kdim = round(dimx/3);
                 if mod(kdim,2) == 1
                     kdim = kdim + 1;
                 end
@@ -1239,7 +1241,7 @@ classdef retroReco
                     % Reduce size for gradient calibration
                     kTrajCalib = trajPicsSum(:,1:M,1:kSkip:end);
                     dataCalib = kSpacePicsSum(1,1:M,1:kSkip:end);
-                    ze = squeeze(abs(dataCalib(1,end,:))) > 0;
+                    ze = squeeze(abs(dataCalib(1,1,:))) > 0;
                     kTrajCalib = kTrajCalib(:,:,ze);
                     app.TextMessage(strcat('Calibration trajectory length = ',{' '},num2str(length(kTrajCalib))));
 
@@ -1365,7 +1367,7 @@ classdef retroReco
                 denseOnes = ones(size(kSpacePics));
                 denseTmp = bart(app,strcat('nufft -d',num2str(dimx),':',num2str(dimx),':',num2str(dimx),' -a'),trajPics,denseOnes);
                 density = bart(app,'nufft ',trajPics,denseTmp);
-                density = abs(density).^(-1/5);
+                density = density.^(-1/3);
                 density(isnan(density)) = 0;
                 density(isinf(density)) = 0;
 
@@ -1441,8 +1443,6 @@ classdef retroReco
                 weight = [];    % data weighting (optional)
                 partial = 0.5;  % Tikhobov penalty on ||imag(x))||
 
-                disp('*')
-      
                 cnt = 0;
 
                 for dynamic = 1:dimd
@@ -1463,10 +1463,10 @@ classdef retroReco
                             data = data(:);
                        
                             image(frame,:,:,:,dynamic,coil) = obj.iNUFT(data,maxit,damp,weight,'phase-constraint',partial);
-                       
-                            cnt = cnt + 1;
-
+                    
                         end
+
+                        cnt = cnt + 1;
 
                     end
 
@@ -2006,7 +2006,7 @@ classdef retroReco
 
             dydtx = dydkx.*repmat(dkx,[1 1 1 nCoils]);
             dydty = dydky.*repmat(dky,[1 1 1 nCoils]);
-            dydtz = dydkz.*repmat(dkz,[1 1 1 nCoils]);
+            dydtz = -dydkz.*repmat(dkz,[1 1 1 nCoils]); % positive does not converge
 
             dydtx(isnan(dydtx)) = 0;
             dydty(isnan(dydty)) = 0;
