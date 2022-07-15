@@ -797,7 +797,7 @@ classdef retroReco
 
                         % Ring method using estdelay in Bart
                         try
-                            delaysBart = bart(app,'estdelay -r4',trajPicsSum,kSpacePicsSum);
+                            delaysBart = bart(app,'estdelay -r1 ',trajPicsSum,kSpacePicsSum);
                         catch ME
                             app.TextMessage(ME.message);
                             app.TextMessage('Ring gradient delay estimation failed ...');
@@ -968,13 +968,15 @@ classdef retroReco
                 trajPics = ipermute(trajPics,[1 2 3 4 11 12 5 6 7 8 9 10]);
             
                 % Density correction
-                % app.TextMessage('Calculating density correction ...');
-                % onesDense = ones(size(kSpacePicsSum));
-                % tmpDense = bart(app,strcat('nufft -d',num2str(dimx),':',num2str(dimx),':1 -a'),trajPicsSum,onesDense);
-                % density = bart(app,'nufft ',trajPicsSum,tmpDense);
-                % density = density.^(-1/2);
-                % density(isnan(density)) = 0;
-                % density(isinf(density)) = 0;
+                if app.DensityCorrectCheckBox.Value
+                  app.TextMessage('Calculating density correction ...');
+                  onesDense = ones(size(kSpacePics));
+                  tmpDense = bart(app,strcat('nufft -d',num2str(dimx),':',num2str(dimx),':1 -a'),trajPics,onesDense);
+                  density = bart(app,'nufft ',trajPics,tmpDense);
+                  density = density.^(-1/2);
+                  density(isnan(density)) = 0;
+                  density(isinf(density)) = 0;
+                end
 
                 % Sensitivity maps
                 if nrCoils > 1 && ESPIRiT
@@ -992,9 +994,9 @@ classdef retroReco
                     sensitivities = ones(dimx,dimy,1,nrCoils,1,1,1,1,1,1,1,1,1,dimz);
                 end
 
-                % 2D radial PICS reconstruction
+                % Prepare the 2D radial PICS reconstruction
                 app.TextMessage('PICS reconstruction ...');
-                picsCommand = 'pics -e ';
+                picsCommand = 'pics -i20 -e ';
                 if Wavelet>0
                     picsCommand = [picsCommand,' -RW:6:0:',num2str(Wavelet)];
                 end
@@ -1014,9 +1016,13 @@ classdef retroReco
                     picsCommand = [picsCommand,' -R',objReco.totalVariation,':2048:0:',num2str(TVd)];
                 end
 
-                %igrid = bart(app,picsCommand,'-t',trajPics,'-p',density,kSpacePics,sensitivities);
-                igrid = bart(app,picsCommand,'-t',trajPics,kSpacePics,sensitivities);
-            
+                % Do the reco
+                if app.DensityCorrectCheckBox.Value
+                    igrid = bart(app,picsCommand,'-t',trajPics,'-p',density,kSpacePics,sensitivities);
+                else
+                    igrid = bart(app,picsCommand,'-t',trajPics,kSpacePics,sensitivities);
+                end
+
                 % Root sum of squares over all coils
                 recoImage = bart(app,'rss 8', igrid);
 
@@ -1363,15 +1369,17 @@ classdef retroReco
                 end
 
                 % Density correction
-                app.TextMessage('Calculating density correction ...');
-                denseOnes = ones(size(kSpacePics));
-                denseTmp = bart(app,strcat('nufft -d',num2str(dimx),':',num2str(dimx),':',num2str(dimx),' -a'),trajPics,denseOnes);
-                density = bart(app,'nufft ',trajPics,denseTmp);
-                density = density.^(-1/3);
-                density(isnan(density)) = 0;
-                density(isinf(density)) = 0;
+                if app.DensityCorrectCheckBox.Value
+                    app.TextMessage('Calculating density correction ...');
+                    denseOnes = ones(size(kSpacePics));
+                    denseTmp = bart(app,strcat('nufft -d',num2str(dimx),':',num2str(dimx),':',num2str(dimx),' -a'),trajPics,denseOnes);
+                    density = bart(app,'nufft ',trajPics,denseTmp);
+                    density = density.^(-1/3);
+                    density(isnan(density)) = 0;
+                    density(isinf(density)) = 0;
+                end
 
-                % PICS reconstruction
+                % Prepare the PICS reconstruction
                 app.TextMessage('PICS reconstruction ...');
                 picsCommand = 'pics -i10 ';
                 if Wavelet>0
@@ -1392,7 +1400,13 @@ classdef retroReco
                 if TVd>0
                     picsCommand = [picsCommand,' -R',objReco.totalVariation,':2048:0:',num2str(TVd)];
                 end
-                igrid = bart(app,picsCommand,'-t',trajPics,'-p',density,kSpacePics,sensitivities);    
+
+                % Do the Bart reco
+                if app.DensityCorrectCheckBox.Value
+                    igrid = bart(app,picsCommand,'-t',trajPics,'-p',density,kSpacePics,sensitivities);
+                else
+                    igrid = bart(app,picsCommand,'-t',trajPics,kSpacePics,sensitivities);
+                end
     
                 % Root sum of squares over all coils
                 recoImage = bart(app,'rss 8', igrid);
