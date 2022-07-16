@@ -1448,7 +1448,7 @@ classdef retroKspace
                         app.SetStatus(1);
                     end
 
-                case 8 % reserved for radial
+                case 8 % reserved for 2D radial
                     if app.HalfCircleButton.Value == 1              trajType = 1; end %#ok<SEPEX> 
                     if app.FullCircleButton.Value == 1              trajType = 2; end %#ok<SEPEX> 
                     if app.FullCircleInterleavedButton.Value == 1   trajType = 3; end %#ok<SEPEX> 
@@ -1456,16 +1456,19 @@ classdef retroKspace
 
                 case 9 % 3D UTE
                     flist = dir(fullfile(app.mrdImportPath,'lut*.txt'));
-                    if ~isempty(flist)
+                    try
                         objKspace.trajectory = load([flist(1).folder,filesep,flist(1).name]);
                         objKspace.gradTrajectory = load('ktraj.txt');
                         objData.dataType = '3Dute';
                         app.TextMessage(strcat('3D UTE trajectory: ',{' '},flist(1).name));
                         objKspace.trajectory = reshape(objKspace.trajectory,[3,length(objKspace.trajectory)/3]);
-                    else
+                        objKspace.trajectory = objKspace.trajectory(:,1:objData.nr_repetitions);
+                    catch ME
+                        app.TextMessage(ME.message);
                         objKspace.trajectory = linearTrajectory(objData.nrKsteps);
-                        app.TextMessage('WARNING: 3D UTE trajectory file not found, reconstruction will fail ...');
-                        app.SetStatus(1);
+                        app.TextMessage('ERROR: 3D UTE trajectory not found or invalid ...');
+                        app.SetStatus(2);
+                        app.objData.validDataFlag = false;
                     end
 
             end
