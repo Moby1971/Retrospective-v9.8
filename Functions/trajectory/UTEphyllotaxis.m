@@ -49,7 +49,7 @@ Xp = [];
 Yp = [];
 Zp = [];
 rp = 32767;
-pmax = 55;
+pmax = 80; % number of phylotaxes
 imax = 183*3;
 
 cnt = 0;
@@ -126,10 +126,12 @@ end
 pnts = [Xp;Yp;Zp];
 pnts = reshape(pnts,[3*length(Xp),1]);
 
-filename = 'lut_20130ph.txt';
+filename = 'lut_32000ph.txt';
 fileID = fopen(filename,'w');
 
-for i = 1:20130*3
+maxpoints = 32000;
+
+for i = 1:maxpoints*3
    
     fprintf(fileID,num2str(pnts(i,1),'%6.f'));
     fprintf(fileID,'\n');
