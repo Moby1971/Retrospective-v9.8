@@ -797,7 +797,7 @@ classdef retroReco
 
                         % Ring method using estdelay in Bart
                         try
-                            delaysBart = bart(app,'estdelay -r1 ',trajPicsSum,kSpacePicsSum);
+                            delaysBart = bart(app,'estdelay -r4 ',trajPicsSum,kSpacePicsSum);
                         catch ME
                             app.TextMessage(ME.message);
                             app.TextMessage('Ring gradient delay estimation failed ...');
