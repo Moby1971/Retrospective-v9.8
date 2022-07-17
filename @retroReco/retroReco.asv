@@ -818,7 +818,7 @@ classdef retroReco
 
                         delaysBart = strrep(delaysBart,':',',');
                         dTotal = str2num(delaysBart); %#ok<ST2NM> 
-                        dTotal(1) = -dTotal(1);
+                        
 
                         % Sent gradient delay vector back to app
                         app.GxDelayEditField.Value = double(dTotal(1));
@@ -1080,7 +1080,7 @@ classdef retroReco
                 % frames, spokes, readout, slices, dynamics, 3 coordinates
 
                 % Initialization
-                maxit = 5;      % 0 or 1 for gridding, higher values for conjugate gradient
+                maxit = 5;     % 0 or 1 for gridding, higher values for conjugate gradient
                 damp = 0;       % Tikhonov penalty on ||x||
                 weight = [];    % data weighting (optional)
                 partial = 0.5;  % Tikhobov penalty on ||imag(x))||
