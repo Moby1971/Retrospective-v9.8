@@ -1210,6 +1210,7 @@ classdef retroKspace
                 % Check if offset does not lead to index larger than available
                 offset(offset < 0) = 0;
                 offset(offset > (size(unsortedKspace,5)-dimx)) = size(unsortedKspace,5)-dimx;
+                app.DataOffsetRadialEditField.Value = offset;
 
                 % Loop over acquired 3D spokes
                 for cnt = 1:objData.nrKlines                

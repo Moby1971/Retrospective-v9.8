@@ -1375,7 +1375,7 @@ classdef retroReco
                     denseOnes = ones(size(kSpacePics));
                     denseTmp = bart(app,strcat('nufft -d',num2str(dimx),':',num2str(dimx),':',num2str(dimx),' -a'),trajPics,denseOnes);
                     density = bart(app,'nufft ',trajPics,denseTmp);
-                    density = density.^(-1/3);
+                    density = density.^(-1/4);
                     density(isnan(density)) = 0;
                     density(isinf(density)) = 0;
                 end
