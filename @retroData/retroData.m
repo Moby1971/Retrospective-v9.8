@@ -413,12 +413,33 @@ classdef retroData
                     if ndims(obj.data{i}) == 3 && obj.NO_SLICES > 1
                         %                                  1 Z Y X
                         obj.data{i} = permute(obj.data{i},[4,1,2,3]);
+
+                    end
+
+                end
+
+                % Center the echo for the navigator
+                interpFactor = 16;
+                dims = size(obj.data{1},4);
+                for i = 1:obj.nr_coils
+                    for dynamic = 1:size(obj.data{1},1)
+                        for slice = 1:size(obj.data{1},2)
+                            for spoke = 1:size(obj.data{1},3)
+                                tmpKline1 = squeeze(obj.data{i}(dynamic,slice,spoke,:));
+                                tmpKline2 = interp(tmpKline1,interpFactor);
+                                [~,kCenter] = max(abs(tmpKline2));
+                                kShift = floor(dims/2)-kCenter/interpFactor;
+                                tmpKline1 = retroData.fracCircShift(tmpKline1,kShift);
+                                obj.data{i}(dynamic,slice,spoke,:) = tmpKline1;
+                            end
+                        end
                     end
                 end
 
                 kSpaceSum = squeeze(sum(abs(obj.data{1}),[1,2,3]));
                 [~,kCenter] = max(kSpaceSum);
                 obj.primaryNavigatorPoint = kCenter;
+                obj.nrNavPointsUsed = 1;
 
                 obj.nr_repetitions = size(obj.data{1},1);
                 
@@ -1592,11 +1613,48 @@ classdef retroData
         end % ExportRecoParametersFcn
 
 
+    end % Public methods
 
 
 
-        
-    end % methods
-    
+
+    % ---------------------------------------------------------------------------------
+    % Static methods
+    % ---------------------------------------------------------------------------------
+    methods (Static)
+
+
+
+
+        % ---------------------------------------------------------------------------------
+        % Fractional circshift
+        % ---------------------------------------------------------------------------------
+        function output = fracCircShift(input,shiftsize)
+
+            int = floor(shiftsize);     %integer portions of shiftsize
+            fra = shiftsize - int;      %fractional portions of shiftsize
+            dim = numel(shiftsize);
+            output = input;
+            for n = 1:numel(shiftsize)  %The dimensions are treated one after another.
+                intn = int(n);
+                fran = fra(n);
+                shift1 = zeros(dim,1);
+                shift1(n) = intn;
+                shift2 = zeros(dim,1);
+                shift2(n) = intn+1;
+                %Linear intepolation:
+                output = (1-fran)*circshift(output,shift1) + fran*circshift(output,shift2);
+            end
+
+        end % fracCircShift
+
+
+
+    end % Static methods
+
+
+
+
+
 end % retroData
 

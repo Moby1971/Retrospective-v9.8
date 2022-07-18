@@ -95,7 +95,7 @@ classdef retroNav
                     extractNavigator2Dms;
                     
                 case '2Dradial'
-                    extractNavigatorRadial;
+                    extractNavigator2DRadial;
 
                 case '3Dute'
                     extractNavigator3Dute;
@@ -305,9 +305,9 @@ classdef retroNav
             
             
             % ---------------------------------------------------------------------------------
-            % ----- Radial data ---------------------------------------------------------------
+            % ----- 2D radial data ------------------------------------------------------------
             % ---------------------------------------------------------------------------------
-            function extractNavigatorRadial
+            function extractNavigator2DRadial
                 
                 objNav.navAmplitude = cell(objData.nr_coils);
                 
@@ -318,18 +318,6 @@ classdef retroNav
                     
                     % size of the input data, 4th dimension is the readout direction which contains the navigator
                     [nrRepetitions,dimz,dimy,dimx] = size(objData.data{coilnr});
-                    
-                    % determine the phase offset of the individual spokes based on the center navigator point
-                    phaseoffset = zeros(nrRepetitions*dimz*dimy,2);
-                    cnt1 = 1;
-                    for i = 1:nrRepetitions
-                        for j = 1:dimz
-                            for k = 1:dimy
-                                phaseoffset(cnt1,:) = [k,angle(objData.data{coilnr}(i,j,k,objData.primaryNavigatorPoint))];
-                                cnt1 = cnt1 + 1;
-                            end
-                        end
-                    end
                     
                     % extract the navigator and put it in a long array
                     navDataAmplitude = reshape(permute(objData.data{coilnr},[3,2,1,4]),nrRepetitions*dimy*dimz,dimx);

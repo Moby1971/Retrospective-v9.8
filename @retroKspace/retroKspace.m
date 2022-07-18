@@ -395,7 +395,7 @@ classdef retroKspace
                 sortedAverages = zeros(nrRespFrames,nrCardFrames,dimz,dimy,dimx,nrDynamics);          % fill temp nr averages array with zeros
                 cnt = 0;
                 for slice=1:dimz                    % loop over slices
-                    for i=1:nrReps                 % loop through all repetitions
+                    for i=1:nrReps                  % loop through all repetitions
                         for j=1:nrKsteps            % loop through all the phase-encoding steps
                             cnt = cnt + 1;
                             if (cardBinAss(cnt) > 0) && (includeWindow(cnt) == 1)         % if assigment = 0, this acquisition is discarded
@@ -1103,7 +1103,7 @@ classdef retroKspace
                             tmpKline2 = interp(tmpKline1,interpFactor);
                             [~,kCenter] = max(abs(tmpKline2));
                             kShift = floor(dimx/2)-kCenter/interpFactor;
-                            tmpKline1 = fraccircshift(tmpKline1,kShift);
+                            tmpKline1 = retorKspace.fracCircShift(tmpKline1,kShift);
                         end
 
                         % Phase correction for k-space center
