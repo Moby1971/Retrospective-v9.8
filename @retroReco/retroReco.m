@@ -1027,7 +1027,7 @@ classdef retroReco
 
                 % Rearrange to correct orientation: frames, z, y, x, dynamics
                 imageReg = reshape(recoImage,[dimz,dimy,dimx,dimf,dimd]);
-                imageOut = flip(flip(permute(imageReg,[4,3,2,1,5]),3),4);
+                imageOut = permute(imageReg,[4,3,2,1,5]);
 
                 % sense map orientations: x, y, slices, map1, map2
                 senseMap1 = flip(permute(abs(sensitivities),[2,1,14,3,4,5,6,7,8,9,10,11,12,13]),2);
@@ -1120,7 +1120,7 @@ classdef retroReco
 
                 % Root sum of squares over coil dimension and flip
                 image = rssq(image,6);
-                image = flip(permute(image,[1,4,3,2,5]),3);
+                image = permute(image,[1,4,3,2,5]);
 
                 % sense map orientations: x, y, slices, map1, map2
                 senseMap1 = permute(sensitivities,[3,2,14,4,5,1,6,7,8,9,10,11,12,13]);
