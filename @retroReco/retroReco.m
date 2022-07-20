@@ -821,9 +821,9 @@ classdef retroReco
                         dTotal(1) = -dTotal(1);
 
                         % Sent gradient delay vector back to app
-                        app.GxDelayEditField.Value = double(dTotal(1));
-                        app.GyDelayEditField.Value = double(dTotal(2));
-                        app.GzDelayEditField.Value = double(dTotal(3));
+                        app.GxDelayEditField.Value = round(double(dTotal(1)),5);
+                        app.GyDelayEditField.Value = round(double(dTotal(2)),5);
+                        app.GzDelayEditField.Value = round(double(dTotal(3)),5);
 
                     end
 
@@ -850,10 +850,8 @@ classdef retroReco
                             dataCalib = kSpacePicsSum(1,M1:M2,1:kSkip:end);
                             app.TextMessage(strcat('Calibration trajectory length = ',{' '},num2str(length(kTrajCalib))));
 
-                            % Interpolation to update trajectory with initial delays
-                            app.GzDelayEditField.Value = 0;
-                            dTotal(3) = 0;
-                            kTrajCalib = objReco.trajInterpolation(kTrajCalib,dTotal);
+                            % Set values to zero first
+                            dTotal = zeros(3,1);
                             kTraj = kTrajCalib;
 
                             % Initial image
@@ -914,8 +912,8 @@ classdef retroReco
                                 app.TextMessage(strcat('Estimated delays:',{' '},num2str(dTotal(1)),':',num2str(dTotal(2))));
 
                                 % Sent gradient delay vector back to app
-                                app.GxDelayEditField.Value = double(dTotal(1));
-                                app.GyDelayEditField.Value = double(dTotal(2));
+                                app.GxDelayEditField.Value = round(double(dTotal(1)),5);
+                                app.GyDelayEditField.Value = round(double(dTotal(2)),5);
                                 app.GzDelayEditField.Value = 0;
 
                                 % Interpolation to update trajectory with new delays

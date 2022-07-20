@@ -1103,7 +1103,7 @@ classdef retroKspace
                             tmpKline2 = interp(tmpKline1,interpFactor);
                             [~,kCenter] = max(abs(tmpKline2));
                             kShift = floor(dimx/2)-kCenter/interpFactor;
-                            tmpKline1 = retorKspace.fracCircShift(tmpKline1,kShift);
+                            tmpKline1 = retroKspace.fracCircShift(tmpKline1,kShift);
                         end
 
                         % Phase correction for k-space center
@@ -1123,19 +1123,7 @@ classdef retroKspace
 
                 % Apply 1-D Tukey filter
                 filterWidth = 0.25;
-                tmpFilter = tukeywin(dimx,filterWidth);
-                tukeyWindow = ones(nrRespFrames,nrCardFrames,objData.nrKlines,dimz,dimx,nrDynamics);
-                for i = 1:nrRespFrames
-                    for j = 1:nrCardFrames
-                        for k = 1:objData.nrKlines
-                            for v = 1:dimz
-                                for w = 1:nrDynamics
-                                    tukeyWindow(i,j,k,v,:,w) = tmpFilter;
-                                end
-                            end
-                        end
-                    end
-                end
+                tukeyWindow(1,1,1,1,:,1) = tukeywin(dimx,filterWidth);
                 sortedKspace = sortedKspace.*tukeyWindow;
 
                 % Report back k-space
@@ -1238,16 +1226,7 @@ classdef retroKspace
                 filterWidth = 0.25/2;
                 tmpFilter = tukeywin(dimx*2,filterWidth);
                 tmpFilter = tmpFilter(dimx+1:dimx*2);
-                tukeyWindow = ones(app.nrRespFrames,app.nrCardFrames,objData.nrKlines,1,dimx,app.nrDynamics);
-                for i = 1:app.nrRespFrames
-                    for j = 1:app.nrCardFrames
-                        for k = 1:objData.nrKlines
-                            for w = 1:app.nrDynamics
-                                tukeyWindow(i,j,k,1,:,w) = tmpFilter;
-                            end
-                        end
-                    end
-                end
+                tukeyWindow(1,1,1,1,:,1) = tmpFilter;
                 sortedKspace = sortedKspace.*tukeyWindow;
 
                 % Report back k-space per coil
