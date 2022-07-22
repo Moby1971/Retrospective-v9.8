@@ -788,6 +788,7 @@ classdef retroReco
                     kSpacePicsSum = kSpacePicsSum(:,:,ze);
                     trajPicsSum = trajPicsSum(:,:,ze);
 
+                    % Ring method
                     if app.RingMethodCheckBox.Value
 
                         % Sent gradient delay vector back to app
@@ -797,38 +798,53 @@ classdef retroReco
 
                         % Ring method using estdelay in Bart
                         try
-                            delaysBart = bart(app,'estdelay -r4 ',trajPicsSum,kSpacePicsSum);
-                        catch ME
-                            app.TextMessage(ME.message);
-                            app.TextMessage('Ring gradient delay estimation failed ...');
-                            app.TextMessage('Trying iterative method ...');
-                            app.SetStatus(1);
-                            app.RingMethodCheckBox.Value = 0;
-                            delaysBart = "0:0:0";
-                        end
 
-                        % Remove unknown warning
-                        try
+                            dTotal = []; %#ok<NASGU> 
+
+                            delaysBart = bart(app,'estdelay -r4 ',trajPicsSum,kSpacePicsSum);
+
                             ff = strfind(delaysBart,"[0m");
                             if ~isempty(ff)
                                 delaysBart = delaysBart(ff:end);
                                 delaysBart = erase(delaysBart,"[0m");
                                 delaysBart = erase(delaysBart,newline);
                             end
-                        catch
+
+                            delaysBart = strrep(delaysBart,':',',');
+                            dTotal = str2num(delaysBart); %#ok<ST2NM> 
+                            dTotal(1) = -dTotal(1);
+                        
+                        catch ME
+
+                            app.TextMessage(ME.message);
+                            app.TextMessage('Ring gradient delay estimation failed ...');
+                            app.TextMessage('Trying iterative method ...');
+                            app.SetStatus(1);
+                            app.RingMethodCheckBox.Value = false;
+                            dTotal = zeros(3,1);
+
                         end
 
-                        delaysBart = strrep(delaysBart,':',',');
-                        dTotal = str2num(delaysBart); %#ok<ST2NM> 
-                        dTotal(1) = -dTotal(1);
-
                         % Sent gradient delay vector back to app
-                        app.GxDelayEditField.Value = round(double(dTotal(1)),5);
-                        app.GyDelayEditField.Value = round(double(dTotal(2)),5);
-                        app.GzDelayEditField.Value = round(double(dTotal(3)),5);
+                        if ~isempty(dTotal)
+   
+                            app.GxDelayEditField.Value = double(round(dTotal(1),5));
+                            app.GyDelayEditField.Value = double(round(dTotal(2),5));
+                            app.GzDelayEditField.Value = double(round(dTotal(3),5));
 
-                    end
+                        else
 
+                            app.TextMessage('Ring gradient delay estimation failed ...');
+                            app.TextMessage('Trying iterative method ...');
+                            app.SetStatus(1);
+                            app.RingMethodCheckBox.Value = false;
+                            dTotal = zeros(3,1);
+
+                        end
+           
+                    end % Ring method
+
+                    % Iterative method
                     if ~app.RingMethodCheckBox.Value
 
                         try

@@ -62,7 +62,7 @@ if ispc
 
     for i=1:nargout
         if ERR==0
-            if contains(cmd,"estdelay") || contains(cmd,"-Rh")
+            if contains(cmd,"estdelay") || contains(cmd,"-Rh") 
                 varargout{1} = cmdout;
             else
                 varargout{i} = readcfl(out{i});
@@ -159,7 +159,7 @@ if ismac
             if contains(cmd,"estdelay") || contains(cmd,"-Rh")
                 varargout{1} = cmdout;
             else
-                varargout{i} = readcfl(out{i});
+                varargout{i} = readcfl(out{i}); %#ok<*AGROW> 
             end
         end
         if (exist(strcat(out{i}, '.cfl'),'file'))
