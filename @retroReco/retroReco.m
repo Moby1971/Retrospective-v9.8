@@ -810,9 +810,11 @@ classdef retroReco
                         % Remove unknown warning
                         try
                             ff = strfind(delaysBart,"[0m");
-                            delaysBart = delaysBart(ff:end);
-                            delaysBart = erase(delaysBart,"[0m");
-                            delaysBart = erase(delaysBart,newline);
+                            if ~isempty(ff)
+                                delaysBart = delaysBart(ff:end);
+                                delaysBart = erase(delaysBart,"[0m");
+                                delaysBart = erase(delaysBart,newline);
+                            end
                         catch
                         end
 
