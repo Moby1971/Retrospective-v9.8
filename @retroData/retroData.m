@@ -9,6 +9,7 @@ classdef retroData
         mrdFooter
         newMrdFooter
         rprFile
+        sqlFile
         newRprFile
         filename
         exportDir
@@ -74,8 +75,9 @@ classdef retroData
         nrKsteps
         
         % Flags
-        rprFlag = false;
-        validDataFlag = false;
+        rprFlag = false
+        sqlFlag = false
+        validDataFlag = false
         multiCoilFlag = false
         multi2DFlag = false
         vfaDataFlag = false
@@ -83,6 +85,16 @@ classdef retroData
         % Data and reconstruction type
         dataType = '2D'
         recoGuess = 'systolic function'
+
+        % Parameters from SQL file
+        SQLnumberOfSlices
+        SQLsliceGap = 0
+        SQLangleX = 0
+        SQLangleY = 0
+        SQLangleZ = 0
+        SQLoffsetX = 0
+        SQLoffsetY = 0
+        SQLoffsetZ = 0
         
     end
     
@@ -130,6 +142,7 @@ classdef retroData
                 
                 if isfield(parameter,'NO_SLICES')
                     obj.NO_SLICES = parameter.NO_SLICES;
+                    obj.SQLnumberOfSlices = parameter.NO_SLICES;
                 end
                 
                 if isfield(parameter,'SLICE_THICKNESS')
@@ -707,20 +720,20 @@ classdef retroData
             % Parse fields in ppr section of the MRD file
             if numel(ppr_text)>0
                 cell_text = textscan(ppr_text,'%s','delimiter',char(13));
-                PPR_keywords = {'BUFFER_SIZE','DATA_TYPE','DECOUPLE_FREQUENCY','DISCARD','DSP_ROUTINE','EDITTEXT','EXPERIMENT_ARRAY','FOV','FOV_READ_OFF','FOV_PHASE_OFF','FOV_SLICE_OFF','GRADIENT_STRENGTH','MULTI_ORIENTATION','Multiple Receivers','NO_AVERAGES','NO_ECHOES','NO_RECEIVERS','NO_SAMPLES','NO_SLICES','NO_VIEWS','NO_VIEWS_2','OBLIQUE_ORIENTATION','OBSERVE_FREQUENCY','ORIENTATION','PHASE_CYCLE','READ/PHASE/SLICE_SELECTION','RECEIVER_FILTER','SAMPLE_PERIOD','SAMPLE_PERIOD_2','SCROLLBAR','SLICE_BLOCK','SLICE_FOV','SLICE_INTERLEAVE','SLICE_THICKNESS','SLICE_SEPARATION','SPECTRAL_WIDTH','SWEEP_WIDTH','SWEEP_WIDTH_2','VAR_ARRAY','VIEW_BLOCK','VIEWS_PER_SEGMENT','SMX','SMY','SWX','SWY','SMZ','SWZ','VAR','PHASE_ORIENTATION','X_ANGLE','Y_ANGLE','Z_ANGLE','PPL','IM_ORIENTATION','IM_OFFSETS'};
+                PPR_keywords = {'BUFFER_SIZE','DATA_TYPE','DECOUPLE_FREQUENCY','DISCARD','DSP_ROUTINE','EDITTEXT','EXPERIMENT_ARRAY','FOV','FOV_READ_OFF','FOV_PHASE_OFF','FOV_SLICE_OFF','GRADIENT_STRENGTH','MULTI_ORIENTATION','Multiple Receivers','NO_AVERAGES','NO_ECHOES','NO_RECEIVERS','NO_SAMPLES','NO_SLICES','NO_VIEWS','NO_VIEWS_2','OBLIQUE_ORIENTATION','OBSERVE_FREQUENCY','ORIENTATION','PHASE_CYCLE','READ/PHASE/SLICE_SELECTION','RECEIVER_FILTER','SAMPLE_PERIOD','SAMPLE_PERIOD_2','SCROLLBAR','SLICE_BLOCK','SLICE_FOV','SLICE_INTERLEAVE','SLICE_THICKNESS','SLICE_SEPARATION','SPECTRAL_WIDTH','SWEEP_WIDTH','SWEEP_WIDTH_2','VAR_ARRAY','VIEW_BLOCK','VIEWS_PER_SEGMENT','SMX','SMY','SWX','SWY','SMZ','SWZ','VAR','PHASE_ORIENTATION','X_ANGLE','Y_ANGLE','Z_ANGLE','PPL','IM_ORIENTATION','IM_OFFSETS','FOV_OFFSETS'};
                 %PPR_type_0 keywords have text fields only, e.g. ":PPL C:\ppl\smisim\1ge_tagging2_1.PPL"
                 PPR_type_0 = [23 53];
                 %PPR_type_1 keywords have single value, e.g. ":FOV 300"
                 PPR_type_1 = [8 42:47];
                 %PPR_type_2 keywords have single variable and single value, e.g. ":NO_SAMPLES no_samples, 16"
-                PPR_type_2 = [4 7 9:11 15:21 25 31 33 41 49];
+                PPR_type_2 = [4 7 15:21 25 31 33 41 49];
                 PPR_type_3 = 48; % VAR keyword only (syntax same as above)
                 PPR_type_4 = [28 29]; % :SAMPLE_PERIOD sample_period, 300, 19, "33.3 KHz  30 ?s" and SAMPLE_PERIOD_2 - read the first number=timeincrement in 100ns
                 %PPR_type_5 keywords have single variable and two values, e.g. ":SLICE_THICKNESS gs_var, -799, 100"
                 PPR_type_5 = [34 35];
                 % KEYWORD [pre-prompt,] [post-prompt,] [min,] [max,] default, variable [,scale] [,further parameters ...];
-                PPR_type_6 = [39 50:52]; % VAR_ARRAY and angles keywords
-                PPR_type_7 = [54 55]; % IM_ORIENTATION and IM_OFFSETS (SUR only)
+                PPR_type_6 = [9:11 39 50:52]; % VAR_ARRAY and angles keywords
+                PPR_type_7 = [54 55 56]; % IM_ORIENTATION and IM_OFFSETS (SUR only)
 
                 par = struct('filename',filename);
                 for j=1:size(cell_text{1},1)
@@ -733,32 +746,40 @@ classdef retroData
                     % find matching number in PPR_keyword array:
                     num = find(strcmp(field_,PPR_keywords));
                     if num>0
+
                         if find(PPR_type_3==num) % :VAR keyword
                             C = textscan(char1, '%*s %s %f');
                             field_title = char(C{1}); field_title(numel(field_title)) = [];
                             numeric_field = C{2};
                             par = setfield(par, field_title, numeric_field); %#ok<*SFLD> 
+
                         elseif find(PPR_type_1==num)
                             C = textscan(char1, '%*s %f');
                             numeric_field = C{1};
                             par = setfield(par, field_, numeric_field);
+
                         elseif find(PPR_type_2==num)
                             C = textscan(char1, '%*s %s %f');
                             numeric_field = C{2};
                             par = setfield(par, field_, numeric_field);
+
                         elseif find(PPR_type_4==num)
+
                             C = textscan(char1, '%*s %s %n %n %s');
                             field_title = char(C{1}); field_title(numel(field_title)) = []; %#ok<*NASGU> 
                             numeric_field = C{2};
                             par = setfield(par, field_, numeric_field);
+
                         elseif find(PPR_type_0==num)
                             C = textscan(char1, '%*s %[^\n]');
                             text_field = char(C{1}); %text_field = reshape(text_field,1,[]);
                             par = setfield(par, field_, text_field);
+
                         elseif  find(PPR_type_5==num)
                             C = textscan(char1, '%*s %s %f %c %f');
                             numeric_field = C{4};
                             par = setfield(par, field_, numeric_field);
+
                         elseif  find(PPR_type_6==num)
                             C = textscan(char1, '%*s %s %f %c %f', 100);
                             field_ = char(C{1}); field_(end) = [];% the name of the array
@@ -779,13 +800,17 @@ classdef retroData
                                 tline = char(cell_text{1}(j+k,:));
                             end
                             par = setfield(par, field_, multiplier);
+
                         elseif find(PPR_type_7==num) % :IM_ORIENTATION keyword
                             C = textscan(char1, '%s %f %f %f');
                             field_title = char(C{1}); field_title(1) = [];
                             numeric_field = [C{2}, C{3}, C{4}];
                             par = setfield(par, field_title, numeric_field);
+
                         end
+
                     end
+
                 end
                 if isfield('OBSERVE_FREQUENCY','par')
                     C = textscan(par.OBSERVE_FREQUENCY, '%q');
@@ -1405,7 +1430,7 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         % Read RPR file
         % ---------------------------------------------------------------------------------
-        function obj = readRprfile(obj, app, filename)
+        function obj = readRPRfile(obj, app, filename)
             
             try
                 fid = fopen(filename,'r');
@@ -1415,12 +1440,12 @@ classdef retroData
             catch
                 obj.rprFile = '';
                 obj.rprFlag = false;
-                app.TextMessage('WARNING: rpr file not found ...');
+                app.TextMessage('WARNING: RPR file not found ...');
             end
-            
+
         end
-        
-        
+
+
 
 
         % ---------------------------------------------------------------------------------
@@ -1509,6 +1534,67 @@ classdef retroData
             obj.newRprFile = inputRpr;
 
         end % makeRprFile
+        
+
+
+
+        % ---------------------------------------------------------------------------------
+        % Read SQL file
+        % ---------------------------------------------------------------------------------
+        function obj = readSQLfile(obj, app, filename)
+            
+            try
+                fid = fopen(filename,'r');
+                obj.sqlFile = char(fread(fid,Inf,'uchar')');
+                fclose(fid);
+                obj.sqlFlag = true;
+            catch
+                obj.sqlFile = '';
+                obj.sqlFlag = false;
+                app.TextMessage('WARNING: SQL file not found ...');
+            end
+
+        end % readSQLfile
+
+
+
+
+        % ---------------------------------------------------------------------------------
+        % Get some parameters from SQL file
+        % ---------------------------------------------------------------------------------
+        function obj = sqlParameters(obj, app)
+
+            try
+
+                sqlData = obj.sqlFile;
+
+                % Group settings
+                groupSettings = strfind(sqlData,'[GROUP SETTINGS]');
+                posStart = strfind(sqlData(groupSettings:end),'VALUES(');
+                posStart = posStart(1)+groupSettings+6;
+                posEnd = strfind(sqlData(posStart:end),')');
+                posEnd = posEnd(1)+posStart-2;
+                groupData = sqlData(posStart:posEnd);
+                values = textscan(groupData, '%f %s %f %f %f %f %f %f %f %f %f %f','Delimiter',',');
+
+                obj.SQLnumberOfSlices = values{4};
+                obj.SQLsliceGap = values{5};
+                obj.SQLangleX = values{6};
+                obj.SQLangleY = values{7};
+                obj.SQLangleZ = values{8};
+                obj.SQLoffsetX = values{9};
+                obj.SQLoffsetY = values{10};
+                obj.SQLoffsetZ = values{11};
+
+            catch ME
+
+                app.TextMessage(ME.message);
+                app.TextMessage('WARNING: something went wrong analyzing the SQL file ...');
+                app.SetStatus(1);
+
+            end
+
+        end % sqlParameters
 
 
         
@@ -1631,18 +1717,18 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         function output = fracCircShift(input,shiftsize)
 
-            int = floor(shiftsize);     %integer portions of shiftsize
-            fra = shiftsize - int;      %fractional portions of shiftsize
+            int = floor(shiftsize);     % Integer portions of shiftsize
+            fra = shiftsize - int;      % Fractional portions of shiftsize
             dim = numel(shiftsize);
             output = input;
-            for n = 1:numel(shiftsize)  %The dimensions are treated one after another.
+            for n = 1:numel(shiftsize)  % The dimensions are treated one after another.
                 intn = int(n);
                 fran = fra(n);
                 shift1 = zeros(dim,1);
                 shift1(n) = intn;
                 shift2 = zeros(dim,1);
                 shift2(n) = intn+1;
-                %Linear intepolation:
+                % Linear interpolation:
                 output = (1-fran)*circshift(output,shift1) + fran*circshift(output,shift2);
             end
 
