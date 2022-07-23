@@ -8,8 +8,8 @@ classdef retroData
         data
         mrdFooter
         newMrdFooter
-        rprFile
-        sqlFile
+        rprFile = []
+        sqlFile = []
         newRprFile
         filename
         exportDir
@@ -87,7 +87,7 @@ classdef retroData
         recoGuess = 'systolic function'
 
         % Parameters from SQL file
-        SQLnumberOfSlices
+        SQLnumberOfSlices = 1
         SQLsliceGap = 0
         SQLangleX = 0
         SQLangleY = 0
@@ -266,10 +266,12 @@ classdef retroData
                 
                 if isfield(parameter,'pixelshift1')
                     obj.pixelshift1 = parameter.pixelshift1;
+                    obj.SQLoffsetY = parameter.pixelshift1;
                 end
                 
                 if isfield(parameter,'pixelshift2')
                     obj.pixelshift2 = parameter.pixelshift2;
+                    obj.SQLoffsetZ = parameter.pixelshift2;
                 end
                 
                 if isfield(parameter,'pe2_traj')
@@ -292,7 +294,7 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         function obj = checkNumberOfExperiments(obj, app)
             
-            if obj.EXPERIMENT_ARRAY * obj.NO_VIEWS * obj.NO_VIEWS_2 * obj.NO_SLICES < 100
+            if (obj.EXPERIMENT_ARRAY * obj.NO_VIEWS * obj.NO_VIEWS_2 * obj.NO_SLICES) < 100
                 obj.validDataFlag = false;
                 app.TextMessage('ERROR: Not enough k-lines for any reconstruction ...');
             end
@@ -371,10 +373,10 @@ classdef retroData
             c = length(b);
             d = obj.VFA_angles(1:obj.VFA_size);
             if a == c
-                nrFlipAngles = a;     % FA1, FA2, FA3, FA4, .... = dym1, dyn2, dyn3, dyn4, ...
+                nrFlipAngles = a;     % FA1, FA2, FA3, FA4, .... = dyn1, dyn2, dyn3, dyn4, ...
                 lsFlipAngles = b;
             elseif mod(a,c) == 0
-                nrFlipAngles = c;     % FA1, FA1, ..., FA2, FA2, ..., FA3, FA3, ... = dym1, dyn2, dyn3, dyn4, ...
+                nrFlipAngles = c;     % FA1, FA1, ..., FA2, FA2, ..., FA3, FA3, ... = dyn1, dyn2, dyn3, dyn4, ...
                 lsFlipAngles = b;
             else
                 nrFlipAngles = a;     % each dynamic has its own flip-angle
@@ -587,7 +589,7 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         % Read MRD file
         % ---------------------------------------------------------------------------------
-        function [im,dim,par,unsortedkspace] = importMRD(obj, filename, reordering1, reordering2)
+        function [im, dim, par, unsortedkspace] = importMRD(obj, filename, reordering1, reordering2)
 
             % Description: Function to open multidimensional MRD/SUR files given a filename with PPR-parsing
             % Read in MRD and SUR file formats
@@ -637,6 +639,7 @@ classdef retroData
                 onlydatatype = datatype(1);
                 iscomplex = 1;
             end
+
             switch onlydatatype
                 case '0'
                     dataformat = 'uchar';   
@@ -764,7 +767,6 @@ classdef retroData
                             par = setfield(par, field_, numeric_field);
 
                         elseif find(PPR_type_4==num)
-
                             C = textscan(char1, '%*s %s %n %n %s');
                             field_title = char(C{1}); field_title(numel(field_title)) = []; %#ok<*NASGU> 
                             numeric_field = C{2};
@@ -835,14 +837,14 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         % Import B-type scanner data
         % ---------------------------------------------------------------------------------
-        function [rawData, parameters] = importB(obj, app) %#ok<*INUSL> 
+        function [obj, rawData, parameters] = importB(obj, app) %#ok<*INUSL> 
 
             % Import path
             importPath = app.mrdImportPath;
 
             % Parameters
-            info1 = jcampread(strcat(importPath,'acqp'));
-            info2 = jcampread(strcat(importPath,'method'));
+            info1 = jCampRead(strcat(importPath,'acqp'));
+            info2 = jCampRead(strcat(importPath,'method'));
 
             % Scanner type
             parameters.scanner = 'B-type';
@@ -965,9 +967,9 @@ classdef retroData
             end
             dataRaw = fread(fileID,datatype);
             fclose(fileID);
-            kreal = dataRaw(1:2:end);
-            kim = dataRaw(2:2:end);
-            kspace = kreal + 1j*kim;
+            kReal = dataRaw(1:2:end);
+            kIm = dataRaw(2:2:end);
+            kSpace = kReal + 1j*kIm;
 
             % Read navigator
             if isfile(strcat(importPath,'fid.NavFid'))
@@ -977,9 +979,9 @@ classdef retroData
             end
             navdata = fread(fileID,datatype);
             fclose(fileID);
-            kreal = navdata(1:2:end);
-            kim = navdata(2:2:end);
-            navkspace = kreal + 1j*kim;
+            kReal = navdata(1:2:end);
+            kIm = navdata(2:2:end);
+            navKspace = kReal + 1j*kIm;
 
             % Phase offset
             if isfield(info1.acq,'phase1_offset')
@@ -996,35 +998,35 @@ classdef retroData
 
                 % Imaging k-space
                 singleRep = parameters.NO_SLICES*parameters.NO_SAMPLES*parameters.nr_coils*parameters.NO_VIEWS;
-                parameters.EXPERIMENT_ARRAY = floor(length(kspace)/singleRep);
-                kspace = kspace(1:singleRep*parameters.EXPERIMENT_ARRAY,:);
-                kspace = reshape(kspace,parameters.NO_SLICES,parameters.NO_SAMPLES,parameters.nr_coils,parameters.NO_VIEWS,parameters.EXPERIMENT_ARRAY);
+                parameters.EXPERIMENT_ARRAY = floor(length(kSpace)/singleRep);
+                kSpace = kSpace(1:singleRep*parameters.EXPERIMENT_ARRAY,:);
+                kSpace = reshape(kSpace,parameters.NO_SLICES,parameters.NO_SAMPLES,parameters.nr_coils,parameters.NO_VIEWS,parameters.EXPERIMENT_ARRAY);
                 
-                parameters.EXPERIMENT_ARRAY = size(kspace,5);
-                kspace = permute(kspace,[3,5,1,4,2]); % nc, nr, ns, np, nf
+                parameters.EXPERIMENT_ARRAY = size(kSpace,5);
+                kSpace = permute(kSpace,[3,5,1,4,2]); % nc, nr, ns, np, nf
 
                 % Flip readout if needed
                 if flr
-                    kspace = flip(kspace,5);
+                    kSpace = flip(kSpace,5);
                 end
 
                 % Coil intensity scaling
                 if isfield(info2.pvm,'encchanscaling')
                     for i = 1:parameters.nr_coils
-                        kspace(i,:) = kspace(i,:) * info2.pvm.encchanscaling(i);
+                        kSpace(i,:) = kSpace(i,:) * info2.pvm.encchanscaling(i);
                     end
                 end
 
                 % Navigator
-                navkspace = navkspace(1:parameters.NO_SLICES*parameters.no_samples_nav*parameters.nr_coils*parameters.NO_VIEWS*parameters.EXPERIMENT_ARRAY);
-                navkspace = reshape(navkspace,parameters.NO_SLICES,parameters.no_samples_nav,parameters.nr_coils,parameters.NO_VIEWS,parameters.EXPERIMENT_ARRAY);
-                navkspace = permute(navkspace,[3,5,1,4,2]);
+                navKspace = navKspace(1:parameters.NO_SLICES*parameters.no_samples_nav*parameters.nr_coils*parameters.NO_VIEWS*parameters.EXPERIMENT_ARRAY);
+                navKspace = reshape(navKspace,parameters.NO_SLICES,parameters.no_samples_nav,parameters.nr_coils,parameters.NO_VIEWS,parameters.EXPERIMENT_ARRAY);
+                navKspace = permute(navKspace,[3,5,1,4,2]);
 
                 % 34 point spacer
-                kspacer = zeros(parameters.nr_coils,parameters.EXPERIMENT_ARRAY,parameters.NO_SLICES,parameters.NO_VIEWS,34);
+                kSpacer = zeros(parameters.nr_coils,parameters.EXPERIMENT_ARRAY,parameters.NO_SLICES,parameters.NO_VIEWS,34);
 
                 % Combine navigator + spacer + k-space
-                raw = cat(5,navkspace,kspacer,kspace);
+                raw = cat(5,navKspace,kSpacer,kSpace);
                 rawData = cell(parameters.nr_coils);
                 for i = 1:parameters.nr_coils
                     rawData{i} = squeeze(raw(i,:,:,:,:));
@@ -1062,31 +1064,31 @@ classdef retroData
                 end
 
                 % K-space
-                kspace = reshape(kspace,parameters.nr_coils,parameters.NO_SAMPLES,parameters.NO_VIEWS,parameters.NO_VIEWS_2,[]);
-                parameters.EXPERIMENT_ARRAY = size(kspace,5);
-                kspace = permute(kspace,[1,5,4,3,2]);
+                kSpace = reshape(kSpace,parameters.nr_coils,parameters.NO_SAMPLES,parameters.NO_VIEWS,parameters.NO_VIEWS_2,[]);
+                parameters.EXPERIMENT_ARRAY = size(kSpace,5);
+                kSpace = permute(kSpace,[1,5,4,3,2]);
 
                 % Flip readout if needed
                 if flr
-                    kspace = flip(kspace,5);
+                    kSpace = flip(kSpace,5);
                 end
 
                 % Coil intesnity scaling
                 if isfield(info2.pvm,'encchanscaling')
                     for i = 1:parameters.nr_coils
-                        kspace(i,:) = kspace(i,:) * info2.pvm.encchanscaling(i);
+                        kSpace(i,:) = kSpace(i,:) * info2.pvm.encchanscaling(i);
                     end
                 end
 
                 % Navigator
-                navkspace = reshape(navkspace,parameters.nr_coils,parameters.no_samples_nav,parameters.NO_VIEWS,parameters.NO_VIEWS_2,parameters.EXPERIMENT_ARRAY);
-                navkspace = permute(navkspace,[1,5,4,3,2]);
+                navKspace = reshape(navKspace,parameters.nr_coils,parameters.no_samples_nav,parameters.NO_VIEWS,parameters.NO_VIEWS_2,parameters.EXPERIMENT_ARRAY);
+                navKspace = permute(navKspace,[1,5,4,3,2]);
 
                 % 34 point spacer
-                kspacer = zeros(parameters.nr_coils,parameters.EXPERIMENT_ARRAY,parameters.NO_VIEWS_2,parameters.NO_VIEWS,34);
+                kSpacer = zeros(parameters.nr_coils,parameters.EXPERIMENT_ARRAY,parameters.NO_VIEWS_2,parameters.NO_VIEWS,34);
 
                 % Combine navigator + spacer + k-space
-                raw = cat(5,navkspace,kspacer,kspace);
+                raw = cat(5,navKspace,kSpacer,kSpace);
                 for i = 1:parameters.nr_coils
                     rawData{i} = squeeze(raw(i,:,:,:,:));
                     rawData{i} = reshape(rawData{i},parameters.EXPERIMENT_ARRAY,parameters.NO_VIEWS_2,parameters.NO_VIEWS,parameters.NO_SAMPLES+34+parameters.no_samples_nav);
@@ -1096,104 +1098,129 @@ classdef retroData
 
 
             % read reco files to a structure
-            function struct = jcampread(filename) %#ok<STOUT> 
+            function struct = jCampRead(filename) %#ok<STOUT> 
 
                 % Open file read-only big-endian
                 fid = fopen(filename,'r','b');
-                skipline=0;
+                skipLine = 0;
 
                 % Loop through separate lines
                 if fid~=-1
+
                     while 1
-                        if skipline
-                            line=nextline;
-                            skipline=0;
+
+                        if skipLine
+                            line = nextLine;
+                            skipLine = 0;
                         else
-                            line=fgetl(fid);
+                            line = fgetl(fid);
                         end
+
                         % Testing the text lines
-                        while length(line)<2
-                            line=fgetl(fid);
+                        while length(line) < 2
+                            line = fgetl(fid);
                         end
+
                         % Parameters and optional size of parameter are on lines starting with '##'
                         if line(1:2) == '##' %#ok<*BDSCA> 
+                            
                             % Parameter extracting and formatting
                             % Read parameter name
-                            paramname = fliplr(strtok(fliplr(strtok(line,'=')),'#'));
+                            paramName = fliplr(strtok(fliplr(strtok(line,'=')),'#'));
+                        
                             % Check for illegal parameter names starting with '$' and correct (Matlab does not accepts variable names starting with $)
-                            if paramname(1) == '$'
-                                paramname = paramname(2:length(paramname));
+                            if paramName(1) == '$'
+                                paramName = paramName(2:length(paramName));
                                 % Check if EOF, if true return
-                            elseif paramname(1:3) == 'END'
+                            elseif paramName(1:3) == 'END'
                                 break
                             end
+
                             % Parameter value formatting
-                            paramvalue = fliplr(strtok(fliplr(line),'='));
+                            paramValue = fliplr(strtok(fliplr(line),'='));
 
                             % Check if parameter values are in a matrix and read the next line
-                            if paramvalue(1) == '('
-                                paramvaluesize = str2num(fliplr(strtok(fliplr(strtok(paramvalue,')')),'(')));
+                            if paramValue(1) == '('
+                                
+                                paramValueSize = str2num(fliplr(strtok(fliplr(strtok(paramValue,')')),'(')));
+                                
                                 % Create an empty matrix with size 'paramvaluesize' check if only one dimension
-                                if ~isempty(paramvaluesize)
-                                    if size(paramvaluesize,2) == 1
-                                        paramvaluesize = [paramvaluesize,1];  
+                                if ~isempty(paramValueSize)
+                                    
+                                    if size(paramValueSize,2) == 1
+                                        paramValueSize = [paramValueSize,1];  
                                     end
+                                    
                                     % Read the next line
-                                    nextline = fgetl(fid);
+                                    nextLine = fgetl(fid);
+                                    
                                     % See whether next line contains a character array
-                                    if nextline(1) == '<'
-                                        paramvalue = fliplr(strtok(fliplr(strtok(nextline,'>')),'<')); %#ok<*NASGU> 
-                                    elseif strcmp(nextline(1),'L') || strcmp(nextline(1),'A') || strcmp(nextline(1),'H')
-                                        paramvalue = nextline;
+                                    if nextLine(1) == '<'
+                                        paramValue = fliplr(strtok(fliplr(strtok(nextLine,'>')),'<')); %#ok<*NASGU> 
+                                    elseif strcmp(nextLine(1),'L') || strcmp(nextLine(1),'A') || strcmp(nextLine(1),'H')
+                                        paramValue = nextLine;
                                     else
+                                        
                                         % Check if matrix has more then one dimension
-                                        if paramvaluesize(2) ~= 1
-                                            paramvaluelong = str2num(nextline);
-                                            while (length(paramvaluelong)<(paramvaluesize(1)*paramvaluesize(2))) & (nextline(1:2) ~= '##') %#ok<*AND2> 
-                                                nextline = fgetl(fid);
-                                                paramvaluelong = [paramvaluelong str2num(nextline)];  
+                                        if paramValueSize(2) ~= 1
+
+                                            paramValueLong = str2num(nextLine);
+                                            while (length(paramValueLong)<(paramValueSize(1)*paramValueSize(2))) & (nextLine(1:2) ~= '##') %#ok<*AND2> 
+                                                nextLine = fgetl(fid);
+                                                paramValueLong = [paramValueLong str2num(nextLine)];  
                                             end
-                                            if (length(paramvaluelong)==(paramvaluesize(1)*paramvaluesize(2))) & (~isempty(paramvaluelong))
-                                                paramvalue=reshape(paramvaluelong,paramvaluesize(1),paramvaluesize(2));
+
+                                            if (length(paramValueLong) == (paramValueSize(1)*paramValueSize(2))) & (~isempty(paramValueLong))
+                                                paramValue=reshape(paramValueLong,paramValueSize(1),paramValueSize(2));
                                             else
-                                                paramvalue=paramvaluelong;
+                                                paramValue = paramValueLong;
                                             end
-                                            if length(nextline)>1
-                                                if (nextline(1:2) ~= '##')
-                                                    skipline=1;
+
+                                            if length(nextLine) > 1
+                                                if (nextLine(1:2) ~= '##')
+                                                    skipLine = 1;
                                                 end
                                             end
+
                                         else
+
                                             % If only 1 dimension just assign whole line to paramvalue
-                                            paramvalue = str2num(nextline);
-                                            if ~isempty(str2num(nextline))
-                                                while length(paramvalue)<paramvaluesize(1)
-                                                    line=fgetl(fid);
-                                                    paramvalue = [paramvalue str2num(line)];  
+                                            paramValue = str2num(nextLine);
+                                            if ~isempty(str2num(nextLine))
+                                                while length(paramValue)<paramValueSize(1)
+                                                    line = fgetl(fid);
+                                                    paramValue = [paramValue str2num(line)];  
                                                 end
                                             end
+
                                         end
+
                                     end
+
                                 else
-                                    paramvalue='';
+                                    paramValue = '';
                                 end
+
                             end
 
                             % Add paramvalue to structure.paramname
-                            if isempty(findstr(paramname,'_'))
-                                eval(['struct.' paramname '= paramvalue;']); %#ok<*EVLDOT>
+                            if isempty(findstr(paramName,'_'))
+                                eval(['struct.' paramName '= paramValue;']); %#ok<*EVLDOT>
                             else
                                 try
-                                    eval(['struct.' lower(paramname(1:findstr(paramname,'_')-1)) '.' lower(paramname(findstr(paramname,'_')+1:length(paramname))) '= paramvalue;']);
+                                    eval(['struct.' lower(paramName(1:findstr(paramName,'_')-1)) '.' lower(paramName(findstr(paramName,'_')+1:length(paramName))) '= paramValue;']);
                                 catch
-                                    eval(['struct.' lower(paramname(1:findstr(paramname,'_')-1)) '.' datestr(str2num(paramname(findstr(paramname,'_')+1:findstr(paramname,'_')+2)),9) ...
-                                        paramname(findstr(paramname,'_')+2:length(paramname)) '= paramvalue;']); %#ok<*FSTR>
+                                    eval(['struct.' lower(paramName(1:findstr(paramName,'_')-1)) '.' datestr(str2num(paramName(findstr(paramName,'_')+1:findstr(paramName,'_')+2)),9) ...
+                                        paramName(findstr(paramName,'_')+2:length(paramName)) '= paramValue;']); %#ok<*FSTR>
                                 end
                             end
+
                         elseif line(1:2) == '$$'
                             % The two $$ lines are not parsed for now
                         end
+
                     end
+
                     % Close file
                     fclose(fid);
           
@@ -1564,33 +1591,37 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         function obj = sqlParameters(obj, app)
 
-            try
+            if ~isempty(obj.sqlFile)
 
                 sqlData = obj.sqlFile;
 
-                % Group settings
-                groupSettings = strfind(sqlData,'[GROUP SETTINGS]');
-                posStart = strfind(sqlData(groupSettings:end),'VALUES(');
-                posStart = posStart(1)+groupSettings+6;
-                posEnd = strfind(sqlData(posStart:end),')');
-                posEnd = posEnd(1)+posStart-2;
-                groupData = sqlData(posStart:posEnd);
-                values = textscan(groupData, '%f %s %f %f %f %f %f %f %f %f %f %f','Delimiter',',');
+                try
 
-                obj.SQLnumberOfSlices = values{4};
-                obj.SQLsliceGap = values{5};
-                obj.SQLangleX = values{6};
-                obj.SQLangleY = values{7};
-                obj.SQLangleZ = values{8};
-                obj.SQLoffsetX = values{9};
-                obj.SQLoffsetY = values{10};
-                obj.SQLoffsetZ = values{11};
+                    % Group settings
+                    groupSettings = strfind(sqlData,'[GROUP SETTINGS]');
+                    posStart = strfind(sqlData(groupSettings:end),'VALUES(');
+                    posStart = posStart(1)+groupSettings+6;
+                    posEnd = strfind(sqlData(posStart:end),')');
+                    posEnd = posEnd(1)+posStart-2;
+                    groupData = sqlData(posStart:posEnd);
+                    values = textscan(groupData, '%f %s %f %f %f %f %f %f %f %f %f %f','Delimiter',',');
 
-            catch ME
+                    obj.SQLnumberOfSlices = values{4};
+                    obj.SQLsliceGap = values{5};
+                    obj.SQLangleX = values{6};
+                    obj.SQLangleY = values{7};
+                    obj.SQLangleZ = values{8};
+                    obj.SQLoffsetX = values{9};
+                    obj.SQLoffsetY = values{10};
+                    obj.SQLoffsetZ = values{11};
 
-                app.TextMessage(ME.message);
-                app.TextMessage('WARNING: something went wrong analyzing the SQL file ...');
-                app.SetStatus(1);
+                catch ME
+
+                    app.TextMessage(ME.message);
+                    app.TextMessage('WARNING: Something went wrong analyzing SQL file group settings ...');
+                    app.SetStatus(1);
+
+                end
 
             end
 
