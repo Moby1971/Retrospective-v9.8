@@ -5,97 +5,98 @@ classdef retroData
     properties
         
         % Data
-        data
-        mrdFooter
-        newMrdFooter
-        rprFile = []
-        sqlFile = []
-        newRprFile
-        filename
-        exportDir
-        includeWindow                                                  
-        excludeWindow 
-        nrKlines
+        data                                                    % raw k-space data
+        mrdFooter                                               % original MRD file footer
+        newMrdFooter                                            % new MRD file footer    
+        rprFile = []                                            % original RPR file data
+        sqlFile = []                                            % SQL file data
+        newRprFile                                              % new RPR file data
+        filename                                                % MRD file name
+        exportDir                                               % export directory
+        includeWindow                                           % data include window
+        excludeWindow                                           % data exclude window
+        nrKlines                                                % number of k-lines 
         
         % Sequence parameters mostly from MRD file header
-        PPL
-        NO_SAMPLES = 1
-        NO_VIEWS = 1
-        NO_VIEWS_2 = 1
-        EXPERIMENT_ARRAY = 1
-        nr_repetitions = 1
-        NO_AVERAGES = 1
-        NO_SLICES = 1
-        SLICE_THICKNESS = 1
-        SLICE_SEPARATION = 1
-        SLICE_INTERLEAVE = 1
-        r_angle_var
-        p_angle_var
-        s_angle_var
-        nr_coils = 1
-        FOV = 30
-        PHASE_ORIENTATION = 0
-        FOVf = 8
-        aspectratio = 1
-        alpha = 20
-        te = 2
-        te_us = 0
-        TE
-        tr = 10
-        tr_extra_us = 0
-        TR
-        ti = 1000
-        VFA_angles = []
-        VFA_size = 0
-        frame_loop_on
-        radial_on = 0
-        slice_nav = 0
-        date
-        pixelshift1 = 0
-        pixelshift2 = 0
-        coil_scaling = 1
-        scanner = 'MRS'
-        no_samples_nav = 10
+        PPL                                                     % PPL name
+        NO_SAMPLES = 1                                          % number of samples
+        NO_VIEWS = 1                                            % number of views / phase encoding 1
+        NO_VIEWS_2 = 1                                          % number of views 2 / phase encoding 2
+        EXPERIMENT_ARRAY = 1                                    % number of experiments
+        nr_repetitions = 1                                      % number of repetitions / experiments
+        NO_AVERAGES = 1                                         % number of averages
+        NO_SLICES = 1                                           % number of slices
+        SLICE_THICKNESS = 1                                     % slice thickness (mm)
+        SLICE_SEPARATION = 1                                    % slice separations (mm)
+        SLICE_INTERLEAVE = 1                                    % slice interleave value
+        r_angle_var                                             % read angle
+        p_angle_var                                             % phase encoding angle
+        s_angle_var                                             % slice angle
+        nr_coils = 1                                            % number of coils
+        FOV = 30                                                % field of view (mm)
+        PHASE_ORIENTATION = 0                                   % phase orientation 1 = hor. 0 = vert.
+        FOVf = 8                                                % field of view factor/8 = aspect ratio
+        aspectratio = 1                                         % aspectratio
+        alpha = 20                                              % flip angle
+        te = 2                                                  % echo time (ms)
+        te_us = 0                                               % additional echo time (us)
+        TE                                                      % echo time (ms) = te + te_us
+        tr = 10                                                 % repetition time (ms)
+        tr_extra_us = 0                                         % additional repetition time (us)
+        TR                                                      % repetition time (ms) = tr + tr_extra_us
+        ti = 1000                                               % inversion time (ms)
+        VFA_angles = []                                         % flip angle array
+        VFA_size = 0                                            % flip angle array size (0 = 1 flip angle)
+        frame_loop_on                                           % CINE loop on (1) or off (0)
+        radial_on = 0                                           % radial on (1) or off (0)
+        slice_nav = 0                                           % slice navigator on (1) or off (0)
+        date                                                    % scan date
+        pixelshift1 = 0                                         % image shift in views direction 
+        pixelshift2 = 0                                         % image shift in views_2 direction
+        coil_scaling = 1                                        % coil intensity scaling parameter
+        scanner = 'MRS'                                         % scanner type
+        no_samples_nav = 10                                     % number of navigator samples
         
         % K-space trajectory related
-        pe1_order = 3
-        pe2_centric_on = 1
-        pe2_traj = 0
-        gp_var_mul = []
-        interpFactor = 16
+        pe1_order = 3                                           % phase-encoding order 
+        pe2_centric_on = 1                                      % phase-encoding 2 centric order on (1) or off (0)
+        pe2_traj = 0                                            % phase-encoding 2 trajectory type    
+        gp_var_mul = []                                         % trajectory array
+        interpFactor = 16                                       % k-space data interpolation factor
         
         % Navigator related
-        primaryNavigatorPoint = 10
-        nrNavPointsDiscarded = 35
-        nrNavPointsUsed = 5
+        primaryNavigatorPoint = 10                              % primary navigator point
+        nrNavPointsDiscarded = 35                               % number of data points discarded after the navigator
+        nrNavPointsUsed = 5                                     % number of navigator points used
         
         % Final dimensions
-        dimx
-        dimy
-        dimz
-        nrKsteps
+        dimx                                                    % image x dimension
+        dimy                                                    % image y dimension
+        dimz                                                    % image z dimension
+        nrKsteps                                                % number of k-space steps / trajectory steps
         
         % Flags
-        rprFlag = false
-        sqlFlag = false
-        validDataFlag = false
-        multiCoilFlag = false
-        multi2DFlag = false
-        vfaDataFlag = false
+        rprFlag = false                                         % RPR file available true / false
+        sqlFlag = false                                         % SQL file available true / false
+        validDataFlag = false                                   % valid data true / false
+        multiCoilFlag = false                                   % multi coil data true / false
+        multi2DFlag = false                                     % multi slice 2D data true / false
+        vfaDataFlag = false                                     % variable flip angle data true / false
         
         % Data and reconstruction type
-        dataType = '2D'
-        recoGuess = 'systolic function'
+        dataType = '2D'                                         % type of data
+        recoGuess = 'systolic function'                         % type of reconstruction
 
         % Parameters from SQL file
-        SQLnumberOfSlices = 1
-        SQLsliceGap = 0
-        SQLangleX = 0
-        SQLangleY = 0
-        SQLangleZ = 0
-        SQLoffsetX = 0
-        SQLoffsetY = 0
-        SQLoffsetZ = 0
+        SQLnumberOfSlices = 1                                   % number of slices
+        SQLsliceGap = 0                                         % slice gap
+        SQLangleX = 0                                           % angle X
+        SQLangleY = 0                                           % angle Y
+        SQLangleZ = 0                                           % angle Z
+        SQLoffsetX = 0                                          % offset X
+        SQLoffsetY = 0                                          % offset Y
+        SQLoffsetZ = 0                                          % offset Z
+
         
     end
     

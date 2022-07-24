@@ -4,14 +4,14 @@ classdef retroReco
     
     properties
         
-        movieExp                        % Movie for movie export
-        movieApp                        % Movie for viewing in the app
-        senseMap                        % Sense map
-        rescaleSlope                    % Dicom info RescaleSlope for image scaling
-        rescaleIntercept                % Dicom info RescaleIntercept for image scaling
-        multiSliceFlag = false          % Multi-slice true or false
-        multiDynamicFlag = false        % Mutli-dynamic true or false
-        totalVariation = 'T'            % Total variation (T) or total generalized variation (G)
+        movieExp                                            % Movie for movie export
+        movieApp                                            % Movie for viewing in the app
+        senseMap                                            % Sense map
+        rescaleSlope                                        % Dicom info RescaleSlope for image scaling
+        rescaleIntercept                                    % Dicom info RescaleIntercept for image scaling
+        multiSliceFlag = false                              % Multi-slice true or false
+        multiDynamicFlag = false                            % Mutli-dynamic true or false
+        totalVariation = 'T'                                % Total variation (T) or total generalized variation (G)
         
     end
     
@@ -687,9 +687,10 @@ classdef retroReco
 
                 kSpace = zeros(size(objKspace.kSpace{1}));
                 for i = 1:nrCoils
-                    kSpace(:,:,:,:,:,i) = objKspace.kSpace{i};
+                    kSpace(:,:,:,:,:,i) = objKspace.kSpace{i};      % K-space
                 end
-                traj = objKspace.kSpaceTraj;
+                traj = objKspace.kSpaceTraj;                        % Trajectory
+                averages = objKspace.kSpaceAvg;                     % Averages
 
                 % Bart dimensions  Bart   Matlab
                 % 	READ_DIM,       0       1   z
@@ -710,6 +711,9 @@ classdef retroReco
 
                 % Rearrange for BART         1  2  3  4  5  6  7  8  9 10 11 12 13 14
                 kSpacePics = permute(kSpace,[7, 2, 3, 6,14, 8, 9,10,11,12,1, 5, 13, 4]);
+
+                % Rearrange for BART        1  2  3  4  5  6  7  8  9 10 11 12 13 14
+                avgPics = permute(averages,[7, 2, 3, 6,14, 8, 9,10,11,12,1, 5, 13, 4]);
 
                 % Rearrange for BART     1  2  3  4  5  6  7  8  9 10 11 12 13 14
                 trajPics = permute(traj,[6, 2, 3,14, 7, 8, 9,10,11,12, 1, 5,13, 4]);
@@ -942,12 +946,14 @@ classdef retroReco
                 % Density correction
                 if app.DensityCorrectCheckBox.Value
                   app.TextMessage('Calculating density correction ...');
-                  onesDense = ones(size(kSpacePics));
-                  tmpDense = bart(app,strcat('nufft -d',num2str(dimx),':',num2str(dimx),':1 -a'),trajPics,onesDense);
-                  density = bart(app,'nufft ',trajPics,tmpDense);
-                  density = density.^(-1/2);
-                  density(isnan(density)) = 0;
-                  density(isinf(density)) = 0;
+                  denseOnes = ones(size(kSpacePics));
+                  denseOnes = denseOnes.*avgPics; % Make sure denseOnes contains only 1's when data is available
+                  denseOnes(denseOnes > 1) = 1;
+                  tmpDense = bart(app,strcat('nufft -d',num2str(dimx),':',num2str(dimx),':1 -a'),trajPics,denseOnes);
+                  densityPics = bart(app,'nufft ',trajPics,tmpDense);
+                  densityPics = densityPics.^(-1/2);
+                  densityPics(isnan(densityPics)) = 0;
+                  densityPics(isinf(densityPics)) = 0;
                 end
 
                 % Sensitivity maps
@@ -990,7 +996,7 @@ classdef retroReco
 
                 % Do the reco
                 if app.DensityCorrectCheckBox.Value
-                    igrid = bart(app,picsCommand,'-t',trajPics,'-p',density,kSpacePics,sensitivities);
+                    igrid = bart(app,picsCommand,'-t',trajPics,'-p',densityPics,kSpacePics,sensitivities);
                 else
                     igrid = bart(app,picsCommand,'-t',trajPics,kSpacePics,sensitivities);
                 end
@@ -1153,6 +1159,7 @@ classdef retroReco
                     kSpace(:,:,:,:,:,i) = objKspace.kSpace{i};
                 end
                 traj = objKspace.kSpaceTraj;
+                averages = objKspace.kSpaceAvg;
                 
                 % Bart dimensions  Bart   Matlab
                 % 	READ_DIM,       0       1   z
@@ -1173,6 +1180,9 @@ classdef retroReco
              
                 % Rearrange for BART         1  2  3  4  5  6  7  8  9 10 11 12 13 14
                 kSpacePics = permute(kSpace,[7, 2, 3, 6,14, 8, 9,10,11,12,1, 5, 13, 4]);
+
+                % Rearrange for BART        1  2  3  4  5  6  7  8  9 10 11 12 13 14
+                avgPics = permute(averages,[7, 2, 3, 6,14, 8, 9,10,11,12,1, 5, 13, 4]);
                 
                 % Rearrange for BART     1  2  3  4  5  6  7  8  9 10 11 12 13 14
                 trajPics = permute(traj,[6, 2, 3,14, 7, 8, 9,10,11,12, 1, 5,13, 4]);
@@ -1344,12 +1354,14 @@ classdef retroReco
                 if app.DensityCorrectCheckBox.Value
                     app.TextMessage('Calculating density correction ...');
                     denseOnes = ones(size(kSpacePics));
+                    denseOnes = denseOnes.*avgPics; % Make sure onesDense contains only 1's when data is available
+                    denseOnes(denseOnes > 1) = 1;
                     denseTmp = bart(app,strcat('nufft -d',num2str(dimx),':',num2str(dimx),':',num2str(dimx),' -a'),trajPics,denseOnes);
-                    density = bart(app,'nufft ',trajPics,denseTmp);
-                    density = density.^(-1/4);
-                    density(isnan(density)) = 0;
-                    density(isinf(density)) = 0;
-                end
+                    densityPics = bart(app,'nufft ',trajPics,denseTmp);
+                    densityPics = densityPics.^(-1/3);
+                    densityPics(isnan(densityPics)) = 0;
+                    densityPics(isinf(densityPics)) = 0;
+               end
 
                 % Prepare the PICS reconstruction
                 app.TextMessage('PICS reconstruction ...');
@@ -1375,7 +1387,7 @@ classdef retroReco
 
                 % Do the Bart reco
                 if app.DensityCorrectCheckBox.Value
-                    igrid = bart(app,picsCommand,'-t',trajPics,'-p',density,kSpacePics,sensitivities);
+                    igrid = bart(app,picsCommand,'-t',trajPics,'-p',densityPics,kSpacePics,sensitivities);
                 else
                     igrid = bart(app,picsCommand,'-t',trajPics,kSpacePics,sensitivities);
                 end

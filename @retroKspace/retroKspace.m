@@ -5,19 +5,19 @@ classdef retroKspace
     properties
         
         % K-space data
-        raw
-        kSpace
-        kSpaceMrd
-        kSpaceAvg
-        kSpaceTraj
-        trajectory
-        gradTrajectory
+        raw                                                     % raw k-space data (without navigator)
+        kSpace                                                  % sorted k-space data
+        kSpaceMrd                                               % k-space for new MRD file                            
+        kSpaceAvg                                               % k-space averages
+        kSpaceTraj                                              % trajectory points for entire k-space
+        trajectory                                              % k-space trajectory
+        gradTrajectory                                          % gradient calibration trajectory        
         
         % Cardiac and respiratory binning
-        cardBins
-        respBins
-        cardBinNrs
-        respBinNrs
+        cardBins                                                % time stamps of the cardiac bins in unit samples
+        respBins                                                % time stamps of the respiratory bins in unit samples
+        cardBinNrs                                              % array with bin assignments of data to cardiac frames
+        respBinNrs                                              % array with bin assignments of data to respiratory frames
         
     end
     

@@ -5,39 +5,39 @@ classdef retroNav
     properties
       
         % Raw navigator
-        navAmplitude
-        navPhase
-        upDown = 1
+        navAmplitude                                            % navigator amplitude
+        navPhase                                                % navigator phase (not used)
+        upDown = 1                                              % flip the navigator up or down
         
         % Filtering
-        physioFilterSettings
-        detectedHR
-        detectedRR
-        powerSpectrum
-        frequency
-        bandwidthHR
-        bandwidthRR
-        heartNav
-        respNav
-        PCANav
+        physioFilterSettings                                    % filter settings for navigator
+        detectedHR                                              % heart rate from navigator
+        detectedRR                                              % respiratory rate from navigator
+        powerSpectrum                                           % navigator power spectrum
+        frequency                                               % navigator frequency range
+        bandwidthHR                                             % navigator heart rate filter bandwidth
+        bandwidthRR                                             % navigator respiration rate filter bandwidth
+        heartNav                                                % heart rate navigator
+        respNav                                                 % respiration rate navigator
+        PCANav                                                  % principal component analysis of navigator
         
         % Triggering assignments
-        splineFactor = 60           % Data interpolation factor to prevent navigator discretization by TR
-        heartTrigPoints             % In units of samples
-        respTrigPoints              % In units of samples
-        heartTrigTime               % In units of ms
-        respTrigTime                % In units of ms
-        respPercentage = 30
-        respWindow                  % Resp window in units of samples
-        respWindowTime              % Resp start and end values in units of ms
+        splineFactor = 60                                       % data interpolation factor to prevent navigator discretization by TR
+        heartTrigPoints                                         % heart trigger points in units of samples
+        respTrigPoints                                          % respiratory trigger points in units of samples
+        heartTrigTime                                           % heart trigger points in units of ms
+        respTrigTime                                            % respiratory trigger points in units of ms
+        respPercentage = 30                                     % percentage of data discarded during respiration
+        respWindow                                              % Resp window in units of samples
+        respWindowTime                                          % Resp start and end values in units of ms
         
         % Rates
-        heartRateTime
-        heartRateTimeFiltered
-        respRateTime
-        respRateTimeFiltered
-        meanHeartRate
-        meanRespRate
+        heartRateTime                                           % heart rate as function of time
+        heartRateTimeFiltered                                   % filtered/smoothed heart rate as function of time
+        respRateTime                                            % respiration rate as function of time
+        respRateTimeFiltered                                    % filtered/smoothed respiration rate as function of time
+        meanHeartRate                                           % average heart rate
+        meanRespRate                                            % average respiration rate
         
     end
     
