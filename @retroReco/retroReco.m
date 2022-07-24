@@ -4,24 +4,28 @@ classdef retroReco
     
     properties
         
-        movieExp                        % movie for movie export
-        movieApp                        % movie for viewing in the app
-        senseMap                        % sense map
-        sos = true                      % Sum of squares reco true or false
+        movieExp                        % Movie for movie export
+        movieApp                        % Movie for viewing in the app
+        senseMap                        % Sense map
         rescaleSlope                    % Dicom info RescaleSlope for image scaling
         rescaleIntercept                % Dicom info RescaleIntercept for image scaling
-        multiSliceFlag = false          % multi-slice true or false
-        multiDynamicFlag = false        % mutli-dynamic true or false
-        totalVariation = text           % total variation (T) or total generalized variation (G)
+        multiSliceFlag = false          % Multi-slice true or false
+        multiDynamicFlag = false        % Mutli-dynamic true or false
+        totalVariation = 'T'            % Total variation (T) or total generalized variation (G)
         
     end
     
     
     
     
+    % ---------------------------------------------------------------------------------
+    % Public methods
+    % -------------------------------------------------------------------------------
     
-    methods
+    methods (Access = public)
         
+
+
         % ---------------------------------------------------------------------------------
         % Object constructor
         % ---------------------------------------------------------------------------------
@@ -42,7 +46,7 @@ classdef retroReco
                 app.TextMessage('Reconstructing the data with the BART toolbox ...');
                 app.ProgressGauge.Value = 0;
                 drawnow;
-                cs_reco2D_mc;
+                csReco2Dmc;
                 app.ProgressGauge.Value = 100;
                 app.validRecoFlag = true;
                 app.validSenseMapFlag = true;
@@ -50,13 +54,13 @@ classdef retroReco
                 
             else
                 
-                % Perform CS reconstruction in matlab, slow but works
+                % Perform CS reconstruction in matlab, slower, but works
                 app.TextMessage('WARNING: Reconstructing the data with MATLAB ...');
                 app.TextMessage('Slow reconstruction, please be patient ...');
                 app.ProgressGauge.Value = 0;
                 app.SetStatus(1);
                 drawnow;
-                cs_reco2D_mat_mc;
+                csReco2Dmatmc;
                 app.ProgressGauge.Value = 100;
                 app.validRecoFlag = true;
                 app.validSenseMapFlag = true;
@@ -68,77 +72,79 @@ classdef retroReco
             % ---------------------------------------------------------------------------------
             % 2D compressed sensing reconstruction with Matlab
             % ---------------------------------------------------------------------------------
-            function cs_reco2D_mat_mc
+            function csReco2Dmatmc
                 
                 kSpaceIn = objKspace.kSpace;
                 averages = objKspace.kSpaceAvg;
                 lambdaTV = app.TVcineEditField.Value;
                 
-                % kspace = {coil}[frames, x, y, slice, dynamic]
-                %                   1     2  3    4       5
+                % K-space = {coil}[frames, x, y, slice, dynamic]
+                %                    1     2  3    4       5
                 dimf = size(kSpaceIn{1},1);
+                dimx = size(kSpaceIn{1},2);
+                dimy = size(kSpaceIn{1},3);
                 dimz = size(kSpaceIn{1},4);
                 dimd = size(kSpaceIn{1},5);
                 nrCoils = objData.nr_coils;
                 
-                % in case of 1 frame, duplicate that frame to facilitate reconstruction
+                % In case of 1 frame, duplicate that frame to facilitate reconstruction
                 if dimf == 1
                     for i = 1:nrCoils
                         kSpaceIn{i}(2,:,:,:,:) = kSpaceIn{i}(1,:,:,:,:);
                     end
                 end
-                
-                % kspace data x,y,frames,slices,dynamics
+
+                % K-space data: x,y,frames,slices,dynamics
                 for i = 1:nrCoils
                     kSpaceIn{i} = permute(kSpaceIn{i},[2,3,1,4,5]);
                 end
-                
-                % kspace data x,y,frames,slices,dynamics,coils
-                kSpace = zeros([size(kSpaceIn{1}),nrCoils]);
+            
+                % K-space data: x,y,frames,slices,dynamics,coils
+                kSpace = zeros(dimx,dimy,dimf,dimz,dimd,nrCoils);
                 for i = 1:nrCoils
-                    kSpace(:,:,:,:,:,i) = kSpaceIn{i};
+                    kSpace(:,:,:,:,:,i) = kSpaceIn{i}(:,:,:,:,:);
                 end
-                
-                % averages data x,y,frames,slices,dynamics
+
+                % Averages data: x,y,frames,slices,dynamics
                 averages = permute(averages,[2,3,1,4,5]);
                 
-                % reset progress counter
+                % Reset progress counter
                 param.iteration = 0;
                 
-                % pad to next power of 2
+                % Pad to next power of 2
                 dimx = 2^nextpow2(size(kSpace,1));
                 dimy = 2^nextpow2(size(kSpace,2));
                 
-                % for convenience make rectangular matrix size
+                % For convenience make rectangular matrix size
                 mdimxy = max([dimx,dimy]);
                 dimx = mdimxy;
                 dimy = mdimxy;
                 dimf = size(kSpace,3);
                 
-                % pre-allocate memory for image_out
+                % Pre-allocate memory for image_out
                 imageOut = zeros(dimf,dimx,dimy,dimz,dimd);
                 
-                % slice and dynamic loop
+                % Slice and dynamic loop
                 for slice = 1:dimz
                     
                     for dynamic = 1:dimd
                         
-                        % kspace of slice and dynamic
+                        % K-space of slice and dynamic
                         kData = squeeze(kSpace(:,:,:,slice,dynamic,:));
                         
-                        % zero padding
+                        % Zero padding
                         padSizex = round((dimx - size(kData,1))/2);
                         padSizey = round((dimy - size(kData,2))/2);
                         kData = padarray(kData,[padSizex,padSizey,0],'both');
                         kData = kData(1:dimx,1:dimy,:,:);
                         
-                        % size of the data
-                        [nx,ny,~,nrCoils]=size(kData);
+                        % Size of the data
+                        [nx,ny,~,nrCoils] = size(kData);
                         
-                        % normalize the data in the range of approx 0 - 1 for better numerical stability
+                        % Normalize the data in the range of approx 0 - 1 for better numerical stability
                         kData = kData/max(abs(kData(:)));
                         
-                        % kspace mask, 0 = nodata, 1 = data, zero-pad to same size as k-space
+                        % K-space mask: 0 = no data, 1 = data, zero-pad to same size as k-space
                         mask = squeeze(averages(:,:,:,slice,dynamic));
                         mask = padarray(mask,[padSizex,padSizey,0],'both');
                         mask = mask(1:dimx,1:dimy,:);
@@ -146,13 +152,13 @@ classdef retroReco
                         mask(isnan(mask)) = 1;
                         mask = logical(mask);
                         
-                        % coil sensitivity map
+                        % Coil sensitivity map
                         b1 = ones(nx,ny,nrCoils);
                         
-                        % data
+                        % Data
                         param.y = kData;
                         
-                        % reconstruction design matrix
+                        % Reconstruction design matrix
                         param.E = Emat_yxt(mask,b1);
                         
                         % Total variation (TV) constraint in the temporal domain
@@ -161,48 +167,59 @@ classdef retroReco
                         param.TV = TVOP;
                         param.TVWeight = lambdaTV/8;
                         
-                        % number of iterations, 2 x 10 iterations
+                        % Number of iterations, 2 x 10 iterations
                         param.nite = 10;
                         param.nouter = 2;
                         param.totaliterations = dimz * dimd * param.nouter * param.nite;
                         
-                        % linear reconstruction
-                        kData1 = randn(size(kData))/2000 + kData;  % add a little bit of randomness, such that linear reco is not exactly right
+                        % Linear reconstruction
+                        kData1 = randn(size(kData))/2000 + kData;  % Add a little bit of randomness, such that linear reco is not exactly right
                         reconDft = param.E'*kData1;
                         
-                        % iterative reconstruction
+                        % Iterative reconstruction
                         reconCS = reconDft;
                         for n = 1:param.nouter
                             [reconCS,param.iteration] = CSL1NlCg(app,reconCS,param);
                         end
                         
-                        % rearrange to correct orientation: frames, x, y
+                        % Rearrange to correct orientation: frames, x, y
                         imageTmp = flip(permute(squeeze(abs(reconCS)),[3, 1, 2]),2);
 
-                        % output reconstructed image
+                        % Output reconstructed image
                         imageOut(:,:,:,slice,dynamic) = imageTmp;
                         
                     end
                     
                 end
                 
-                % correct back to 1 frame reconstruction
+                % Correct back to 1 frame reconstruction
                 if dimf == 1
                     imageOut = imageOut(1,:,:,:,:);
                 end
            
-                % shift image in phase-encoding direction if needed
+                % Shift image in phase-encoding direction if needed
                 objReco.movieExp = circshift(imageOut,-objData.pixelshift1,3);
                 objReco.senseMap = ones(size(objReco.movieExp));
                 
-            end
+            end % csReco2Dmatmc
             
             
             % ---------------------------------------------------------------------------------
             % 2D compressed sensing reconstruction with Bart toolbox
             % ---------------------------------------------------------------------------------
-            function cs_reco2D_mc
-                
+            function csReco2Dmc
+
+                % app = matlab app
+                % kSpaceIn = sorted k-space
+                % nrCoils = number of RF receiver coils
+                % Wavelet = wavelet L1-norm regularization factor
+                % LR = low rank regularization
+                % TVt = total variation in CINE dimension
+                % TVxy = total variation in xy-dimension regularization
+                % TVd = total variation in dynamic dimension
+                % ESPIRiT = reconstruction of multi-coil data with ESPIRiT true or false
+                % SOS = sum of squares reconstruction (1 = yes, 0 = no)
+
                 kSpaceIn = objKspace.kSpace;
                 Wavelet = app.WVxyzEditField.Value;
                 TVxy = app.TVxyzEditField.Value;
@@ -210,20 +227,9 @@ classdef retroReco
                 TVt = app.TVcineEditField.Value;
                 TVd = app.TVdynEditField.Value;
                 ESPIRiT = app.ESPIRiTCheckBox.Value;
-                SOS = objReco.sos;
                 
-                % app = matlab app
-                % kspace_in = sorted k-space
-                % nc = number of RF receiver coils
-                % averages_in = number of averages per k-line
-                % Wavelet = wavelet L1-norm regularization factor
-                % TVt = total variation in CINE dimension
-                % TVxy = total variation in xy-dimension regularization
-                % TVd = total variation in dynamic dimension
-                % ESPIRiT = reconstruction of multi-coil data with ESPIRiT true or false
-                
-                % kspace_in = {coil}[CINE, x, y, slice, dynamic]
-                %                     1    2  3    4       5
+                % kSpaceIn = {coil}[CINE, x, y, slice, dynamic]
+                %                    1    2  3    4       5
                 dimf = size(kSpaceIn{1},1);
                 dimx = 2^nextpow2(size(kSpaceIn{1},2));
                 dimy = 2^nextpow2(size(kSpaceIn{1},3));
@@ -231,26 +237,20 @@ classdef retroReco
                 dimd = size(kSpaceIn{1},5);
                 nrCoils = objData.nr_coils;
                 
-                % for convenience make rectangular matrix size
+                % For convenience make rectangular matrix size
                 mdimxy = max([dimx,dimy]);
                 dimx = mdimxy;
                 dimy = mdimxy;
                 
-                % resize k-space to next power of 2
+                % Resize k-space to next power of 2
                 for i = 1:nrCoils
                     kSpaceIn{i} = bart(app,['resize -c 1 ',num2str(dimx),' 2 ',num2str(dimy)],kSpaceIn{i});
                 end
                 
-                % put all data in a normal matrix
+                % Put all data in a normal matrix
                 kSpace = zeros(dimf,dimx,dimy,dimz,dimd);
-                for l = 1:dimd
-                    for k = 1:dimz
-                        for j = 1:dimf
-                            for i = 1:nrCoils
-                                kSpace(j,:,:,k,l,i) = kSpaceIn{i}(j,:,:,k,l);
-                            end
-                        end
-                    end
+                for i = 1:nrCoils
+                    kSpace(:,:,:,:,:,i) = kSpaceIn{i}(:,:,:,:,:);
                 end
                 
                 % Bart dimensions  Bart   Matlab
@@ -270,12 +270,12 @@ classdef retroReco
                 % 	SLICE_DIM,      13      14  slices
                 % 	AVG_DIM,        14      15
                 
-                kspacePics = permute(kSpace,[7,3,2,6,8,9,10,11,12,13,1,5,14,4]);
+                kSpacePics = permute(kSpace,[7,3,2,6,8,9,10,11,12,13,1,5,14,4]);
                 
-                % wavelet in spatial dimensions 2^1+2^2=6
-                % total variation in spatial dimensions 2^1+2^2=6
-                % total variation in cine dimension 2^10 = 1024
-                % total variation in dynamic dimension 2^11 = 2048
+                % Wavelet in spatial dimensions 2^1+2^2=6
+                % Total variation in spatial dimensions 2^1+2^2=6
+                % Total variation in cine dimension 2^10 = 1024
+                % Total variation in dynamic dimension 2^11 = 2048
 
                 if ESPIRiT && nrCoils>1
                     
@@ -283,90 +283,65 @@ classdef retroReco
                     TextMessage(app,'ESPIRiT reconstruction ...');
                     
                     % Calculate coil sensitivity maps with ecalib bart function
-                    kspace_pics_sum = sum(kspacePics,[11,12]);
-                    sensitivities = bart(app,'ecalib -S -I -a', kspace_pics_sum);      % ecalib with softsense
-                    
-                    picsCommand = 'pics ';
-                    if Wavelet>0
-                        picsCommand = [picsCommand,' -RW:6:0:',num2str(Wavelet)];
-                    end
-                    if TVxy>0
-                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':6:0:',num2str(TVxy)];
-                    end
-                    if LR>0
-                        % Locally low-rank in the spatial domain
-                        blocksize = round(dimx/16);  % Block size
-                        blocksize(blocksize < 8) = 8;
-                        picsCommand = [picsCommand,' -RL:6:6:',num2str(LR),' -b',num2str(blocksize)];
-                    end
-                    if TVt>0
-                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':1024:0:',num2str(TVt)];
-                    end
-                    if TVd>0
-                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':2048:0:',num2str(TVd)];
-                    end
-                    imageReg = bart(app,picsCommand,kspacePics,sensitivities);
-                    
-                    % Sum of squares reconstruction
-                    if SOS
-                        imageReg = bart(app,'rss 16', imageReg);
-                    end
-                    imageReg = abs(imageReg);
-                    
+                    kSpacePicsSum = sum(kSpacePics,[11,12]);
+                    sensitivities = bart(app,'ecalib -S -I -a', kSpacePicsSum);      % Ecalib with softsense
+
                 else
-                    
-                    % Reconstruction without sensitivity correction, including coil scaling
+
+                    % Reconstruction without sensitivity correction
                     sensitivities = ones(1,dimy,dimx,nrCoils,1,1,1,1,1,1,1,1,1,dimz);
-                    
-                    % regular reconstruction
-                    picsCommand = 'pics ';
-                    if Wavelet>0
-                        picsCommand = [picsCommand,' -RW:6:0:',num2str(Wavelet)];
-                    end
-                    if TVxy>0
-                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':6:0:',num2str(TVxy)];
-                    end
-                    if LR>0
-                        blocksize = round(dimx/16);  % Block size
-                        blocksize(blocksize < 8) = 8;
-                        picsCommand = [picsCommand,' -RL:6:6:',num2str(LR),' -b',num2str(blocksize)];
-                    end
-                    if TVt>0
-                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':1024:0:',num2str(TVt)];
-                    end
-                    if TVd>0
-                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':2048:0:',num2str(TVd)];
-                    end
-                    imageReg = bart(app,picsCommand,kspacePics,sensitivities);
 
-                    % total-generalized-variation denoising. Seems not really useful
-                    % imageReg2 = bart(app,'tgv 0.001 1030',imageReg);
-                    % imageReg = imageReg2(:,:,:,:,:,:,:,:,:,:,:,:,:,:,:,1);
-                    
-                    % Take absolute values
-                    imageReg = abs(imageReg);
-                    
                 end
-                
-                %                              y    x  frames dynamic slices
-                imageReg = reshape(imageReg,[dimy,dimx,dimf,dimd,dimz]);
 
-                % rearrange to correct orientation: frames, x, y, slices, dynamics
-                imageOut = flip(permute(imageReg,[3,2,1,5,4]),3);
+                % PICS command
+                picsCommand = 'pics ';
+                if Wavelet>0
+                    picsCommand = [picsCommand,' -RW:6:0:',num2str(Wavelet)];
+                end
+                if TVxy>0
+                    picsCommand = [picsCommand,' -R',objReco.totalVariation,':6:0:',num2str(TVxy)];
+                end
+                if LR>0
+                    % Locally low-rank in the spatial domain
+                    blocksize = round(dimx/16);  % Block size
+                    blocksize(blocksize < 8) = 8;
+                    picsCommand = [picsCommand,' -RL:6:6:',num2str(LR),' -b',num2str(blocksize)];
+                end
+                if TVt>0
+                    picsCommand = [picsCommand,' -R',objReco.totalVariation,':1024:0:',num2str(TVt)];
+                end
+                if TVd>0
+                    picsCommand = [picsCommand,' -R',objReco.totalVariation,':2048:0:',num2str(TVd)];
+                end
 
-                % sense map orientations: x, y, slices, map1, map2
+                % BART reconstruction
+                imageReco = bart(app, picsCommand, kSpacePics, sensitivities);
+
+                % Sum of squares in the coil dimension 
+                imageReco = bart(app,'rss 16', imageReco);
+               
+                % Take the absolute value
+                imageReco = abs(imageReco);
+
+                % Reshape the image :           y    x  frames dynamic slices
+                imageReco = reshape(imageReco,[dimy,dimx,dimf,dimd,dimz]);
+
+                % Rearrange to correct orientation: frames, x, y, slices, dynamics
+                imageOut = flip(permute(imageReco,[3,2,1,5,4]),3);
+
+                % Sense map orientations: x, y, slices, map1, map2
                 senseMap1 = flip(permute(abs(sensitivities),[3,2,14,4,5,1,6,7,8,9,10,11,12,13]),2);
-                
-                % normalize sense map to reasonable value range
+
+                % Normalize sense map to reasonable value range
                 senseMap1 = senseMap1*4095/max(senseMap1(:));
 
-                % shift image in phase-encoding direction if needed
+                % Shift image in phase-encoding direction if needed
                 objReco.movieExp = circshift(imageOut,-objData.pixelshift1,3);
                 objReco.senseMap = circshift(senseMap1,-objData.pixelshift1,3);
-                
-            end
+
+            end % csReco2Dmc
             
-        end
+        end % reco2D
         
                 
         
@@ -377,11 +352,11 @@ classdef retroReco
             
             if app.bartDetectedFlag
                 
-                % perform CS reconstruction with the Bart toolbox, preferred option
+                % Perform CS reconstruction with the Bart toolbox, preferred option
                 app.TextMessage('Reconstructing the 3D data with the BART toolbox ...');
                 app.ProgressGauge.Value = 0;
                 drawnow;
-                cs_reco3D_mc;
+                csReco3Dmc;
                 app.ProgressGauge.Value = 100;
                 app.validRecoFlag = true;
                 app.validSenseMapFlag = true;
@@ -389,12 +364,12 @@ classdef retroReco
                 
             else
                 
-                % perform cs reconstruction in matlab, slow but works
+                % Perform cs reconstruction in matlab, slower, but works
                 app.TextMessage('WARNING: Reconstructing the data with MATLAB ...');
                 app.TextMessage('Slow reconstruction, please be patient ...');
                 app.ProgressGauge.Value = 0;
                 app.SetStatus(1);
-                cs_reco3D_mat_mc;
+                csReco3Dmatmc;
                 app.ProgressGauge.Value = 100;
                 app.validRecoFlag = true;
                 app.validSenseMapFlag = true;
@@ -406,75 +381,75 @@ classdef retroReco
             % ---------------------------------------------------------------------------------
             % 3D compressed sensing reconstruction with Matlab
             % ---------------------------------------------------------------------------------
-            function cs_reco3D_mat_mc
+            function csReco3Dmatmc
                 
                 kSpaceIn = objKspace.kSpace;
                 averages = objKspace.kSpaceAvg;
                 lambdaTV = app.TVcineEditField.Value;
      
-                % kdata_in = {coil}[frames, x, y, z, dynamics]
+                % kSpaceIn = {coil}[frames, x, y, z, dynamics]
                 %                      1    2  3  4     5
                 dimf = size(kSpaceIn{1},1);
                 dimd = size(kSpaceIn{1},5);
                 nrCoils = objData.nr_coils;
                 
-                % in case of 1 frame, duplicate that frame to facilitate reconstruction
+                % In case of 1 frame, duplicate that frame to facilitate reconstruction
                 if dimf == 1
                     for i = 1:nrCoils
                         kSpaceIn{i}(2,:,:,:,:) = kSpaceIn{i}(1,:,:,:,:);
                     end
                 end
                 
-                % kspace data x,y,z,frames,dynamics
+                % K-space data: x,y,z,frames,dynamics
                 for i = 1:nrCoils
                     kSpaceIn{i} = permute(kSpaceIn{i},[2,3,4,1,5]);
                 end
 
-                % kspace data x,y,z,frames,dynamics,coils
+                % K-space data: x,y,z,frames,dynamics,coils
                 kSpace = zeros([size(kSpaceIn{1}),nrCoils]);
                 for i = 1:nrCoils
                     kSpace(:,:,:,:,:,i) = kSpaceIn{i};
                 end
                 
-                % averages data x,y,z,frames,dynamics
+                % Averages data: x,y,z,frames,dynamics
                 averages = permute(averages,[2,3,4,1,5]);
                 
-                % reset progress counter
+                % Reset progress counter
                 param.iteration = 0;
                 
-                % pad to next power of 2
+                % Pad to next power of 2
                 dimx = 2^nextpow2(size(kSpace,1));
                 dimy = 2^nextpow2(size(kSpace,2));
                 dimz = 2^nextpow2(size(kSpace,3));
                 
-                % for convenience make rectangular matrix size
+                % For convenience make rectangular matrix size
                 mdimxy = max([dimx,dimy]);
                 dimx = mdimxy;
                 dimy = mdimxy;
                 dimf = size(kSpace,4);
                 
-                % pre-allocate memory for image_out
+                % Pre-allocate memory for imageOut
                 imageOut = zeros(dimf,dimx,dimy,dimz,dimd);
                 
                 for dynamic = 1:dimd
                     
-                    % kspace of slice and dynamic
+                    % K-space of slice and dynamic
                     kData = squeeze(kSpace(:,:,:,:,dynamic,:));
                     
-                    % zero padding
+                    % Zero padding
                     padSizex = round((dimx - size(kData,1))/2);
                     padSizey = round((dimy - size(kData,2))/2);
                     padSizez = round((dimz - size(kData,3))/2);
                     kData = padarray(kData,[padSizex,padSizey,padSizez,0],'both');
                     kData = kData(1:dimx,1:dimy,1:dimz,:,:);
                     
-                    % size of the data, z,y,x,frames,coils
+                    % Size of the data: z,y,x,frames,coils
                     [nx,ny,nz,~,nrCoils] = size(kData);
                     
-                    % normalize the data in the range of approx 0 - 1 for better numerical stability
+                    % Normalize the data in the range of approx 0 - 1 for better numerical stability
                     kData = kData/max(abs(kData(:)));
                     
-                    % kspace mask, 0 = nodata, 1 = data, zero-pad to same size as k-space
+                    % K-space mask: 0 = nodata, 1 = data, zero-pad to same size as k-space
                     mask = squeeze(averages(:,:,:,:,dynamic));
                     mask = padarray(mask,[padSizex,padSizey,padSizez,0],'both');
                     mask = mask(1:dimx,1:dimy,1:dimz,:);
@@ -482,13 +457,13 @@ classdef retroReco
                     mask(isnan(mask)) = 1;
                     mask = logical(mask);
                     
-                    % coil sensitivity map
+                    % Coil sensitivity map
                     b1 = ones(nx,ny,nz,nrCoils);
                     
-                    % data
+                    % Data
                     param.y = kData;
                     
-                    % reconstruction design matrix
+                    % Reconstruction design matrix
                     param.E = Emat_zyxt(mask,b1);
                     
                     % Total variation (TV) constraint in the temporal domain
@@ -497,47 +472,57 @@ classdef retroReco
                     param.TV = TVOP3D;
                     param.TVWeight = lambdaTV/8;
                     
-                    % number of iterations, 2 x 10 iterations
+                    % Number of iterations, 2 x 10 iterations
                     param.nite = 10;
                     param.nouter = 2;
                     param.totaliterations = dimd * param.nouter * param.nite;
                     
-                    % linear reconstruction
+                    % Linear reconstruction
                     kData1 = randn(size(kData))/2000 + kData;  % add a little bit of randomness, such that linear reco is not exactly right
                     reconDft = param.E'*kData1;
                     
-                    % iterative reconstruction
+                    % Iterative reconstruction
                     reconCs=reconDft;
                     for n=1:param.nouter
                         [reconCs,param.iteration] = CSL1NlCg(app,reconCs,param);
                     end
                     
-                    % rearrange to correct orientation: frames, x, y, z
+                    % Rearrange to correct orientation: frames, x, y, z
                     imageTmp = flip(permute(abs(reconCs),[4, 1, 2, 3]),2);
 
-                    % output reconstructed image
+                    % Output reconstructed image
                     imageOut(:,:,:,:,dynamic) = imageTmp;
                     
                 end
                 
-                % correct back to 1 frame reconstruction
+                % Correct back to 1 frame reconstruction
                 if dimf == 1
                     imageOut = imageOut(1,:,:,:,:);
                 end
                 
-                % shift image in phase-encoding directions if needed
+                % Shift image in phase-encoding directions if needed
                 objReco.movieExp = circshift(imageOut,-objData.pixelshift1,3);
                 objReco.movieExp = circshift(imageOut,-objData.pixelshift2,4);
                 objReco.senseMap = ones(size(objReco.movieExp));
                 
-            end
+            end % csReco3Dmatmc
             
             
             % ---------------------------------------------------------------------------------
             % 3D compressed sensing reconstruction with Bart toolbox
             % ---------------------------------------------------------------------------------
-            function cs_reco3D_mc
-                
+            function csReco3Dmc
+
+                % app = matlab app
+                % kSpaceIn = sorted k-space
+                % nrCoils = number of RF receiver coils
+                % averages_in = number of averages per k-line
+                % Wavelet = wavelet L1-norm regularization factor
+                % LR = low rank regularization
+                % TVt = total variation in time regularization
+                % TVxyz = total variation in xyz-dimension regularization
+                % ESPIRiT = reconstruction of multi-coil data with ESPIRiT true or false
+
                 kSpaceIn = objKspace.kSpace;
                 Wavelet = app.WVxyzEditField.Value;
                 TVxyz = app.TVxyzEditField.Value;
@@ -545,19 +530,9 @@ classdef retroReco
                 TVt = app.TVcineEditField.Value;
                 TVd = app.TVdynEditField.Value;
                 ESPIRiT = app.ESPIRiTCheckBox.Value;
-                
-                % app = matlab app
-                % kspace_in = sorted k-space
-                % nc = number of RF receiver coils
-                % averages_in = number of averages per k-line
-                % Wavelet = wavelet L1-norm regularization factor
-                % TVt = total variation in time regularization
-                % TVxyz = total variation in xyz-dimension regularization
-                % VNSA = variable number of signal averages correction true or false
-                % ESPIRiT = reconstruction of multi-coil data with ESPIRiT true or false
-                
-                % kspace_in = {coil}[frames, x, y, z, dynamics]
-                %                     1      2  3  4     5
+
+                % kSpaceIn = {coil}[frames, x, y, z, dynamics]
+                %                    1      2  3  4     5
                 dimf = size(kSpaceIn{1},1);
                 dimx = 2^nextpow2(size(kSpaceIn{1},2));
                 dimy = 2^nextpow2(size(kSpaceIn{1},3));
@@ -565,26 +540,20 @@ classdef retroReco
                 dimd = size(kSpaceIn{1},5);
                 nrCoils = objData.nr_coils;
                 
-                % for convenience make rectangular matrix size
+                % For convenience make rectangular matrix size
                 mdimxy = max([dimx,dimy]);
                 dimx = mdimxy;
                 dimy = mdimxy;
                 
-                % resize to next power of 2
+                % Resize to next power of 2
                 for i = 1:nrCoils
                     kSpaceIn{i} = bart(app,['resize -c 1 ',num2str(dimx),' 2 ',num2str(dimy),' 3 ',num2str(dimz)],kSpaceIn{i});
                 end
                 
-                % kspace suitable for bart
+                % K-space suitable for bart
                 kSpace = zeros(dimf,dimx,dimy,dimz,dimd,nrCoils);
-                for l = 1:dimd
-                    for k = 1:dimz
-                        for j = 1:dimf
-                            for i = 1:nrCoils
-                                kSpace(j,:,:,k,l,i) = kSpaceIn{i}(j,:,:,k,l);
-                            end
-                        end
-                    end
+                for i = 1:nrCoils
+                    kSpace(:,:,:,:,:,i) = kSpaceIn{i}(:,:,:,:,:);
                 end
                 
                 % Bart dimensions
@@ -604,95 +573,81 @@ classdef retroReco
                 % 	SLICE_DIM,      14  slices
                 % 	AVG_DIM,        15
                 
-                kspace_pics = permute(kSpace,[4,3,2,6,7,8,9,10,11,12,1,5,13,14]);
+                kSpacePics = permute(kSpace,[4,3,2,6,7,8,9,10,11,12,1,5,13,14]);
                 
                 % wavelet in spatial dimensions 2^0+2^1+2^2=7
                 % total variation in spatial dimensions 2^0+2^1+2^2=7
                 % total variation in time 2^10 = 1024
                 % total variation in dynamic dimension 2^11 = 2048
-                
+
                 if ESPIRiT && nrCoils>1
-                    
+
                     TextMessage(app,'ESPIRiT reconstruction ...');
-                    kspace_pics_sum = sum(kspace_pics,[11,12]);
+                    kspace_pics_sum = sum(kSpacePics,[11,12]);
                     sensitivities = bart(app,'ecalib -I -S -a', kspace_pics_sum);
-                    
+
                     app.ProgressGauge.Value = 25;
                     drawnow;
-                    
-                    picsCommand = 'pics -S ';
-                    if Wavelet>0
-                        picsCommand = [picsCommand,' -RW:7:0:',num2str(Wavelet)];
-                    end
-                    if TVxyz>0
-                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':7:0:',num2str(TVxyz)];
-                    end
-                    if LR>0
-                        % Locally low-rank in the spatial domain
-                        blocksize = round(dimx/16);  % Block size
-                        blocksize(blocksize < 8) = 8;
-                        picsCommand = [picsCommand,' -RL:7:7:',num2str(LR),' -b',num2str(blocksize)];
-                    end
-                    if TVt>0
-                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':1024:0:',num2str(TVt)];
-                    end
-                    if TVd>0
-                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':2048:0:',num2str(TVd)];
-                    end
-                    imageReg = bart(app,picsCommand,kspace_pics,sensitivities);
-                    
-                    app.ProgressGauge.Value = 95;
-                    drawnow;
-                    imageReg = bart(app,'rss 16', imageReg);
-                    imageReg = abs(imageReg);
-                    
+
                 else
-                    
+
                     % Reconstruction without sensitivity correction
                     sensitivities = ones(dimz,dimy,dimx,nrCoils,1,1,1,1,1,1,1,1,1,1);
-                    
-                    picsCommand = 'pics -S ';
-                    if Wavelet>0
-                        picsCommand = [picsCommand,' -RW:7:0:',num2str(Wavelet)];
-                    end
-                    if TVxyz>0
-                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':7:0:',num2str(TVxyz)];
-                    end
-                    if LR>0
-                        blocksize = round(dimx/16);  % Block size
-                        blocksize(blocksize < 8) = 8;
-                        picsCommand = [picsCommand,' -RL:7:7:',num2str(LR),' -b',num2str(blocksize)];
-                    end
-                    if TVt>0
-                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':1024:0:',num2str(TVt)];
-                    end
-                    if TVd>0
-                        picsCommand = [picsCommand,' -R',objReco.totalVariation,':2048:0:',num2str(TVd)];
-                    end
-                    
-                    imageReg = abs(bart(app,picsCommand,kspace_pics,sensitivities));
-                    
+
                 end
-                
-                % rearrange to correct orientation: frames, x, y, z, dynamics
+
+                picsCommand = 'pics -S ';
+                if Wavelet>0
+                    picsCommand = [picsCommand,' -RW:7:0:',num2str(Wavelet)];
+                end
+                if TVxyz>0
+                    picsCommand = [picsCommand,' -R',objReco.totalVariation,':7:0:',num2str(TVxyz)];
+                end
+                if LR>0
+                    % Locally low-rank in the spatial domain
+                    blocksize = round(dimx/16);  % Block size
+                    blocksize(blocksize < 8) = 8;
+                    picsCommand = [picsCommand,' -RL:7:7:',num2str(LR),' -b',num2str(blocksize)];
+                end
+                if TVt>0
+                    picsCommand = [picsCommand,' -R',objReco.totalVariation,':1024:0:',num2str(TVt)];
+                end
+                if TVd>0
+                    picsCommand = [picsCommand,' -R',objReco.totalVariation,':2048:0:',num2str(TVd)];
+                end
+                imageReg = bart(app,picsCommand,kSpacePics,sensitivities);
+
+                app.ProgressGauge.Value = 95;
+                drawnow;
+
+                % Sum of squares over the coil dimension
+                imageReg = bart(app,'rss 16', imageReg);
+
+                % Absolute value
+                imageReg = abs(imageReg);
+
+                % Rearrange to correct orientation: frames, x, y, z, dynamics
                 imageReg = reshape(imageReg,[dimz,dimy,dimx,dimf,dimd]);
                 imageOut = flip(flip(permute(imageReg,[4,3,2,1,5]),3),4);
                 imageOut = circshift(imageOut,1,4);
                 
-                % sense map orientations: x, y, z, map1, map2
+                % Sense map orientations: x, y, z, map1, map2
                 senseMap1 = flip(flip(permute(abs(sensitivities),[3,2,1,4,5,6,7,8,9,10,11,12,13,14]),2),3);
                 senseMap1 = circshift(senseMap1,1,4);
                 
-                % normalize sense map to reasonable value range
+                % Normalize sense map to reasonable value range
                 senseMap1 = senseMap1*4095/max(senseMap1(:));
                 
-                % shift image in phase-encoding directions if needed
+                % Shift image in phase-encoding directions if needed
                 objReco.movieExp = circshift(imageOut,-objData.pixelshift1,3);
                 objReco.movieExp = circshift(imageOut,-objData.pixelshift2,4);
                 objReco.senseMap = circshift(senseMap1,-objData.pixelshift1,3);
                 objReco.senseMap = circshift(senseMap1,-objData.pixelshift2,4);
+
+                app.ProgressGauge.Value = 100;
+                drawnow;
                 
-            end
+            end % csReco3Dmc
             
         end % reco3D
         
@@ -709,6 +664,13 @@ classdef retroReco
                 app.ProgressGauge.Value = 0;
                 drawnow;
 
+                % Wavelet = wavelet L1-norm regularization factor
+                % TVxyz = total variation in xyz-dimension regularization
+                % LR = low rank regularization
+                % TVt = total variation in time regularization
+                % TVd = total variation in dynamic dimension regularization
+                % nrCoils = number of RF receiver coils
+
                 Wavelet = app.WVxyzEditField.Value;
                 TVxyz = app.TVxyzEditField.Value;
                 LR = app.LLRxyzEditField.Value;
@@ -716,13 +678,6 @@ classdef retroReco
                 TVd = app.TVdynEditField.Value;
                 nrCoils = objData.nr_coils;
                 ESPIRiT = app.ESPIRiTCheckBox.Value;
-
-                % Wavelet = wavelet L1-norm regularization factor
-                % TVxyz = total variation in xyz-dimension regularization
-                % LR = low rank regularization
-                % TVt = total variation in time regularization
-                % TVd = total variation in dynamic dimension regularization
-                % nCoils = number of RF receiver coils
 
                 dimf = size(objKspace.kSpace{1},1);
                 dimx = size(objKspace.kSpace{1},2);
@@ -1173,19 +1128,19 @@ classdef retroReco
                 app.ProgressGauge.Value = 0;
                 drawnow;
 
-                Wavelet = app.WVxyzEditField.Value;
-                TVxyz = app.TVxyzEditField.Value;
-                LR = app.LLRxyzEditField.Value;
-                TVt = app.TVcineEditField.Value;
-                TVd = app.TVdynEditField.Value;
-                nCoils = objData.nr_coils;
-
                 % Wavelet = wavelet L1-norm regularization factor
                 % TVxyz = total variation in xyz-dimension regularization
                 % LR = low rank regularization
                 % TVt = total variation in time regularization
                 % TVd = total variation in dynamic dimension regularization
-                % nCoils = number of RF receiver coils
+                % nrCoils = number of RF receiver coils
+
+                Wavelet = app.WVxyzEditField.Value;
+                TVxyz = app.TVxyzEditField.Value;
+                LR = app.LLRxyzEditField.Value;
+                TVt = app.TVcineEditField.Value;
+                TVd = app.TVdynEditField.Value;
+                nrCoils = objData.nr_coils;
                 
                 dimf = size(objKspace.kSpace{1},1);
                 dimx = size(objKspace.kSpace{1},2);
@@ -1194,7 +1149,7 @@ classdef retroReco
                 dimd = size(objKspace.kSpace{1},5);
                
                 kSpace = zeros(size(objKspace.kSpace{1}));
-                for i = 1:nCoils
+                for i = 1:nrCoils
                     kSpace(:,:,:,:,:,i) = objKspace.kSpace{i};
                 end
                 traj = objKspace.kSpaceTraj;
@@ -1308,7 +1263,7 @@ classdef retroReco
                         % NUFFT to get updated k-space data
                         kNew = objReco.ifft3Dmri(xNew);
                         dataCalib = bart(app,'bart nufft',kTraj,kNew);
-                        kNew  = reshape(dataCalib,[M size(kTrajCalib,3) nCoils]);
+                        kNew  = reshape(dataCalib,[M size(kTrajCalib,3) nrCoils]);
 
                         % Partial derivatives
                         [dydtx,dydty,dydtz] = objReco.partialDerivative3D(app,kTraj,xNew,calibSize);
@@ -1338,7 +1293,7 @@ classdef retroReco
                         kTraj = objReco.trajInterpolation(kTrajCalib,dTotal);
 
                         % The new image with k-space updated for gradient delays
-                        imCalib = bart(app,['bart nufft -i -l 0.01 ',cSize,' -t'],kTraj,reshape(y,[1 M size(kTrajCalib,3) nCoils]));
+                        imCalib = bart(app,['bart nufft -i -l 0.01 ',cSize,' -t'],kTraj,reshape(y,[1 M size(kTrajCalib,3) nrCoils]));
 
                         % Show image
                         im = squeeze(abs(imCalib(:,:,round(calibSize(3)/2),1)));
@@ -1370,7 +1325,7 @@ classdef retroReco
                 trajPics = ipermute(trajPics,[1 2 3 4 11 12 5 6 7 8 9 10]);
             
                 % Coil sensitivities from sum of all frames and dynamics
-                if nCoils > 1
+                if nrCoils > 1
                     kSpacePicsSum = sum(kSpacePics,[11,12]);
                     trajPicsSum = sum(trajPics,[11,12]);
                     ze = squeeze(abs(kSpacePicsSum(1,end,:))) > 0;
@@ -1460,13 +1415,13 @@ classdef retroReco
                 dimy = dimx;
                 dimz = dimx;
                 dimd = size(objKspace.kSpace{1},5);
-                nCoils = objData.nr_coils;
-                loops = dimf*dimd*nCoils;
+                nrCoils = objData.nr_coils;
+                loops = dimf*dimd*nrCoils;
                 app.TextMessage('Slow reconstruction ...');
                 app.TextMessage(strcat('Estimated reconstruction time >',{' '},num2str(loops*2),{' '},'min ...'));
                 
                 traj = objKspace.kSpaceTraj;
-                image = zeros(dimf,dimx,dimy,dimz,dimd,nCoils);
+                image = zeros(dimf,dimx,dimy,dimz,dimd,nrCoils);
                 sensitivities = 4095*ones(dimz,dimy,dimx,1,1,1,1,1,1,1,1,1,1,1);
               
                 maxit = 10;     % 0 or 1 for gridding, higher values for conjugate gradient
@@ -1481,7 +1436,7 @@ classdef retroReco
                     for frame = 1:dimf
 
                         % NOTE: coils can be incorporated in the NUFFT, need data first
-                        for coil = 1:nCoils 
+                        for coil = 1:nrCoils 
 
                             app.ProgressGauge.Value = round(100*cnt/loops);
                             drawnow;
@@ -1617,7 +1572,7 @@ classdef retroReco
         % ---------------------------------------------------------------------------------
         function obj = recoLcurve(obj,objData,objKspace,app)
 
-            % Range of lamda's
+            % Range of lamdas
             lambda = logspace(log10(app.Lambda1EditField.Value),log10(app.Lambda2EditField.Value),app.LambdaStepsEditField.Value);
             lambda = round(lambda,3);
 
@@ -2004,7 +1959,7 @@ classdef retroReco
         % ---------------------------------------------------------------------------------
         function [dydtx,dydty,dydtz] = partialDerivative3D(app,kTraj,xNew,calibSize)
 
-            nCoils = size(xNew,4);
+            nrCoils = size(xNew,4);
 
             kx = squeeze(kTraj(1,:,:));
             ky = squeeze(kTraj(2,:,:));
@@ -2019,25 +1974,25 @@ classdef retroReco
             dkz(2:end,:) = kz(2:end,:)- kz(1:end-1,:);
             xNewFFT = 1j*retroReco.ifft3Dmri(xNew);
 
-            repX = repmat([0:(calibSize(1)/2-1), 0, -calibSize(1)/2+1:-1]'/calibSize(1),[1 calibSize(1) calibSize(1) nCoils]);
+            repX = repmat([0:(calibSize(1)/2-1), 0, -calibSize(1)/2+1:-1]'/calibSize(1),[1 calibSize(1) calibSize(1) nrCoils]);
             repY = permute(repX,[2 1 3]);
             repZ = permute(repX,[3 1 2]);
 
             tmp = xNewFFT.*repX;
-            tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize nCoils]));
-            dydkx = reshape(tmpCalib,[size(kx) nCoils]);
+            tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize nrCoils]));
+            dydkx = reshape(tmpCalib,[size(kx) nrCoils]);
 
             tmp = xNewFFT.*repY;
-            tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize nCoils]));
-            dydky = reshape(tmpCalib,[size(kx) nCoils]);
+            tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize nrCoils]));
+            dydky = reshape(tmpCalib,[size(kx) nrCoils]);
 
             tmp = xNewFFT.*repZ;
-            tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize nCoils]));
-            dydkz = reshape(tmpCalib,[size(kx) nCoils]);
+            tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize nrCoils]));
+            dydkz = reshape(tmpCalib,[size(kx) nrCoils]);
 
-            dydtx = dydkx.*repmat(dkx,[1 1 1 nCoils]);
-            dydty = dydky.*repmat(dky,[1 1 1 nCoils]);
-            dydtz = -dydkz.*repmat(dkz,[1 1 1 nCoils]); % positive does not converge
+            dydtx = dydkx.*repmat(dkx,[1 1 1 nrCoils]);
+            dydty = dydky.*repmat(dky,[1 1 1 nrCoils]);
+            dydtz = -dydkz.*repmat(dkz,[1 1 1 nrCoils]); % positive does not converge
 
             dydtx(isnan(dydtx)) = 0;
             dydty(isnan(dydty)) = 0;
@@ -2053,7 +2008,7 @@ classdef retroReco
         % ---------------------------------------------------------------------------------
         function [dydtx,dydty] = partialDerivative2D(app,kTraj,Xnew,calibSize)
 
-            nCoils = size(Xnew,3);
+            nrCoils = size(Xnew,3);
 
             kx = squeeze(kTraj(1,:,:));
             ky = squeeze(kTraj(2,:,:));
@@ -2064,16 +2019,16 @@ classdef retroReco
             dkx(2:end,:) = kx(2:end,:)- kx(1:end-1,:);
             dky(2:end,:) = ky(2:end,:)- ky(1:end-1,:);
 
-            tmp =(1j*retroReco.ifft2Dmri(Xnew).*repmat([0:(calibSize(1)/2-1), 0, -calibSize(1)/2+1:-1]'/calibSize(1),[1 calibSize(2) nCoils]));
-            tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize 1 nCoils]));
-            dydkx = reshape(tmpCalib,[size(kx) nCoils]);
+            tmp =(1j*retroReco.ifft2Dmri(Xnew).*repmat([0:(calibSize(1)/2-1), 0, -calibSize(1)/2+1:-1]'/calibSize(1),[1 calibSize(2) nrCoils]));
+            tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize 1 nrCoils]));
+            dydkx = reshape(tmpCalib,[size(kx) nrCoils]);
 
-            tmp = (1j*retroReco.ifft2Dmri(Xnew).*repmat([0:(calibSize(1)/2-1), 0, -calibSize(1)/2+1:-1]/calibSize(1),[calibSize(1) 1 nCoils]));
-            tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize 1 nCoils]));
-            dydky = reshape(tmpCalib,[size(kx) nCoils]);
+            tmp = (1j*retroReco.ifft2Dmri(Xnew).*repmat([0:(calibSize(1)/2-1), 0, -calibSize(1)/2+1:-1]/calibSize(1),[calibSize(1) 1 nrCoils]));
+            tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize 1 nrCoils]));
+            dydky = reshape(tmpCalib,[size(kx) nrCoils]);
 
-            dydtx = dydkx.*repmat(dkx,[1 1 nCoils]);
-            dydty = dydky.*repmat(dky,[1 1 nCoils]);
+            dydtx = dydkx.*repmat(dkx,[1 1 nrCoils]);
+            dydty = dydky.*repmat(dky,[1 1 nrCoils]);
 
             dydtx(isnan(dydtx)) = 0;
             dydty(isnan(dydty)) = 0;
@@ -2148,9 +2103,9 @@ classdef retroReco
 
                         for idx3 = 1:size(kSpaceOld,3) % spokes
 
-                            kx = interp1((1:size(kSpaceOld,2))+dShift(1),kSpaceOld(1,:,idx3,idx4,idx5,idx6),1:size(kSpaceOld,2),'linear'); %Kx
-                            ky = interp1((1:size(kSpaceOld,2))+dShift(2),kSpaceOld(2,:,idx3,idx4,idx5,idx6),1:size(kSpaceOld,2),'linear'); %Ky
-                            kz = interp1((1:size(kSpaceOld,2))+dShift(3),kSpaceOld(3,:,idx3,idx4,idx5,idx6),1:size(kSpaceOld,2),'linear'); %Kz
+                            kx = interp1((1:size(kSpaceOld,2))+dShift(1),kSpaceOld(1,:,idx3,idx4,idx5,idx6),1:size(kSpaceOld,2),'linear'); % Kx
+                            ky = interp1((1:size(kSpaceOld,2))+dShift(2),kSpaceOld(2,:,idx3,idx4,idx5,idx6),1:size(kSpaceOld,2),'linear'); % Ky
+                            kz = interp1((1:size(kSpaceOld,2))+dShift(3),kSpaceOld(3,:,idx3,idx4,idx5,idx6),1:size(kSpaceOld,2),'linear'); % Kz
 
                             if dShift(1) > 0
                                 kx(isnan(kx)) = 0;
@@ -2236,11 +2191,11 @@ classdef retroReco
         % ---------------------------------------------------------------------------------
         function [res,W] = row2im3D(mtx, imSize, winSize)
 
-            nCoils = size(mtx,4);
+            nrCoils = size(mtx,4);
             sx = imSize(1);
             sy = imSize(2);
             sz = imSize(3);
-            res = zeros(imSize(1),imSize(2),imSize(3),nCoils);
+            res = zeros(imSize(1),imSize(2),imSize(3),nrCoils);
             W = res;
 
             count=0;
@@ -2248,7 +2203,7 @@ classdef retroReco
                 for y=1:winSize(2)
                     for x=1:winSize(1)
                         count = count+1;
-                        res(x:sx-winSize(1)+x,y:sy-winSize(2)+y,z:sz-winSize(3)+z,:) = res(x:sx-winSize(1)+x,y:sy-winSize(2)+y,z:sz-winSize(3)+z,:) + reshape(mtx(:,count,:,:),(sx-winSize(1)+1),(sy-winSize(2)+1),(sz-winSize(3)+1),nCoils);
+                        res(x:sx-winSize(1)+x,y:sy-winSize(2)+y,z:sz-winSize(3)+z,:) = res(x:sx-winSize(1)+x,y:sy-winSize(2)+y,z:sz-winSize(3)+z,:) + reshape(mtx(:,count,:,:),(sx-winSize(1)+1),(sy-winSize(2)+1),(sz-winSize(3)+1),nrCoils);
                         W(x:sx-winSize(1)+x,y:sy-winSize(2)+y,z:sz-winSize(3)+z,:) = W(x:sx-winSize(1)+x,y:sy-winSize(2)+y,z:sz-winSize(3)+z,:)+1;
                     end
                 end

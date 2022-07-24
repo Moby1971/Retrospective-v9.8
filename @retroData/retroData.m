@@ -61,7 +61,8 @@ classdef retroData
         pe1_order = 3
         pe2_centric_on = 1
         pe2_traj = 0
-        gp_var_mul
+        gp_var_mul = []
+        interpFactor = 16
         
         % Navigator related
         primaryNavigatorPoint = 10
@@ -284,7 +285,7 @@ classdef retroData
                 
             end
             
-        end
+        end % retroData
         
         
         
@@ -294,12 +295,14 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         function obj = checkNumberOfExperiments(obj, app)
             
-            if (obj.EXPERIMENT_ARRAY * obj.NO_VIEWS * obj.NO_VIEWS_2 * obj.NO_SLICES) < 100
+            % Check if there is enough data to do some meaningful reconstruction
+            % Kind of random number
+            if (obj.EXPERIMENT_ARRAY * obj.NO_VIEWS * obj.NO_VIEWS_2 * obj.NO_SLICES) < 1000
                 obj.validDataFlag = false;
                 app.TextMessage('ERROR: Not enough k-lines for any reconstruction ...');
             end
             
-        end
+        end % checkNumberOfExperiments
         
         
         
@@ -309,12 +312,13 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         function obj = checkNumberOfAverages(obj, app)
             
+            % For retrospective imaging number of averages should be 1
             if obj.NO_AVERAGES > 1
                 obj.validDataFlag = false;
                 app.TextMessage('ERROR: Number of averages should be 1 ...');
             end
             
-        end
+        end % checkNumberOfAverages
         
         
 
@@ -324,12 +328,13 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         function obj = checkForMultiSlab(obj, app)
             
+            % 3D multi-slab data is not supported
             if strcmp(obj.dataType,'3D') && obj.NO_SLICES > 1
                 obj.validDataFlag = false;
                 app.TextMessage('ERROR: Only 3D single-slab data supported ...');
             end
             
-        end
+        end % checkForMultiSlab
         
 
 
@@ -338,12 +343,14 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         function obj = checkTR(obj, app)
             
+            % TR should not be zero (minimum in MR Solutions software)
+            % A positive TR is needed to calculate heart and respiratory rates
             if obj.tr == 0
                 obj.validDataFlag = false;
                 app.TextMessage('ERROR: TR = 0 is not allowed ...');
             end
             
-        end
+        end % checkTR
         
         
 
@@ -352,13 +359,21 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         function obj = checkForVFA(obj, app)
             
+            % Variable flip-angle data in 3D is supported
             if strcmp(obj.dataType,'3D') && obj.VFA_size > 0
                 obj.vfaDataFlag = true;
                 obj = setVariableFlipAngles(obj);
                 app.TextMessage(strcat('INFO:',{' '},num2str(obj.VFA_size),{' '},'flip angles detected ...'));
             end
+
+            % Set number of flip angles to 1 if obj.VFA_size = 0
+            if obj.VFA_size == 0
+                app.NrFlipAnglesViewField.Value = 1;
+            else
+                app.NrFlipAnglesViewField.Value = obj.VFA_size;
+            end
             
-        end
+        end % checkForVFA
         
         
 
@@ -368,6 +383,8 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         function obj = setVariableFlipAngles(obj)
             
+            % The different flip angles in a variable flip-angle experiment can be ordered in different ways
+            % Here they are sorted, such that they can be combined 
             a = obj.VFA_size;
             b = unique(obj.VFA_angles(1:obj.VFA_size),'Stable');
             c = length(b);
@@ -379,13 +396,13 @@ classdef retroData
                 nrFlipAngles = c;     % FA1, FA1, ..., FA2, FA2, ..., FA3, FA3, ... = dyn1, dyn2, dyn3, dyn4, ...
                 lsFlipAngles = b;
             else
-                nrFlipAngles = a;     % each dynamic has its own flip-angle
+                nrFlipAngles = a;     % Each dynamic has its own flip-angle
                 lsFlipAngles = d;
             end
             obj.VFA_size = nrFlipAngles;
             obj.VFA_angles = lsFlipAngles;
             
-        end
+        end % setVariableFlipAngles
         
         
         
@@ -395,8 +412,11 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         function obj = acquisitionType(obj, app)
             
-            
+            % Determine acquisition type and put the data in the right order
+
             if obj.NO_VIEWS == 1 && obj.NO_VIEWS_2 == 1 && obj.EXPERIMENT_ARRAY > 1000
+
+                % 3D UTE data
 
                 obj.validDataFlag = true;
 
@@ -411,6 +431,8 @@ classdef retroData
                 obj.nr_repetitions = size(obj.data{1},1);
 
             elseif obj.radial_on == 1
+
+                % 2D radial data
                 
                 obj.validDataFlag = true;
 
@@ -428,58 +450,66 @@ classdef retroData
                     if ndims(obj.data{i}) == 3 && obj.NO_SLICES > 1
                         %                                  1 Z Y X
                         obj.data{i} = permute(obj.data{i},[4,1,2,3]);
-
+                    end
+                    if ndims(obj.data{i}) == 4 && obj.NO_SLICES > 1
+                        %                                 NR Z Y X
+                        obj.data{i} = permute(obj.data{i},[1,4,2,3]);
                     end
 
                 end
 
                 % Center the echo for the navigator
-                interpFactor = 16;
+                % This is needed to know that the navigator is the center k-space point
+                % For out-of-center points the navigator is disturbed by the radial frequency
                 dims = size(obj.data{1},4);
                 for i = 1:obj.nr_coils
                     for dynamic = 1:size(obj.data{1},1)
                         for slice = 1:size(obj.data{1},2)
                             for spoke = 1:size(obj.data{1},3)
-                                tmpKline1 = squeeze(obj.data{i}(dynamic,slice,spoke,:));
-                                tmpKline2 = interp(tmpKline1,interpFactor);
-                                [~,kCenter] = max(abs(tmpKline2));
-                                kShift = floor(dims/2)-kCenter/interpFactor;
-                                tmpKline1 = retroData.fracCircShift(tmpKline1,kShift);
-                                obj.data{i}(dynamic,slice,spoke,:) = tmpKline1;
+                                tmpKline1 = squeeze(obj.data{i}(dynamic,slice,spoke,:));    % Take a k-line (spoke)
+                                tmpKline2 = interp(tmpKline1,obj.interpFactor);             % Interpolate
+                                [~,kCenter] = max(abs(tmpKline2));                          % Determine the center
+                                kShift = floor(dims/2)-kCenter/obj.interpFactor;            % Calculate the shift
+                                tmpKline1 = retroData.fracCircShift(tmpKline1,kShift);      % Apply the shift on sub-sample level
+                                obj.data{i}(dynamic,slice,spoke,:) = tmpKline1;             % Return the result
                             end
                         end
                     end
                 end
 
-                kSpaceSum = squeeze(sum(abs(obj.data{1}),[1,2,3]));
-                [~,kCenter] = max(kSpaceSum);
-                obj.primaryNavigatorPoint = kCenter;
-                obj.nrNavPointsUsed = 1;
+                kSpaceSum = squeeze(sum(abs(obj.data{1}),[1,2,3]));     % Sum over all dimensions
+                [~,kCenter] = max(kSpaceSum);                           % Determine the center
+                obj.primaryNavigatorPoint = kCenter;                    % Navigator = k-space center
+                obj.nrNavPointsUsed = 1;                                % Number of navigator points = 1
 
-                obj.nr_repetitions = size(obj.data{1},1);
+                obj.nr_repetitions = size(obj.data{1},1);               % Number of k-space repetitions
                 
             elseif (obj.slice_nav == 1) && (obj.no_samples_nav > 0)
                 
+                % 3D Cartesian data
+
                 obj.validDataFlag = true;
                 
                 if obj.NO_VIEWS_2 > 1
                     
-                    % 3D data
                     obj.dataType = '3D';                                        
+                 
                     for i=1:obj.nr_coils
                         if obj.EXPERIMENT_ARRAY > 1
                             %                                 NR Z Y X  
                             obj.data{i} = permute(obj.data{i},[1,3,2,4]);
                         else
-                            %                                 NR Z Y X 
+                            %                                  1 Z Y X 
                             obj.data{i} = permute(obj.data{i},[4,2,1,3]);
                         end
                     end
                     
                 else
 
-                    % 2D single-slice data
+                    % 2D single-slice Cartesian data
+
                     obj.dataType = '2D';  
+                    
                     for i=1:obj.nr_coils
                         if ismatrix(obj.data{i})
                             %                                  1 1 Y X
@@ -497,6 +527,7 @@ classdef retroData
                     end
 
                     % 2D multi-slice data
+
                     if obj.NO_SLICES > 1                                        
                         obj.dataType = '2Dms';
                         obj.multi2DFlag = true;
@@ -506,14 +537,17 @@ classdef retroData
                     
                 end
 
+                % Set the navigator points
                 obj.primaryNavigatorPoint = obj.no_samples_nav;
                 if obj.nrNavPointsUsed > obj.primaryNavigatorPoint
                     obj.nrNavPointsUsed = obj.primaryNavigatorPoint;
                 end
-                obj.nr_repetitions = size(obj.data{1},1);
+                % Number of k-space repetitions
+                obj.nr_repetitions = size(obj.data{1},1); 
                 
             else
                 
+                % If not one of the above, data cannot be used
                 obj.validDataFlag = false;
 
             end
@@ -534,7 +568,7 @@ classdef retroData
             
             end
 
-        end
+        end % acquisitionType
         
         
 
@@ -544,6 +578,8 @@ classdef retroData
         % function, scout, VFA
         % ---------------------------------------------------------------------------------
         function obj = guessRecoType(obj)
+
+            % Guess which type of reconstruction would be suitable for the data
 
             switch obj.dataType
 
@@ -581,7 +617,7 @@ classdef retroData
 
             end
 
-        end
+        end % guessRecoType
         
 
 
@@ -594,9 +630,9 @@ classdef retroData
             % Description: Function to open multidimensional MRD/SUR files given a filename with PPR-parsing
             % Read in MRD and SUR file formats
             % Inputs: string filename, reordering1, reordering2
-            % reordering1, 2 is 'seq' or 'cen'
-            % reordering1 is for 2D (views)
-            % reordering2 is for 3D (views2)
+            % Reordering1, 2 is 'seq' or 'cen'
+            % Reordering1 is for 2D (views)
+            % Reordering2 is for 3D (views2)
             % Outputs: complex data, raw dimension [no_expts,no_echoes,no_slices,no_views,no_views_2,no_samples], MRD/PPR parameters
             % Author: Ruslan Garipov
             % Date: 01/03/2014 - swapped views and views2 dimension - now correct
@@ -659,6 +695,7 @@ classdef retroData
                     dataformat = 'int32';   
             end
           
+            % Read the data
             num2read = no_expts*no_echoes*no_slices*no_views_2*no_views*no_samples*iscomplex; %*datasize;
             [m_total, count] = fread(fid,num2read,dataformat); % reading all the data at once
        
@@ -674,10 +711,10 @@ classdef retroData
                 clear m_total;
             end
 
+            % Unsorted k-space
             unsortedkspace = m_C;
-
-            n=0;
-            % shaping the data manually:
+            
+            % Centric k-space ordering views
             ord=1:no_views;
             if strcmp(reordering1,'cen')
                 for g=1:no_views/2
@@ -685,7 +722,8 @@ classdef retroData
                     ord(2*g)=no_views/2-g+1;
                 end
             end
-
+            
+            % Centric k-space ordering views2
             ord1 = 1:no_views_2;
             ord2 = ord1;
             if strcmp(reordering2,'cen')
@@ -695,8 +733,9 @@ classdef retroData
                 end
             end
 
-            % pre-allocate the data matrix
+            % Pre-allocating the data matrix speeds up this function significantly
             m_C_1=zeros(no_expts,no_echoes,no_slices,max(ord(:)),max(ord2(:)),no_samples);
+            n = 0;
             for a=1:no_expts
                 for b=1:no_echoes
                     for c=1:no_slices
@@ -722,6 +761,7 @@ classdef retroData
 
             % Parse fields in ppr section of the MRD file
             if numel(ppr_text)>0
+
                 cell_text = textscan(ppr_text,'%s','delimiter',char(13));
                 PPR_keywords = {'BUFFER_SIZE','DATA_TYPE','DECOUPLE_FREQUENCY','DISCARD','DSP_ROUTINE','EDITTEXT','EXPERIMENT_ARRAY','FOV','FOV_READ_OFF','FOV_PHASE_OFF','FOV_SLICE_OFF','GRADIENT_STRENGTH','MULTI_ORIENTATION','Multiple Receivers','NO_AVERAGES','NO_ECHOES','NO_RECEIVERS','NO_SAMPLES','NO_SLICES','NO_VIEWS','NO_VIEWS_2','OBLIQUE_ORIENTATION','OBSERVE_FREQUENCY','ORIENTATION','PHASE_CYCLE','READ/PHASE/SLICE_SELECTION','RECEIVER_FILTER','SAMPLE_PERIOD','SAMPLE_PERIOD_2','SCROLLBAR','SLICE_BLOCK','SLICE_FOV','SLICE_INTERLEAVE','SLICE_THICKNESS','SLICE_SEPARATION','SPECTRAL_WIDTH','SWEEP_WIDTH','SWEEP_WIDTH_2','VAR_ARRAY','VIEW_BLOCK','VIEWS_PER_SEGMENT','SMX','SMY','SWX','SWY','SMZ','SWZ','VAR','PHASE_ORIENTATION','X_ANGLE','Y_ANGLE','Z_ANGLE','PPL','IM_ORIENTATION','IM_OFFSETS','FOV_OFFSETS'};
                 %PPR_type_0 keywords have text fields only, e.g. ":PPL C:\ppl\smisim\1ge_tagging2_1.PPL"
@@ -740,14 +780,17 @@ classdef retroData
 
                 par = struct('filename',filename);
                 for j=1:size(cell_text{1},1)
+                    
                     char1 = char(cell_text{1}(j,:));
                     field_ = '';
                     if ~isempty(char1)
                         C = textscan(char1, '%*c%s %s', 1);
                         field_ = char(C{1});
                     end
-                    % find matching number in PPR_keyword array:
+
+                    % Find matching number in PPR_keyword array:
                     num = find(strcmp(field_,PPR_keywords));
+                    
                     if num>0
 
                         if find(PPR_type_3==num) % :VAR keyword
@@ -814,6 +857,7 @@ classdef retroData
                     end
 
                 end
+
                 if isfield('OBSERVE_FREQUENCY','par')
                     C = textscan(par.OBSERVE_FREQUENCY, '%q');
                     text_field = char(C{1});
@@ -821,12 +865,15 @@ classdef retroData
                 else
                     par.Nucleus = 'Unspecified';
                 end
+                
                 par.datatype = datatype;
                 file_pars = dir(filename);
                 par.date = file_pars.date;
+            
             else
                 par = [];
             end
+            
             par.scaling = scaling;
 
         end % ImportMRD
@@ -870,6 +917,7 @@ classdef retroData
             pm1 = -1;
             pm2 = -1;
 
+            % Determine how to flip the data for different orientations
             if isfield(info2.pvm,'spackarrreadorient')
                 if strcmp(info2.pvm.spackarrreadorient,'L_R')
                     parameters.PHASE_ORIENTATION = 0;
@@ -944,8 +992,8 @@ classdef retroData
                 end
                 parameters.pe1_order = 3;
             else
-                % assume zigzag
-                parameters.pe1_order = 2;
+                % Assume linear
+                parameters.pe1_order = 1;
             end
 
             % Data type
@@ -1022,7 +1070,7 @@ classdef retroData
                 navKspace = reshape(navKspace,parameters.NO_SLICES,parameters.no_samples_nav,parameters.nr_coils,parameters.NO_VIEWS,parameters.EXPERIMENT_ARRAY);
                 navKspace = permute(navKspace,[3,5,1,4,2]);
 
-                % 34 point spacer
+                % Insert 34 point spacer to make the data compatible with MR Solutions data
                 kSpacer = zeros(parameters.nr_coils,parameters.EXPERIMENT_ARRAY,parameters.NO_SLICES,parameters.NO_VIEWS,34);
 
                 % Combine navigator + spacer + k-space
@@ -1084,7 +1132,7 @@ classdef retroData
                 navKspace = reshape(navKspace,parameters.nr_coils,parameters.no_samples_nav,parameters.NO_VIEWS,parameters.NO_VIEWS_2,parameters.EXPERIMENT_ARRAY);
                 navKspace = permute(navKspace,[1,5,4,3,2]);
 
-                % 34 point spacer
+                % Insert 34 point spacer to make the data compatible with MR Solutions data
                 kSpacer = zeros(parameters.nr_coils,parameters.EXPERIMENT_ARRAY,parameters.NO_VIEWS_2,parameters.NO_VIEWS,34);
 
                 % Combine navigator + spacer + k-space
@@ -1097,7 +1145,7 @@ classdef retroData
             end
 
 
-            % read reco files to a structure
+            % Read reco files to a structure
             function struct = jCampRead(filename) %#ok<STOUT> 
 
                 % Open file read-only big-endian
@@ -1299,12 +1347,13 @@ classdef retroData
                 
             catch ME
                 
+                % If unsuccesful data is invalid
                 obj.validDataFlag = false;
                 app.TextMessage(ME.message);
                 
             end
             
-        end
+        end % readMrdFooter
         
         
         
@@ -1324,12 +1373,12 @@ classdef retroData
             % .NoSamples
             % .NoViews
             % .NoViews2
-            % footer - int8 data type footer as copied from an MRD containing a copy of
-            % the PPR file, including preceeding 120-byte zeros
+            % Footer - int8 data type footer as copied from an MRD containing a copy of
+            % The PPR file, including preceeding 120-byte zeros
             % Output: 1 if write was successful, 0 if not, -1 if failed early (e.g. the dimension checks)
 
-            % data: multidimensional, complex float, with dimensions arranged
-            % dimensions: structure
+            % Data: multidimensional, complex float, with dimensions arranged
+            % Dimensions: structure
 
             kSpaceMRDdata = objKspace.kSpaceMrd;
             footer = obj.newMrdFooter;
@@ -1387,6 +1436,7 @@ classdef retroData
 
             inputFooter = obj.mrdFooter;
 
+            % Parameter names
             parameters = {':NO_SAMPLES no_samples, ',':NO_VIEWS no_views, ',':NO_VIEWS_2 no_views_2, ', ...
                 ':NO_ECHOES no_echoes, ',':EXPERIMENT_ARRAY no_experiments, ',':NO_AVERAGES no_averages, ', ...
                 ':VAR pe1_order, ',':VAR slice_nav, ',':VAR radial_on, ', ...
@@ -1396,6 +1446,7 @@ classdef retroData
                 ':VAR tr_extra_us, '
                 };
 
+            % Parameter replacement values
             replacePars = {par.NoSamples,par.NoViews,par.NoViews2, ...
                 par.NoEchoes,par.NoExperiments,par.NoAverages, ...
                 par.peorder,par.slicenav,par.radialon, ...
@@ -1470,7 +1521,7 @@ classdef retroData
                 app.TextMessage('WARNING: RPR file not found ...');
             end
 
-        end
+        end % readRPRfile
 
 
 
@@ -1496,6 +1547,7 @@ classdef retroData
 
             inputRpr = obj.rprFile;
 
+            % Parameter names
             parameters = {
                 ':EDITTEXT LAST_ECHO ',':EDITTEXT MAX_ECHO ', ...
                 ':EDITTEXT LAST_EXPT ',':EDITTEXT MAX_EXPT ', ...
@@ -1507,6 +1559,7 @@ classdef retroData
                 ':RADIOBUTTON VIEW_ORDER_1',':RADIOBUTTON VIEW_ORDER_2'
                 };
 
+            % Parameter replacement values
             replacePars = {par.NoEchoes,par.NoEchoes, ...
                 par.NoExperiments, par.NoExperiments, ...
                 par.NoSamples, par.NoSamples, par.NoSamples, ...
@@ -1517,6 +1570,7 @@ classdef retroData
                 par.View1order, par.View2order
                 };
 
+            % Search for all parameters and replace values
             for i = 1:length(parameters)
 
                 txt = parameters{i};
@@ -1591,35 +1645,39 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         function obj = sqlParameters(obj, app)
 
-            if ~isempty(obj.sqlFile)
+            if obj.sqlFlag
 
-                sqlData = obj.sqlFile;
+                if ~isempty(obj.sqlFile)
 
-                try
+                    sqlData = obj.sqlFile;
 
-                    % Group settings
-                    groupSettings = strfind(sqlData,'[GROUP SETTINGS]');
-                    posStart = strfind(sqlData(groupSettings:end),'VALUES(');
-                    posStart = posStart(1)+groupSettings+6;
-                    posEnd = strfind(sqlData(posStart:end),')');
-                    posEnd = posEnd(1)+posStart-2;
-                    groupData = sqlData(posStart:posEnd);
-                    values = textscan(groupData, '%f %s %f %f %f %f %f %f %f %f %f %f','Delimiter',',');
+                    try
 
-                    obj.SQLnumberOfSlices = values{4};
-                    obj.SQLsliceGap = values{5};
-                    obj.SQLangleX = values{6};
-                    obj.SQLangleY = values{7};
-                    obj.SQLangleZ = values{8};
-                    obj.SQLoffsetX = values{9};
-                    obj.SQLoffsetY = values{10};
-                    obj.SQLoffsetZ = values{11};
+                        % Group settings
+                        groupSettings = strfind(sqlData,'[GROUP SETTINGS]');
+                        posStart = strfind(sqlData(groupSettings:end),'VALUES(');
+                        posStart = posStart(1)+groupSettings+6;
+                        posEnd = strfind(sqlData(posStart:end),')');
+                        posEnd = posEnd(1)+posStart-2;
+                        groupData = sqlData(posStart:posEnd);
+                        values = textscan(groupData, '%f %s %f %f %f %f %f %f %f %f %f %f','Delimiter',',');
 
-                catch ME
+                        obj.SQLnumberOfSlices = values{4};
+                        obj.SQLsliceGap = values{5};
+                        obj.SQLangleX = values{6};
+                        obj.SQLangleY = values{7};
+                        obj.SQLangleZ = values{8};
+                        obj.SQLoffsetX = values{9};
+                        obj.SQLoffsetY = values{10};
+                        obj.SQLoffsetZ = values{11};
 
-                    app.TextMessage(ME.message);
-                    app.TextMessage('WARNING: Something went wrong analyzing SQL file group settings ...');
-                    app.SetStatus(1);
+                    catch ME
+
+                        app.TextMessage(ME.message);
+                        app.TextMessage('WARNING: Something went wrong analyzing SQL file group settings ...');
+                        app.SetStatus(1);
+
+                    end
 
                 end
 
@@ -1634,6 +1692,8 @@ classdef retroData
         % Write physiological data to files
         % ---------------------------------------------------------------------------------
         function objData = writePhysLog(objData,objNav,exportPath)
+
+            % Write the cardiac triggering, respiratory triggering and window values to files
 
             if ~isempty(objNav.heartTrigTime)
                 writematrix(objNav.heartTrigTime',strcat(exportPath,filesep,'cardtrigpoints.txt'),'Delimiter','tab');
@@ -1653,6 +1713,8 @@ classdef retroData
 
         % Export the reconstruction settings
         function objData = ExportRecoParametersFcn(objData,app)
+
+            % Write the reconstruction information to a file
 
             pars = strcat(...
                 "------------------------- \n\n", ...
@@ -1747,6 +1809,8 @@ classdef retroData
         % Fractional circshift
         % ---------------------------------------------------------------------------------
         function output = fracCircShift(input,shiftsize)
+
+            % Shift an array on a sub-index level
 
             int = floor(shiftsize);     % Integer portions of shiftsize
             fra = shiftsize - int;      % Fractional portions of shiftsize
