@@ -1,6 +1,10 @@
 classdef retroReco
     
     % Reconstruction and movie class for retrospective app
+    %    
+    % Gustav Strijkers
+    % g.j.strijkers@amsterdamumc.nl
+    % July 2022
     
     properties
         

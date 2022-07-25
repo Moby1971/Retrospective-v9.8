@@ -1,7 +1,11 @@
 classdef retroKspace
     
     % K-space data and sorting class for retrospective app
-    
+    %
+    % Gustav Strijkers
+    % g.j.strijkers@amsterdamumc.nl
+    % July 2022
+
     properties
         
         % K-space data

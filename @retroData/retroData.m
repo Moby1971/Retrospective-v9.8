@@ -1,6 +1,10 @@
 classdef retroData
     
     % Data and parameter class for retrospective app
+    %
+    % Gustav Strijkers
+    % g.j.strijkers@amsterdamumc.nl
+    % July 2022
     
     properties
         
