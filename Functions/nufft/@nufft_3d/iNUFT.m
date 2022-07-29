@@ -1,5 +1,5 @@
 %% inverse non-uniform FT (cartesian image <- irregular kspace)
-function im = iNUFT(obj,raw,maxit,damp,W,constraint,lambda)
+function im = iNUFT(obj,raw,maxit,damp,W,constraint,lambda,app)
 %im = iNUFT(obj,raw,maxit,damp,W,constraint,lambda)
 %
 % -raw: complex raw kspace data [nr nc] or [nr ny nc]
@@ -26,15 +26,15 @@ nrow = size(obj.H,1);
 
 if size(raw,1)==nrow
     nc = size(raw,2);
-    fprintf('  %s received raw data: nr=%i nc=%i\n',mfilename,nrow,nc);
+    app.TextMessage(sprintf('%s received raw data: nr=%i nc=%i\n',mfilename,nrow,nc));
 else
     nr = size(raw,1); % assume readout points
     ny = size(raw,2); % assume radial spokes
     if nr*ny ~= nrow
-        error('raw data leading dimension(s) must be length %i (not %ix%i)',nrow,nr,ny)
+        app.TextMessage(sprintf('raw data leading dimension(s) must be length %i (not %ix%i)',nrow,nr,ny));
     end
     nc = size(raw,3);
-    fprintf('  %s received raw data: nr=%i ny=%i nc=%i\n',mfilename,nr,ny,nc);
+    app.TextMessage(sprintf('%s received raw data: nr=%i ny=%i nc=%i\n',mfilename,nr,ny,nc));
 end
 raw = reshape(raw,nrow,nc);
 
@@ -44,11 +44,13 @@ if ~exist('maxit','var') || isempty(maxit)
 else
     validateattributes(maxit,{'numeric'},{'scalar','finite','integer','nonnegative'},'','maxit');
 end
+
 if ~exist('damp','var') || isempty(damp)
     damp = 0;
 else
     validateattributes(damp,{'numeric'},{'scalar','finite','nonnegative'},'','damp');
 end
+
 if ~exist('W','var') || isscalar(W) || isempty(W)
     W = 1;
 else
@@ -60,48 +62,51 @@ else
         end
         % this should catch size mismatches
         if mod(nr,1) || nr*ny~=nrow
-            error('W must be a vector of length ny or ny*nr');
+            app.TextMessage('W must be a vector of length ny or ny*nr');
         end
         W = repmat(reshape(W,1,ny),nr,1);
     end
     W = reshape(W,nrow,1);
-    if numel(unique(W))==1; W = W(1); end
-    if ~any(W); error('W cannot be all zero'); end
+    if numel(unique(W))==1 
+        W = W(1); 
+    end
+    if ~any(W) 
+        app.TextMessage('W cannot be all zero'); 
+    end
     validateattributes(W,{'numeric','gpuArray'},{'finite','nonnegative'},'','W');
 end
+
 if ~exist('constraint','var') || isempty(constraint)
     constraint = '';
 else
     switch constraint
-        case 'phase-constraint';
-        case 'compressed-sensing';
+        case 'phase-constraint'
+        case 'compressed-sensing'
         case 'parallel-imaging-sake'; if nc==1; error('sake-low-rank requires multiple coils'); end    
         case 'parallel-imaging-pruno'; if nc==1; error('parallel-imaging requires multiple coils'); end            
         otherwise; error('unknown constraint');
     end
     if ~exist('lambda','var') || isempty(lambda)
-        error('lambda must be supplied with %s',constraint);
+        app.TextMessage(sprintf('lambda must be supplied with %s',constraint));
     end
     validateattributes(lambda,{'numeric'},{'scalar','finite','nonnegative'},'','lambda');
 end
 
 % damp, weighting and constraints require iterative recon
 if damp~=0 && maxit<=1
-    warning('damp is only effective when maxit>1 - try 10');
+    app.TextMessage('damp is only effective when maxit>1 - try 10');
 end
 if ~isscalar(W) && maxit<=1
-    warning('weighting is only effective when maxit>1 - try 10');
+    app.TextMessage('weighting is only effective when maxit>1 - try 10');
 end
 if ~isempty(constraint) && lambda && maxit<=1
-    warning('phase constraint is only effective when maxit>1 - try 10');
+    app.TextMessage('phase constraint is only effective when maxit>1 - try 10');
 end
 
 %% finalize setup
-fprintf('  maxit=%i damp=%.3f weighted=%i',maxit,damp,~isscalar(W));
-if isempty(constraint)
-    fprintf('\n')
-else
-    fprintf(' (%s lambda=%.3f)\n',constraint,lambda);
+app.TextMessage(sprintf('maxit=%i damp=%.3f weighted=%i',maxit,damp,~isscalar(W)));
+if ~isempty(constraint)
+    app.TextMessage(sprintf('%s lambda=%.3f)\n',constraint,lambda));
 end
 
 % send to gpu if needed
@@ -132,7 +137,7 @@ else
     b = reshape(b,prod(obj.N),nc);
     
     % solve (A'WDA)(x) = (A'WDb) + penalty on ||x||
-    [x,~,relres,iter] = pcgpc(A,b,[],maxit);
+    [x,~,relres,iter] = pcgpc(A,b,[],maxit); %#ok<ASGLU> 
     
 end
 
@@ -153,7 +158,7 @@ if ~isempty(constraint)
         P = convn(P,reshape(h,1,numel(h),1),'same');
         P = convn(P,reshape(h,1,1,numel(h)),'same');
         P = circshift(P,-fix(obj.N/2)); % shift back again
-        P = exp(i*angle(P));
+        P = exp(1i*angle(P));
         
         % linear operator (P'A'WDAP)
         A = @(x)obj.pprojection(x,damp,lambda,W,P);
@@ -166,7 +171,7 @@ if ~isempty(constraint)
         b = reshape(b,prod(obj.N),nc);
         
         % solve (P'A'WDAP)(P'x) = (P'A'WDb) + penalty on imag(P'x)
-        [x,~,relres,iter] = pcgpc(A,b,[],maxit);
+        [x,~,relres,iter] = pcgpc(A,b,[],maxit); %#ok<ASGLU> 
         
         % put back the low resolution phase
         x = P.*x;
@@ -226,15 +231,16 @@ if ~isempty(constraint)
         
         % check: measure diagonal of iprojection (V. SLOW)
         if 0
-            N = 200; % how many to test
+            N = 200; %#ok<UNRCH> % how many to test
             d = zeros(1,N,'like',D);
             for j = 1:N
                 tmp = zeros(size(D));
                 tmp(j) = 1; tmp = obj.iprojection(tmp,damp,W);
                 d(j) = real(tmp(j)); fprintf('%i/%i\n',j,N);
             end
-            plot([d;D(1:N);d-D(1:N)]'); legend({'exact','estimate','diff'});
-            keyboard
+          %  plot([d;D(1:N);d-D(1:N)]'); 
+          %  legend({'exact','estimate','diff'});
+          %  keyboard
         end
         
         % least squares (A'WA)(x) = (A'Wb) + penalty on ||null*x||
@@ -248,4 +254,5 @@ end
 %% reshape into image format
 im = reshape(gather(x),obj.N(1),obj.N(2),obj.N(3),nc);
 
-fprintf('  %s returned %ix%ix%ix%i dataset. ',mfilename,obj.N(1),obj.N(2),obj.N(3),nc); toc;
+app.TextMessage(sprintf('%s returned %ix%ix%ix%i dataset. ',mfilename,obj.N(1),obj.N(2),obj.N(3),nc)); 
+

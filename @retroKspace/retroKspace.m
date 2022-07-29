@@ -54,7 +54,7 @@ classdef retroKspace
                         objKspace.raw{i} = objData.data{i}(:,:,:,objData.primaryNavigatorPoint+objData.nrNavPointsDiscarded+1:end);
                     end
                     
-                case {'2Dradial','3Dute'}
+                case {'2Dradial','2Dradialms','3Dute'}
                     for i = 1:objData.nr_coils
                         objKspace.raw{i} = objData.data{i};
                     end
@@ -1073,12 +1073,15 @@ classdef retroKspace
             interpFactor = 16;
 
             % Create spokes from trajectory list of angles
-            spoke = zeros(1,1,objData.nrKlines,1,dimx,1,3);
-            for cnt = 1:objData.nrKlines
-                spoke(1,1,cnt,1,:,1,1) = (-floor(dimx/2)+0.5:floor(dimx/2)-0.5)*cos(objKspace.trajectory(cnt)*pi/180);
-                spoke(1,1,cnt,1,:,1,2) = (-floor(dimx/2)+0.5:floor(dimx/2)-0.5)*sin(objKspace.trajectory(cnt)*pi/180);
+            spoke = zeros(1,1,objData.nrKlines,dimz,dimx,1,3);
+
+            for z = 1:dimz
+                for cnt = 1:objData.nrKlines
+                    spoke(1,1,cnt,z,:,1,1) = (-floor(dimx/2)+0.5:floor(dimx/2)-0.5)*cos(objKspace.trajectory(cnt)*pi/180);
+                    spoke(1,1,cnt,z,:,1,2) = (-floor(dimx/2)+0.5:floor(dimx/2)-0.5)*sin(objKspace.trajectory(cnt)*pi/180);
+                end
             end
-       
+  
             for coilnr = 1:objData.nr_coils
                 
                 rawData = permute(objKspace.raw{coilnr},[3 2 1 4]); % needed to be able to rearrange according to spokes, readout
@@ -1086,6 +1089,7 @@ classdef retroKspace
                 sortedAverages = zeros(nrRespFrames,nrCardFrames,objData.nrKlines,dimz,dimx,nrDynamics);
                 sortedTraj = zeros(nrRespFrames,nrCardFrames,objData.nrKlines,dimz,dimx,nrDynamics,3);
                 unsortedKspace = reshape(rawData,[1,1,objData.nrKlines,1,dimx]);
+    
       
                 % Dynamics and slice assignment
                 if dimz > 1
@@ -1295,12 +1299,11 @@ classdef retroKspace
 
                     % kSpace = frames, X, Y, Z(/slices), dynamics
 
-                case {'2Dradial','3Dute'}
+                case {'2Dradial','2Dradialms','3Dute'}
 
                     % Reshape to either cardiac or respiratory CINE
         
                     [s1,s2,s3,s4,s5,s6] = size(objKspace.kSpace{1});
-
                     s = max([s1,s2]);
                     nrCoils = length(objKspace.kSpace);
                     for i = 1:nrCoils
@@ -1381,7 +1384,7 @@ classdef retroKspace
                     filling(filling>100) = 100;
                     app.FillingViewField.Value = filling;
 
-                case '2Dradial'
+                case {'2Dradial','2Dradialms'}
 
                     % Kspace radial spokes
                     nrKpoints = objData.dimx;
@@ -1440,7 +1443,7 @@ classdef retroKspace
                     if app.HalfCircleButton.Value == 1              trajType = 1; end %#ok<SEPEX> 
                     if app.FullCircleButton.Value == 1              trajType = 2; end %#ok<SEPEX> 
                     if app.FullCircleInterleavedButton.Value == 1   trajType = 3; end %#ok<SEPEX> 
-                    objKspace.trajectory = radialTrajectory(objData.nrKsteps,objData.nr_repetitions,trajType);
+                    objKspace.trajectory = radialTrajectory(objData.nrKsteps, objData.nr_repetitions, objData.NO_SLICES, trajType);
 
                 case 9 % 3D UTE
                     flist = dir(fullfile(app.mrdImportPath,'lut*.txt'));
@@ -1504,7 +1507,7 @@ classdef retroKspace
             % ---------------------------------------------------------------------------------
             % Radial trajectory
             % ---------------------------------------------------------------------------------
-            function traject = radialTrajectory(nrPE,nrReps,trajType)
+            function traject = radialTrajectory(nrPE,nrReps,nrSlices,trajType)
 
                 % Radial k-space trajectory
                 % The actual trajectory is later incorporated in the trajectory that is used by the Bart toolbox
@@ -1518,10 +1521,12 @@ classdef retroKspace
                         fullAngle = 180;
 
                         cnt = 1;
-                        for i = 1:nrReps
-                            for j = 1:nrPE
-                                traject(cnt) = (j-1)*fullAngle/nrPE;
-                                cnt = cnt + 1;
+                        for k = 1:nrSlices
+                            for i = 1:nrReps
+                                for j = 1:nrPE
+                                    traject(cnt) = (j-1)*fullAngle/nrPE;
+                                    cnt = cnt + 1;
+                                end
                             end
                         end
 
@@ -1531,10 +1536,12 @@ classdef retroKspace
                         fullAngle = 360;
 
                         cnt = 1;
-                        for i = 1:nrReps
-                            for j = 1:nrPE
-                                traject(cnt) = (j-1)*fullAngle/nrPE;
-                                cnt = cnt + 1;
+                        for k = 1:nrSlices
+                            for i = 1:nrReps
+                                for j = 1:nrPE
+                                    traject(cnt) = (j-1)*fullAngle/nrPE;
+                                    cnt = cnt + 1;
+                                end
                             end
                         end
 
@@ -1542,14 +1549,16 @@ classdef retroKspace
                         
                         % One of the trajectorie tried with Chayenne
                         cnt = 1;
-                        for i = 1:nrReps
-                            for j = 1:nrPE
-                                if j < nrPE/2
-                                     traject(cnt) = (j-1)*360/nrPE;
-                                else
-                                    traject(cnt) = (j-1)*360/nrPE + 180/nrPE;
+                        for k = 1:nrSlices
+                            for i = 1:nrReps
+                                for j = 1:nrPE
+                                    if j < nrPE/2
+                                        traject(cnt) = (j-1)*360/nrPE;
+                                    else
+                                        traject(cnt) = (j-1)*360/nrPE + 180/nrPE;
+                                    end
+                                    cnt = cnt + 1;
                                 end
-                                cnt = cnt + 1;
                             end
                         end
                 end
@@ -1570,7 +1579,7 @@ classdef retroKspace
 
             switch objData.dataType
 
-                case {'2D','2Dms','2Dradial'}
+                case {'2D','2Dms','2Dradial','2Dradialms'}
 
                     for i = 1:nf
                         for j = 1:nr

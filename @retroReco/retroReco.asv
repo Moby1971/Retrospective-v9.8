@@ -1050,7 +1050,7 @@ disp(size(imageOut))
                 
                 traj = objKspace.kSpaceTraj;
                 image = zeros(dimf,dimz,dimy,dimx,dimd,nrCoils);
-                sensitivities = ones(dimx,dimy,1,nrCoils,1,1,1,1,1,1,1,1,1,dimz);
+                sensitivities = ones(1,dimy,dimx,1,1,1,1,1,1,1,1,1,1,dimz);
 
                 % Gradient delays from app
                 dTotal(1) = app.GxDelayEditField.Value;
@@ -1110,7 +1110,7 @@ disp(size(imageOut))
                 image = permute(image,[1,4,3,2,5]);
 
                 % sense map orientations: x, y, slices, map1, map2
-                senseMap1 = flip(permute(abs(sensitivities),[2,1,14,3,4,5,6,7,8,9,10,11,12,13]),2);
+                senseMap1 = permute(sensitivities,[3,2,14,4,5,1,6,7,8,9,10,11,12,13]);
 
                 % normalize sense map to reasonable value range
                 senseMap1 = senseMap1*4095/max(senseMap1(:));

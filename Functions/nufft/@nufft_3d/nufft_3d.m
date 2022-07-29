@@ -53,35 +53,35 @@ classdef nufft_3d
     methods
         
         %% constructor
-        function obj = nufft_3d(om,N,varargin)
+        function obj = nufft_3d(om,N,app,varargin)
 
             if nargin==0
                 return; % default constructor required by MATLAB
             end 
             if ~isnumeric(om) || ~isreal(om) || size(om,1)~=3 || isempty(om)
-                error('om must be a real array with leading dimension of 3')
+                app.TextMessage('om must be a real array with leading dimension of 3')
             else
                 om = reshape(om,3,[]); % remove unnecessary shape
             end
             if ~exist('N','var') || isempty(N)
                 N = 2 * ceil(max(abs(om),[],2)); % assume centered at [0 0 0]
-                warning(sprintf('N argument not supplied - using [%i %i %i]',N))
+                app.TextMessage(sprintf('N argument not supplied - using [%i %i %i]',N));
             end
 
             % varargin handling - must be field/value pairs, e.g. ('J',5)
             for k = 1:2:numel(varargin)
                 if k==numel(varargin) || ~ischar(varargin{k})
-                    error('''varargin'' must be supplied in string/value pairs');
+                    app.TextMessage('''varargin'' must be supplied in string/value pairs');
                 end
                 obj.(varargin{k}) = varargin{k+1};
             end
             
             %% check values, sizes, shapes, etc.
             if obj.J<1 || obj.J>7
-                warning('value of J=%f is not recommended',obj.J);
+                app.TextMessage(sprintf('value of J=%f is not recommended',obj.J));
             end
             if obj.u<=1 || obj.u>6 % doesn't work properly with u=1
-                error('value of u=%f is not recommended',obj.u);
+                app.TextMessage(sprintf('value of u=%f is not recommended',obj.u));
             end
             if obj.alpha==0
                 % Beatty formula
@@ -92,18 +92,19 @@ classdef nufft_3d
                 end
             end
             if obj.radial && (obj.J<3 || obj.u<1.5)
-                warning('radial kernel not recommended with J<3 or u<1.5');
+                app.TextMessage('radial kernel not recommended with J<3 or u<1.5');
             end
             if ~isscalar(obj.low) || obj.low<0 || mod(obj.low,1)
-                error('low must be a nonnegative integer');
+                app.TextMessage('low must be a nonnegative integer');
             end
             if (numel(N)==1 || numel(N)==3) && isnumeric(N)
-                obj.N = ones(3,1).*reshape(N,[],1); N = [];
+                obj.N = ones(3,1).*reshape(N,[],1); 
+                N = []; %#ok<NASGU> 
             else
-                error('N must be scalar or 3-vector of even integers');
+                app.TextMessage('N must be scalar or 3-vector of even integers');
             end
             if mod(obj.N(1),2) || mod(obj.N(2),2) % allow z=1 for 2D
-                error('N must be an even integer');
+                app.TextMessage('N must be an even integer');
             end
             if all(om(3,:)==0) % catch z=1 case for 2D
                 obj.N(3) = 1;
@@ -114,10 +115,10 @@ classdef nufft_3d
             if obj.N(3) == 1; obj.K(3) = 1; end
             
             % display trajectory limits
-            disp(' Trajectory:     min        max        matrix')
-            fprintf('   om(1):    %.3f       %.3f      %i\n',min(om(1,:)),max(om(1,:)),obj.N(1))
-            fprintf('   om(2):    %.3f       %.3f      %i\n',min(om(2,:)),max(om(2,:)),obj.N(2))           
-            fprintf('   om(3):    %.3f       %.3f      %i\n',min(om(3,:)),max(om(3,:)),obj.N(3))
+            app.TextMessage(sprintf('om(3):    %.3f       %.3f      %i\n',min(om(3,:)),max(om(3,:)),obj.N(3)));
+            app.TextMessage(sprintf('om(2):    %.3f       %.3f      %i\n',min(om(2,:)),max(om(2,:)),obj.N(2)));
+            app.TextMessage(sprintf('om(1):    %.3f       %.3f      %i\n',min(om(1,:)),max(om(1,:)),obj.N(1)));
+            app.TextMessage('Trajectory:     min        max        matrix')
             
             % scale trajectory (doubles to stay below flintmax when calculating sparse indicies)
             kx = obj.u * double(om(1,:));
@@ -127,7 +128,7 @@ classdef nufft_3d
             % only keep points that are within bounds
             ok = kx >= -obj.K(1)/2 & kx <= obj.K(1)/2-1 & ky >= -obj.K(2)/2 & ky <= obj.K(2)/2-1;
             if obj.N(3)>1; ok = ok & kz >= -obj.K(3)/2 & kz <= obj.K(3)/2-1; end % allow 2d
-            fprintf('  %i points (out of %i) are out of bounds.\n',sum(~ok),numel(ok))
+            app.TextMessage(sprintf('%i points (out of %i) are out of bounds.\n',sum(~ok),numel(ok)));
             
             %% set up interpolation matrix
 
@@ -143,7 +144,7 @@ classdef nufft_3d
                 try
                     obj.H  = gpuSparse(obj.H);
                 catch ME
-                    warning('%s gpuSparse failed.',ME.message);
+                    app.TextMessage(ME.message);
                 end
                 try
                     kx = gpuArray(kx);
@@ -152,7 +153,7 @@ classdef nufft_3d
                     ok = gpuArray(ok);
                 catch ME
                     obj.gpu = 0;
-                    warning('%s Setting gpu=0.',ME.message);
+                    app.TextMessage(ME.message);
                 end
             end
 
@@ -216,10 +217,11 @@ classdef nufft_3d
                     
                 end
             end
-            fprintf(' Created %s matrix. ',class(obj.H)); toc(t);
+            app.TextMessage(sprintf('Created %s matrix. ',class(obj.H))); 
+            %toc(t);
             
             % clear large temporaries
-            clearvars -except om N varargin obj ok
+            clearvars -except om N varargin obj ok app
 
             % create transpose matrix (CPU only) 
             if ~obj.gpu; obj.HT = obj.H'; end    
@@ -230,13 +232,13 @@ classdef nufft_3d
             obj.U = obj.deap();
             
             % density weighting
-            [tmp obj.sd obj.dwsd] = obj.density(ok);
+            [tmp, obj.sd, obj.dwsd] = obj.density(ok,app);
             
             if isempty(obj.d)
                 obj.d = tmp; % use the default calculated density
             else
                 if numel(tmp)~=numel(obj.d)
-                    error('supplied density has wrong number of elements (%i)',numel(obj.d));
+                    app.TextMessage(sprintf('supplied density has wrong number of elements (%i)',numel(obj.d)));
                 end
                 obj.d = cast(reshape(obj.d,size(tmp)),'like',tmp);
                 obj.d(~ok) = 0; % exclude out of bounds points
@@ -246,12 +248,11 @@ classdef nufft_3d
             fftw('planner','measure');           
 
             % display properties
-            fprintf(' Created'); disp(obj);
-            fprintf('\n');
-            fprintf('\tH: [%ix%i] (nonzeros %i) %0.1fGbytes\n',size(obj.H),nnz(obj.H),3*nnz(obj.H)*4*(2-isa(obj.H,'gpuSparse'))/1e9);
-            fprintf('\tU: [%ix%ix%i] min=%f max=%f\n',size(obj.U,1),size(obj.U,2),size(obj.U,3),min(obj.U(:)),max(obj.U(:)));
-            fprintf('\td: [%ix%i] (zeros %i) min=%f max=%f\n',size(obj.d),nnz(obj.d==0),min(nonzeros(obj.d)),max(obj.d));
-            fprintf('\n');
+            % disp(obj);
+            app.TextMessage(sprintf('H: [%ix%i] (nonzeros %i) %0.1fGbytes',size(obj.H),nnz(obj.H),3*nnz(obj.H)*4*(2-isa(obj.H,'gpuSparse'))/1e9));
+            app.TextMessage(sprintf('U: [%ix%ix%i] min=%f max=%f',size(obj.U,1),size(obj.U,2),size(obj.U,3),min(obj.U(:)),max(obj.U(:))));
+            app.TextMessage(sprintf('d: [%ix%i] (zeros %i) min=%f max=%f',size(obj.d),nnz(obj.d==0),min(nonzeros(obj.d)),max(obj.d)));
+            
   
         end
 
@@ -325,7 +326,7 @@ classdef nufft_3d
             if isempty(obj.fnull) || isempty(obj.anull)
                 y = reshape(y,prod(obj.N),[]); % coils separate
             elseif size(x,4)~=size(obj.fnull,4)
-                error('check number of coils (received %i expected %i)',size(x,4),size(obj.fnull,4));
+                app.TextMessage(sprintf('check number of coils (received %i expected %i)',size(x,4),size(obj.fnull,4)));
             else
                 % nullspace constraints
                 r = sum(obj.fnull.*x,4);
@@ -343,7 +344,7 @@ classdef nufft_3d
             if ~isscalar(lambda)
                 lambda = reshape(lambda,size(x,1),1);
             end
-            y = conj(P).*y + i*lambda.^2.*imag(x);
+            y = conj(P).*y + 1i*lambda.^2.*imag(x);
         end
 
     end

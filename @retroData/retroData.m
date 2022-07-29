@@ -455,10 +455,12 @@ classdef retroData
                     if ndims(obj.data{i}) == 3 && obj.NO_SLICES > 1
                         %                                  1 Z Y X
                         obj.data{i} = permute(obj.data{i},[4,1,2,3]);
+                        obj.dataType = '2Dradialms';
                     end
                     if ndims(obj.data{i}) == 4 && obj.NO_SLICES > 1
-                        %                                 NR Z Y X
-                        obj.data{i} = permute(obj.data{i},[1,4,2,3]);
+                        %                                   NR Z Y X
+                        % obj.data{i} = permute(obj.data{i},[1,2,3,4]);
+                        obj.dataType = '2Dradialms';
                     end
 
                 end
@@ -568,6 +570,8 @@ classdef retroData
                     app.TextMessage('2D multi-slice data ...');
                 case '2Dradial'
                     app.TextMessage('2D radial data ...');
+                case '2Dradialms'
+                    app.TextMessage('2D multi-slice radial data ...');
                 case '3Dute'
                     app.TextMessage('3D UTE data ...');
             
@@ -596,7 +600,7 @@ classdef retroData
                         obj.recoGuess = 'systolic function';
                     end
 
-                case '2Dms'
+                case {'2Dms','2Dradialms'}
 
                     if obj.nr_repetitions > 200
                         obj.recoGuess = 'diastolic function';

@@ -1,5 +1,5 @@
 %% density estimation
-function [d sd dwsd] = density(obj,ok)
+function [d sd dwsd] = density(obj,ok,app)
 
 % Pipe's method (sort of)
 maxit = 20;
@@ -66,7 +66,7 @@ sd = dwsd / mean(d);
 
 % measure true diagonals of Q'*Q and Q'*D*Q (V. SLOW)
 if false
-    N = 100; % how many to test
+    N = 100; %#ok<UNRCH> % how many to test
     T = zeros(N,2);
     for j = 1:N
         tmp = zeros(size(obj.U)); tmp(j) = 1;
@@ -78,8 +78,9 @@ if false
         %fprintf('%i/%i\n',j,N);
     end
     T = cat(2,real(T),max(abs(imag(T)),[],2));
-    plot(T); legend({'diag(Q''*Q','diag(Q=Q''*D*Q)','imag'});
-    fprintf('  sd=%f dwsd=%f (measured)\n',mean(T(:,1)),mean(T(:,2)));
+    %plot(T); 
+    %legend({'diag(Q''*Q','diag(Q=Q''*D*Q)','imag'});
+    app.TextMessage(sprintf('sd=%f dwsd=%f (measured)\n',mean(T(:,1)),mean(T(:,2))));
 end
 
 % normalize for dwsd, as promised, so that diag(Q'*D*Q) = 1. there
@@ -92,4 +93,4 @@ dwsd = dwsd / dwsd / obj.u;
 
 % report metrics
 R = numel(d) / prod(obj.N);
-fprintf(' Density: sd=%f dwsd=%f 1/R=%f\n',sd,dwsd,R);
+app.TextMessage(sprintf('Density: sd=%f dwsd=%f 1/R=%f\n',sd,dwsd,R));

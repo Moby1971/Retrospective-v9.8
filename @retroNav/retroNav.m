@@ -98,7 +98,7 @@ classdef retroNav
                 case '2Dms'
                     extractNavigator2Dms;
                     
-                case '2Dradial'
+                case {'2Dradial','2Dradialms'}
                     extractNavigator2DRadial;
 
                 case '3Dute'
