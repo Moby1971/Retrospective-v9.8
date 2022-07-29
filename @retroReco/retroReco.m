@@ -683,12 +683,14 @@ classdef retroReco
                 nrCoils = objData.nr_coils;
                 ESPIRiT = app.ESPIRiTCheckBox.Value;
 
+                % Get the data dimensions from the kSpace object
                 dimf = size(objKspace.kSpace{1},1);
                 dimx = size(objKspace.kSpace{1},2);
                 dimy = dimx;
                 dimz = size(objKspace.kSpace{1},4);
                 dimd = size(objKspace.kSpace{1},5);
 
+                % Retrieve the k-Space, trajectory, and averages from the object
                 kSpace = zeros(size(objKspace.kSpace{1}));
                 for i = 1:nrCoils
                     kSpace(:,:,:,:,:,i) = objKspace.kSpace{i};      % K-space
@@ -742,10 +744,11 @@ classdef retroReco
                 % Gradient delay calibration
                 if app.GradDelayCalibrationCheckBox.Value
 
-                    % Calculate k-space and trajectory sum of all frames
-                    % and dynamics, remove all zero values
-                    kSpacePicsSum = sum(kSpacePics(:,:,:,:,:,:,:,:,:,:,:,:,:,floor(dimz/2)+1),[11,12]);
-                    trajPicsSum = sum(trajPics(:,:,:,:,:,:,:,:,:,:,:,:,:,floor(dimz/2)+1),[11,12]);
+                    % Calculate k-space and trajectory of a typical frame
+                    % and dynamic, remove all zero values
+               
+                    kSpacePicsSum = kSpacePics(:,:,:,:,:,:,:,:,:,:,floor(dimf/2)+1,floor(dimd/2)+1,:,floor(dimz/2)+1);
+                    trajPicsSum = trajPics(:,:,:,:,:,:,:,:,:,:,floor(dimf/2)+1,floor(dimd/2)+1,:,floor(dimz/2)+1);
 
                     ze = squeeze(abs(kSpacePicsSum(1,floor(end/2),:))) > 0;
                     kSpacePicsSum = kSpacePicsSum(:,:,ze);
@@ -905,11 +908,12 @@ classdef retroReco
 
                                 % Show image
                                 im = squeeze(abs(imCalib(:,:)));
-                                im = flip(permute(im,[2 1]),2);
+                                im = permute(im,[2 1]);
                                 if app.retroDataPars.PHASE_ORIENTATION
                                     im = rot90(im,-1);
                                     daspect(app.MovieFig,[1 app.retroDataPars.aspectratio 1]);
                                 else
+                                    im = flip(im,1);
                                     daspect(app.MovieFig,[app.retroDataPars.aspectratio 1 1]);
                                 end
                                 xlim(app.MovieFig, [0 size(im,2)+1]);
@@ -962,8 +966,8 @@ classdef retroReco
 
                 % Sensitivity maps
                 if nrCoils > 1 && ESPIRiT
-                    kSpacePicsSum = sum(kSpacePics,[11,12]);
-                    trajPicsSum = sum(trajPics,[11,12]);
+                    kSpacePicsSum = sum(kSpacePics,[11,12,14]);
+                    trajPicsSum = sum(trajPics,[11,12,14]);
                     ze = squeeze(abs(kSpacePicsSum(1,end,:))) > 0;
                     kSpacePicsSum = kSpacePicsSum(:,:,ze);
                     trajPicsSum = trajPicsSum(:,:,ze);
@@ -1008,13 +1012,9 @@ classdef retroReco
                 % Root sum of squares over all coils
                 recoImage = bart(app,'rss 8', igrid);
 
-disp(size(recoImage))
-
                 % Rearrange to correct orientation: frames, z, y, x, dynamics
                 imageReg = reshape(recoImage,[dimy,dimx,dimf,dimd,dimz]);
                 imageOut = permute(imageReg,[3,2,1,5,4]);
-
-disp(size(imageOut))
 
                 % sense map orientations: x, y, slices, map1, map2
                 senseMap1 = flip(permute(abs(sensitivities),[2,1,14,3,4,5,6,7,8,9,10,11,12,13]),2);

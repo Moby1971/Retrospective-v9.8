@@ -82,9 +82,16 @@ else
     switch constraint
         case 'phase-constraint'
         case 'compressed-sensing'
-        case 'parallel-imaging-sake'; if nc==1; error('sake-low-rank requires multiple coils'); end    
-        case 'parallel-imaging-pruno'; if nc==1; error('parallel-imaging requires multiple coils'); end            
-        otherwise; error('unknown constraint');
+        case 'parallel-imaging-sake' 
+            if nc==1
+                app.TextMessage('sake-low-rank requires multiple coils'); 
+            end    
+        case 'parallel-imaging-pruno' 
+            if nc==1 
+                app.TextMessage('parallel-imaging requires multiple coils'); 
+            end            
+        otherwise 
+            app.TextMessage('unknown constraint');
     end
     if ~exist('lambda','var') || isempty(lambda)
         app.TextMessage(sprintf('lambda must be supplied with %s',constraint));
