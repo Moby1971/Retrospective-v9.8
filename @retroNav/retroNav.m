@@ -323,8 +323,8 @@ classdef retroNav
                     % Size of the input data, 4th dimension is the readout direction which contains the navigator
                     [nrRepetitions,dimz,dimy,dimx] = size(objData.data{coilnr});
                     
-                    % Extract the navigator and put it in a long array
-                    navDataAmplitude = reshape(permute(objData.data{coilnr},[3,2,1,4]),nrRepetitions*dimy*dimz,dimx);
+                    % Extract the navigator and put it in a long array:      y repetions slices, x
+                    navDataAmplitude = reshape(permute(objData.data{coilnr},[3,1,2,4]),nrRepetitions*dimy*dimz,dimx);
                     
                     if objData.nrNavPointsUsed > 1
                         
