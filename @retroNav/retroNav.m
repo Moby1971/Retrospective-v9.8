@@ -895,32 +895,36 @@ classdef retroNav
             
             % This function creates an array (time line) of rectangular boxes of 0's and 1's around the detected respiratory signals
             % Later on 1 means that there is a respiration, for which the k-lines will be discarded
-            
-            respWin = 0.5*(respPercent/100)*(60/meanResp)*1000/objData.TR;   % 1/2 window width around respiratory peak locations
-            
-            window = zeros(nrKlines,1);   % Fill array with zeros
-            
-            for i = 1 : size(rLocs,2)
-                
-                % Center of the respiration window
-                center = rLocs(1,i);
-                
-                % Beginning and end of the respiration window in ms, time starts at zero
-                objNav.respWindowTime(i,1) = (center - respWin)*objData.TR  - objData.TR;
-                objNav.respWindowTime(i,2) = (center + respWin)*objData.TR  - objData.TR;
 
-                % Set respiration window mask to 0 during respiration
-                for j = round(center - respWin) : round(center + respWin)
-                    if (j>0) && (j<=nrKlines)
-                        window(j) = 1;
+            respWin = 0.5*(respPercent/100)*(60/meanResp)*1000/objData.TR;   % 1/2 window width around respiratory peak locations
+
+            window = zeros(nrKlines,1);   % Fill array with zeros
+
+            if ~app.IgnoreRespirationToggleCheckBox.Value
+
+                for i = 1 : size(rLocs,2)
+
+                    % Center of the respiration window
+                    center = rLocs(1,i);
+
+                    % Beginning and end of the respiration window in ms, time starts at zero
+                    objNav.respWindowTime(i,1) = (center - respWin)*objData.TR  - objData.TR;
+                    objNav.respWindowTime(i,2) = (center + respWin)*objData.TR  - objData.TR;
+
+                    % Set respiration window mask to 1 during respiration
+                    for j = round(center - respWin) : round(center + respWin)
+                        if (j>0) && (j<=nrKlines)
+                            window(j) = 1;
+                        end
                     end
+
                 end
 
-            end
-            
-            % Set window to expiration (0) or inspiration (1)
-            if app.RespirationToggleCheckBox.Value == 1
-                window = 1 - window;
+                % Set window to expiration (0) or inspiration (1)
+                if app.RespirationToggleCheckBox.Value
+                    window = 1 - window;
+                end
+
             end
 
             objNav.respWindow = window;

@@ -1156,12 +1156,14 @@ classdef retroReco
                 TVd = app.TVdynEditField.Value;
                 nrCoils = objData.nr_coils;
                 
+                % Retrieve the dimensions from the k-space object
                 dimf = size(objKspace.kSpace{1},1);
                 dimx = size(objKspace.kSpace{1},2);
                 dimy = dimx;
                 dimz = dimx;
                 dimd = size(objKspace.kSpace{1},5);
                
+                % Retrieve k-space, trajectory, and averages
                 kSpace = zeros(size(objKspace.kSpace{1}));
                 for i = 1:nrCoils
                     kSpace(:,:,:,:,:,i) = objKspace.kSpace{i};
