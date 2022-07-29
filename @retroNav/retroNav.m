@@ -92,18 +92,21 @@ classdef retroNav
                 case '2D'
                     extractNavigator2D;
                     
-                case {'3D','3Dp2roud'}
-                    extractNavigator3D;
-                    
                 case '2Dms'
                     extractNavigator2Dms;
-                    
-                case {'2Dradial','2Dradialms'}
-                    extractNavigator2DRadial;
+
+                case {'3D','3Dp2roud'}
+                    extractNavigator3D;
+
+                case '2Dradial'
+                    extractNavigator2Dradial;
+
+                case '2Dradialms'
+                    extractNavigator2Dradialms;
 
                 case '3Dute'
                     extractNavigator3Dute;
-                    
+
             end
             
             
@@ -311,7 +314,7 @@ classdef retroNav
             % ---------------------------------------------------------------------------------
             % ----- 2D radial data ------------------------------------------------------------
             % ---------------------------------------------------------------------------------
-            function extractNavigator2DRadial
+            function extractNavigator2Dradial
 
                 % Extracts the navigator data from the raw k-space data
                 % Outputs a 1D array of doubles
@@ -369,7 +372,87 @@ classdef retroNav
                     
                 end
                 
-            end % extractNavigatorRadial
+            end % extractNavigator2Dradial
+
+
+
+            % ---------------------------------------------------------------------------------
+            % ----- 2D muslti-slice radial data ------------------------------------------------------------
+            % ---------------------------------------------------------------------------------
+            function extractNavigator2Dradialms
+
+                % Extracts the navigator data from the raw k-space data
+                % Outputs a 1D array of doubles
+
+                objNav.navAmplitude = cell(objData.nr_coils);
+
+                for coilnr = 1:objData.nr_coils
+
+                    % Size of the input data, 4th dimension is the readout direction which contains the navigator
+                    [nrExperiments,dimz,dimy,dimx] = size(objData.data{coilnr});
+                    
+                    % Extract the navigator and put it in a long array
+                    % Y-dimension, repetitions, slice, readout
+                    navDataAmplitude = reshape(permute(objData.data{coilnr},[3,1,2,4]),nrExperiments*dimy*dimz,dimx);
+                    
+                    if objData.nrNavPointsUsed > 1
+                        
+                        % Take the principal component of the data
+                        data = navDataAmplitude(:,objData.primaryNavigatorPoint-objData.nrNavPointsUsed+1:objData.primaryNavigatorPoint);
+                        [coeff,~,~] = pca(data);
+                        dataPCA = data*coeff;
+                        
+                        % Take the principal component of the data
+                        amplitude = abs(dataPCA(:,1))';
+                        
+                    else
+                        
+                        % Single nav point
+                        amplitude = abs(navDataAmplitude(:,objData.primaryNavigatorPoint))';
+                        
+                    end
+                    
+                    % Detrend
+                    amplitude(1,:) = detrend(amplitude(1,:));
+                    
+                    % Make a guess whether the respiration peaks are positive or negative in the different slices
+                    % This will not be needed with out-of-slice navigator
+                    
+                    nrElements = length(amplitude);
+                    nrElementsPerSlice = round(nrElements/dimz);
+                    
+                    for i = 1:dimz
+                        
+                        % First and last navigator point for each slice
+                        firstElement0 = (i-1)*nrElementsPerSlice + 1;
+                        lastElement0 = i*nrElementsPerSlice;
+                        
+                        % Only look at part of that data away from the start to prevent transient effects
+                        firstElement1 = (i-1)*nrElementsPerSlice + 1 + round(0.4*nrElementsPerSlice);
+                        lastElement1 = i*nrElementsPerSlice - round(0.1*nrElementsPerSlice);
+                        
+                        % Min/max of navigator
+                        maxAmplitude = abs(max(detrend(amplitude(1,firstElement1:lastElement1))));
+                        minAmplitude = abs(min(detrend(amplitude(1,firstElement1:lastElement1))));
+                        
+                        if minAmplitude > maxAmplitude
+                            amplitude(1,firstElement0:lastElement0) = -amplitude(1,firstElement0:lastElement0);
+                        end
+                        
+                        amplitude(1,firstElement0:lastElement0) = detrend(amplitude(1,firstElement0:lastElement0));
+                        
+                    end
+                    
+                    % Multiple with +1 or -1 depending on global switch
+                    amplitude = amplitude * objNav.upDown;
+                    
+                    % Return the final nav amplitude
+                    objNav.navAmplitude{coilnr} = amplitude;
+                    
+                end
+                
+            end % extractNavigator2Dradialms
+
 
 
             % ---------------------------------------------------------------------------------
@@ -940,13 +1023,15 @@ classdef retroNav
                 
                 if includeEndpoints
                     signDx = sign(diff(x(1:3)));
-                    if signDx(1) <= 0 % The first point is larger or equal to the second
+                    if signDx(1) <= 0 
+                        % The first point is larger or equal to the second
                         if signDx(1) == signDx(2) % Want alternating signs
                             x(2) = [];
                             ind(2) = [];
                             len = len-1;
                         end
-                    else % First point is smaller than the second
+                    else 
+                        % First point is smaller than the second
                         if signDx(1) == signDx(2) % Want alternating signs
                             x(1) = [];
                             ind(1) = [];
@@ -1002,7 +1087,8 @@ classdef retroNav
                         peakLoc(cInd) = tempLoc; % Add peak to index
                         peakMag(cInd) = tempMag;
                         cInd = cInd+1;
-                    elseif x(ii) < leftMin % New left minima
+                    elseif x(ii) < leftMin 
+                        % New left minima
                         leftMin = x(ii);
                     end
 
@@ -1015,7 +1101,8 @@ classdef retroNav
                         peakLoc(cInd) = len;
                         peakMag(cInd) = x(end);
                         cInd = cInd + 1;
-                    elseif ~foundPeak && tempMag > minMag % Check if we still need to add the last point
+                    elseif ~foundPeak && tempMag > minMag 
+                        % Check if we still need to add the last point
                         peakLoc(cInd) = tempLoc;
                         peakMag(cInd) = tempMag;
                         cInd = cInd + 1;
