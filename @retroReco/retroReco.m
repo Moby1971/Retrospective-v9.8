@@ -1012,19 +1012,43 @@ classdef retroReco
                 % Root sum of squares over all coils
                 recoImage = bart(app,'rss 8', igrid);
 
-                % Rearrange to correct orientation: frames, z, y, x, dynamics
+                % Rearrange to correct orientation: frames, x, y, z, dynamics
                 imageReg = reshape(recoImage,[dimy,dimx,dimf,dimd,dimz]);
-                imageOut = permute(imageReg,[3,2,1,5,4]);
+                imageOut = permute(imageReg,[3,1,2,5,4]);
 
-                % sense map orientations: x, y, slices, map1, map2
-                senseMap1 = flip(permute(abs(sensitivities),[2,1,14,3,4,5,6,7,8,9,10,11,12,13]),2);
+                % Flip for phase-orientation is vertical
+                if objData.PHASE_ORIENTATION == 0
+                    imageOut = flip(imageOut,3);
+                end
 
-                % normalize sense map to reasonable value range
-                senseMap1 = senseMap1*4095/max(senseMap1(:));
+                % Sense map orientations: x, y, slices, map1, map2
+                senseMap1 = flip(permute(abs(sensitivities),[1,2,14,3,4,5,6,7,8,9,10,11,12,13]),2);
 
-                % shift image in phase-encoding direction if needed
-                objReco.movieExp = circshift(imageOut,-objData.pixelshift1,3);
-                objReco.senseMap = circshift(senseMap1,-objData.pixelshift1,3);
+                % Normalize sense map to reasonable value range
+                senseMapOut = senseMap1*4095/max(senseMap1(:));
+        
+                % Retrieve the in-plane image shifts
+                objData = objData.get2DimageShift(imageOut, app);
+
+                % Apply the shift on sub-pixel level
+                for frame = 1:size(imageOut,1)
+                    for slice = 1:size(imageOut,4)
+                        for dynamic = 1:size(imageOut,5)
+                            imageOut(frame,:,:,slice,dynamic) = retroReco.image2Dshift(squeeze(imageOut(frame,:,:,slice,dynamic)),objData.yShift,objData.xShift);
+                        end
+                    end
+                end
+                for slice = 1:size(senseMapOut,3)
+                    for map1 = 1:size(senseMapOut,4)
+                        for map2 = 1:size(senseMapOut,5)
+                            senseMapOut(:,:,slice,map1,map2) = retroReco.image2Dshift(squeeze(senseMapOut(:,:,slice,map1,map2)),objData.yShift,objData.xShift);
+                        end
+                    end
+                end
+              
+                % Return the movie and sense-map objects
+                objReco.movieExp = imageOut;
+                objReco.senseMap = senseMapOut;
 
                 app.validRecoFlag = true;
                 app.validSenseMapFlag = true;
@@ -1038,19 +1062,20 @@ classdef retroReco
                 app.TextMessage('2D radial reconstruction using NUFFT ...');
                 app.ProgressGauge.Value = 0;
                 
-                dimf = size(objKspace.kSpace{1},1);
-                dimx = size(objKspace.kSpace{1},2);
-                dimy = dimx;
-                dimz = size(objKspace.kSpace{1},4);
-                dimd = size(objKspace.kSpace{1},5);
-                nrCoils = objData.nr_coils;
-                loops = dimz*dimf*dimd*nrCoils;
+                dimf = size(objKspace.kSpace{1},1);     % frames
+                dimx = size(objKspace.kSpace{1},2);     % x
+                dimy = dimx;                            % y
+                dimz = size(objKspace.kSpace{1},4);     % slices
+                dimd = size(objKspace.kSpace{1},5);     % dynamics
+                nrCoils = objData.nr_coils;             % coils
+                loops = dimz*dimf*dimd*nrCoils;         % number of NUFFT loops
+
                 app.TextMessage('Slow reconstruction ...');
                 app.TextMessage(strcat('Estimated reconstruction time >',{' '},num2str(loops/2),{' '},'min ...'));
                 
-                traj = objKspace.kSpaceTraj;
-                image = zeros(dimf,dimz,dimy,dimx,dimd,nrCoils);
-                sensitivities = ones(dimx,dimy,1,nrCoils,1,1,1,1,1,1,1,1,1,dimz);
+                traj = objKspace.kSpaceTraj;                                        % trajectory
+                image = zeros(dimf,dimz,dimy,dimx,dimd,nrCoils);                    % image pre-allocation
+                sensitivities = ones(dimx,dimy,1,nrCoils,1,1,1,1,1,1,1,1,1,dimz);   % sensitivity maps = 1
 
                 % Gradient delays from app
                 dTotal(1) = app.GxDelayEditField.Value;
@@ -1060,7 +1085,7 @@ classdef retroReco
 
                 % Prepare the trajectory
                 traj = permute(traj,[6,2,3,4,1,5]);
-                traj = objReco.trajInterpolation(traj,dTotal);
+                traj = objReco.trajInterpolation(traj,dTotal); % Shift with the gradient delay values
                 traj = permute(traj,[5,3,2,4,6,1]);
                 % frames, spokes, readout, slices, dynamics, 3 coordinates
 
@@ -1105,19 +1130,23 @@ classdef retroReco
 
                 end
 
-                % Root sum of squares over coil dimension and flip
+                % Root sum of squares over coil dimension and permute
                 image = rssq(image,6);
-                image = permute(image,[1,4,3,2,5]);
+                imageOut = permute(image,[1,4,3,2,5]);
 
                 % sense map orientations: x, y, slices, map1, map2
                 senseMap1 = flip(permute(abs(sensitivities),[2,1,14,3,4,5,6,7,8,9,10,11,12,13]),2);
 
                 % normalize sense map to reasonable value range
-                senseMap1 = senseMap1*4095/max(senseMap1(:));
+                senseMapOut = senseMap1*4095/max(senseMap1(:));
 
-                % shift image in phase-encoding direction if needed
-                objReco.movieExp = circshift(image,-objData.pixelshift1,3);
-                objReco.senseMap = circshift(senseMap1,-objData.pixelshift1,3);
+                % XXXXXXXXXX IMAGE SHIFT HERE %%%%%%
+
+
+
+                % Return the image and sense maps objects
+                objReco.movieExp = imageOut;
+                objReco.senseMap = senseMapOut;
 
                 app.validRecoFlag = true;
                 app.validSenseMapFlag = true;
@@ -2326,6 +2355,24 @@ classdef retroReco
         end
 
 
+
+        % ---------------------------------------------------------------------------------
+        % Fractional 2D image shift
+        % ---------------------------------------------------------------------------------
+        function y = image2Dshift(im, xShift, yShift)
+            
+            % Shift in pixels, can be fractional
+            H = retroReco.ifft2Dmri(im);
+
+            % Create linear grid
+            [xF,yF] = meshgrid(-size(im,2)/2:size(im,2)/2-1,-size(im,1)/2:size(im,1)/2-1);
+
+            % Perform the shift
+            H = H.*exp(-1i*2*pi.*(xF*xShift/size(im,2)+yF*yShift/size(im,1)));
+            
+            y = retroReco.fft2Dmri(H);
+
+        end % image2Dshift
 
 
 

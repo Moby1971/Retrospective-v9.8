@@ -60,6 +60,9 @@ classdef retroData
         coil_scaling = 1                                        % coil intensity scaling parameter
         scanner = 'MRS'                                         % scanner type
         no_samples_nav = 10                                     % number of navigator samples
+        fov_read_off = 0                                        % read-offset from MRD file, relative offset = value/4000
+        fov_phase_off = 0                                       % phase-offset from MRD file, relative offset = value/4000
+        SAMPLE_PERIOD                                           % sample period 
         
         % K-space trajectory related
         pe1_order = 3                                           % phase-encoding order 
@@ -100,6 +103,10 @@ classdef retroData
         SQLoffsetX = 0                                          % offset X
         SQLoffsetY = 0                                          % offset Y
         SQLoffsetZ = 0                                          % offset Z
+
+        % Image shifts
+        xShift = 0                                              % image shift in X direction
+        yShift = 0                                              % image shift in Y direction
 
         
     end
@@ -286,6 +293,18 @@ classdef retroData
                 
                 if isfield(parameter,'scanner')
                     obj.scanner = parameter.scanner;
+                end
+
+                if isfield(parameter,'fov_read_off')
+                    obj.fov_read_off = parameter.fov_read_off;
+                end
+
+                if isfield(parameter,'fov_phase_off')
+                    obj.fov_phase_off = parameter.fov_phase_off;
+                end
+
+                if isfield(parameter,'SAMPLE_PERIOD')
+                    obj.SAMPLE_PERIOD = parameter.SAMPLE_PERIOD;
                 end
                 
             end
@@ -1624,6 +1643,34 @@ classdef retroData
             obj.newRprFile = inputRpr;
 
         end % makeRprFile
+
+
+
+
+        % ---------------------------------------------------------------------------------
+        % Retrieve the 2D image shift for off-center and oblique Radial sequence
+        % ---------------------------------------------------------------------------------
+        function objData = get2DimageShift(objData, image, app)
+
+            % Image dimensions in pixels
+            imDimX = size(image,2);
+            imDimY = size(image,3);
+
+            % Calculate the shift
+            for i = 1:length(objData.fov_read_off)
+
+                relShiftX = imDimX*objData.fov_read_off(i)/4000;
+                relShiftY = imDimY*objData.fov_phase_off(i)/4000;
+
+            end
+
+            % Report the values back / return the object
+            objData.xShift = relShiftX;
+            objData.yShift = -relShiftY;
+
+            app.TextMessage(sprintf('Image shift ΔX = %.2f, ΔY = %.2f pixels ...',relShiftX(1),-relShiftY(1)));
+
+        end % get2DimageShift
         
 
 
