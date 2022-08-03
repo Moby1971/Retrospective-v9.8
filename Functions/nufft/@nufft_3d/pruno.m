@@ -1,5 +1,7 @@
 %% generate nullspace kernels
+
 function K = pruno(obj,data,varargin)
+
 %
 % Returns nulling kernels for 2d/3d data with nc coils.
 %
@@ -43,7 +45,7 @@ end
 %% initialize
 
 % argument checks
-[nx ny nz nc] = size(data);
+[nx, ny, nz, nc] = size(data);
 
 if ndims(data)~=4 || ~isfloat(data)
     error('''data'' must be a 4d float array [%s]',num2str(size(data)))
@@ -54,10 +56,10 @@ end
 
 % convolution kernel indicies
 if nz==1
-    [x y] = ndgrid(-fix(opts.width/2):fix(opts.width/2));
+    [x, y] = ndgrid(-fix(opts.width/2):fix(opts.width/2));
     z = zeros(size(x)); % still need the z coordinates
 else
-    [x y z] = ndgrid(-fix(opts.width/2):fix(opts.width/2));
+    [x, y, z] = ndgrid(-fix(opts.width/2):fix(opts.width/2));
 end
 if opts.radial
     k = sqrt(x.^2+y.^2+z.^2)<=opts.width/2;
@@ -90,14 +92,14 @@ disp(rmfield(opts,'kernel'));
 AA = make_data_matrix(data,opts);
 
 % row space and singular values (squared)
-[V W] = svd(AA);
+[V, W] = svd(AA);
 W = diag(W);
 
 % estimate noise floor (sigma)
 if isempty(opts.noise)
     hi = nnz(W > eps(numel(W)*W(1))); % skip true zeros
     for lo = 1:hi
-        h = hist(W(lo:hi),sqrt(hi-lo));
+        h = hist(W(lo:hi),sqrt(hi-lo)); %#ok<HIST> 
         [~,k] = max(h);
         if k>1; break; end
     end
@@ -145,7 +147,7 @@ K = ifft(K,obj.N(3),3) * obj.N(3);
 %% make normal calibration matrix (low memory)
 function AA = make_data_matrix(data,opts)
 
-nx = size(data,1);
+nx = size(data,1); %#ok<*NASGU> 
 ny = size(data,2);
 nz = size(data,3);
 nc = size(data,4);

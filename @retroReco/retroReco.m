@@ -1130,9 +1130,16 @@ classdef retroReco
 
                 end
 
-                % Root sum of squares over coil dimension and permute
+                % Root sum of squares over coil dimension 
                 image = rssq(image,6);
-                imageOut = permute(image,[1,4,3,2,5]);
+
+                % ImageOut = frames, x, y, slices, dynamics
+                imageOut = permute(image,[1,3,4,2,5]);
+
+                % Flip for phase-orientation is vertical
+                if objData.PHASE_ORIENTATION == 0
+                    imageOut = flip(imageOut,3);
+                end
 
                 % sense map orientations: x, y, slices, map1, map2
                 senseMap1 = flip(permute(abs(sensitivities),[2,1,14,3,4,5,6,7,8,9,10,11,12,13]),2);
@@ -1140,10 +1147,25 @@ classdef retroReco
                 % normalize sense map to reasonable value range
                 senseMapOut = senseMap1*4095/max(senseMap1(:));
 
-                % XXXXXXXXXX IMAGE SHIFT HERE %%%%%%
+                % Retrieve the in-plane image shifts
+                objData = objData.get2DimageShift(imageOut, app);
 
-
-
+                % Apply the shift on sub-pixel level
+                for frame = 1:size(imageOut,1)
+                    for slice = 1:size(imageOut,4)
+                        for dynamic = 1:size(imageOut,5)
+                            imageOut(frame,:,:,slice,dynamic) = retroReco.image2Dshift(squeeze(imageOut(frame,:,:,slice,dynamic)),objData.yShift,objData.xShift);
+                        end
+                    end
+                end
+                for slice = 1:size(senseMapOut,3)
+                    for map1 = 1:size(senseMapOut,4)
+                        for map2 = 1:size(senseMapOut,5)
+                            senseMapOut(:,:,slice,map1,map2) = retroReco.image2Dshift(squeeze(senseMapOut(:,:,slice,map1,map2)),objData.yShift,objData.xShift);
+                        end
+                    end
+                end
+              
                 % Return the image and sense maps objects
                 objReco.movieExp = imageOut;
                 objReco.senseMap = senseMapOut;

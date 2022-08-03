@@ -1,4 +1,5 @@
 %% kaiser bessel kernel
+
 function s = kernel(obj,dist2)
 
 arg = obj.alpha*sqrt(1-dist2/(obj.J/2).^2);
@@ -10,7 +11,10 @@ s = bessi0(arg) / bessi0(obj.alpha);
 
 s = real(s); % remove trace imag component
 
+end
+
 %% substitute for matlab besseli function (Numerical Recipes in C)
+
 function output = bessi0(ax)
 
 output = zeros(size(ax),'like',ax);
@@ -32,3 +36,5 @@ output(k)=(exp(ax(k))./sqrt(ax(k))).*(0.39894228+y.*(0.1328592e-1+...
 % hack to get the same result as MATLAB besseli
 k=k & real(ax)==0;
 output(k)=2*output(k);
+
+end

@@ -45,7 +45,7 @@ U = fftshift(U);
 if 0
     
     % analytical deapodization (kaiser bessel)
-    U = zeros(obj.N');
+    U = zeros(obj.N'); %#ok<UNRCH> 
     
     % analytical deapodization (Lewitt, J Opt Soc Am A 1990;7:1834)
     if 0

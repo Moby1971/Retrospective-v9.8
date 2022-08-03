@@ -132,7 +132,7 @@ classdef nufft_3d
             
             %% set up interpolation matrix
 
-            t = tic;
+            t = tic; %#ok<NASGU> 
             
             % interpolation matrix
             nrow = numel(ok);

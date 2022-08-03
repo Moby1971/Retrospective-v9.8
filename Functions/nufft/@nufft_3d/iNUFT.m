@@ -1,6 +1,8 @@
 %% inverse non-uniform FT (cartesian image <- irregular kspace)
+
 function im = iNUFT(obj,raw,maxit,damp,W,constraint,lambda,app)
-%im = iNUFT(obj,raw,maxit,damp,W,constraint,lambda)
+
+% im = iNUFT(obj,raw,maxit,damp,W,constraint,lambda)
 %
 % -raw: complex raw kspace data [nr nc] or [nr ny nc]
 % -maxit [scalar]: no. iterations (use 0 or 1 for regridding)

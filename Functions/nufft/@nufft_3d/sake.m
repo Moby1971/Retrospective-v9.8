@@ -1,4 +1,5 @@
 function ksp = sake(obj,data,varargin)
+
 % ksp = sake(data,varargin)
 %
 % 3D MRI reconstruction based on matrix completion.
@@ -60,7 +61,7 @@ if size(data,1)~=size(obj.H,1) || nc<2 || ~isfloat(data)
 end
 
 % convolution kernel indicies
-[x y z] = ndgrid(-fix(opts.width/2):fix(opts.width/2));
+[x, y, z] = ndgrid(-fix(opts.width/2):fix(opts.width/2));
 if opts.radial
     k = sqrt(x.^2+y.^2+z.^2)<=opts.width/2;
 else
@@ -97,7 +98,7 @@ end
 matrix_density = obj.sd;
 
 % display
-disp(rmfield(opts,{'flip','kernel'}));
+% disp(rmfield(opts,{'flip','kernel'}));
 
 %% Cadzow algorithm
 
@@ -122,14 +123,14 @@ for iter = 1:opts.maxit
     AA = make_data_matrix(ksp,opts);
     
     % row space and singular values (squared)
-    [V W] = svd(AA);
+    [V, W] = svd(AA);
     W = diag(W);
 
     % estimate noise floor (sigma)
     if isempty(opts.noise)
         hi = nnz(W > eps(numel(W)*W(1))); % skip true zeros
         for lo = 1:hi
-            h = hist(W(lo:hi),sqrt(hi-lo));
+            h = hist(W(lo:hi),sqrt(hi-lo)); %#ok<*HIST> 
             [~,k] = max(h);
             if k>1; break; end
         end
@@ -150,7 +151,7 @@ for iter = 1:opts.maxit
     ksp = undo_data_matrix(F,ksp,opts);
 
     % check convergence
-    norms(1,iter) = norm(W,Inf); % L2 norm    
+    norms(1,iter) = norm(W,Inf); %#ok<*AGROW> % L2 norm    
     norms(2,iter) = norm(W,1); % nuclear norm 
     norms(3,iter) = norm(W,2); % Frobenius norm
     if iter==1
@@ -163,7 +164,7 @@ for iter = 1:opts.maxit
     
     % display every few iterations
     if mod(iter,2)==1 || converged
-        display(W,f,sigma,ksp,iter,tol,opts,norms);
+        % display(W,f,sigma,ksp,iter,tol,opts,norms);
     end
 
     % finish when nothing left to do
@@ -176,7 +177,7 @@ if nargout==0; clear; end % avoid dumping to screen
 %% make normal calibration matrix (low memory)
 function AA = make_data_matrix(data,opts)
 
-nx = size(data,1);
+nx = size(data,1); %#ok<*NASGU> 
 ny = size(data,2);
 nz = size(data,3);
 nc = size(data,4);
@@ -309,7 +310,7 @@ norms(1,:)=norms(1,1)./norms(1,:);
 norms(2,:)=norms(2,:)./norms(2,1);
 norms(3,:)=norms(3,1)./norms(3,:);
 subplot(1,4,4);
-ax = plotyy(1:iter,norms([1 3],:),1:iter,norms(2,:));
+%ax = plotyy(1:iter,norms([1 3],:),1:iter,norms(2,:));
 legend('||A||_F^{-1}','||A||_2^{-1}','||A||_*'); axis(ax,'tight');
 xlim([0 iter+1]); xlabel('iters'); title(sprintf('tol %.2e',tol(end)));
 drawnow;

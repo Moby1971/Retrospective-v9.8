@@ -1,5 +1,5 @@
 %% density estimation
-function [d sd dwsd] = density(obj,ok,app)
+function [d, sd, dwsd] = density(obj,ok,app)
 
 % Pipe's method (sort of)
 maxit = 20;
