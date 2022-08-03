@@ -2392,7 +2392,7 @@ classdef retroReco
             % Perform the shift
             H = H.*exp(-1i*2*pi.*(xF*xShift/size(im,2)+yF*yShift/size(im,1)));
             
-            y = retroReco.fft2Dmri(H);
+            y = abs(retroReco.fft2Dmri(H));
 
         end % image2Dshift
 

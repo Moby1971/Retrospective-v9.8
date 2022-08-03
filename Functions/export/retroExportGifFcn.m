@@ -10,7 +10,6 @@ tag = app.tag;
 recoType = app.RecoTypeDropDown.Value;
 acqDur = app.acqDur;
 
-
 % Which type of movie
 if app.AveragesButton.Value == 1
     movie = app.retroKspacePars.kSpaceAvg;
@@ -70,14 +69,12 @@ fct = max([dimx dimy]);
 dimx = round(gifImageSize * dimx / fct);
 dimy = round(gifImageSize * dimy / fct);
 
-
 % Variable flip-angle
 if parameters.VFA_size > 1
     dynamiclabel = '_flipangle_';
 else
     dynamiclabel = '_dynamic_';
 end
-
 
 if strcmp(recoType,'realtime')
 
