@@ -1816,7 +1816,7 @@ classdef retroData
                 "heart rate = ",num2str(app.FinalHeartViewField.Value), " bpm\n" ...
                 );
 
-            if strcmp(app.retroDataPars.dataType,'3Dute')
+            if strcmp(objData.dataType,'3Dute')
                 pars = strcat(pars,...
                     "\n3D UTE\n\n", ...
                     "Gx delay = ",num2str(app.GxDelayEditField.Value),"\n",...
@@ -1826,7 +1826,7 @@ classdef retroData
                     );
             end
 
-            if strcmp(app.retroDataPars.dataType,'2Dradial')
+            if strcmp(objData.dataType,'2Dradial') || strcmp(objData.dataType,'2Dradialms')
 
                 if app.HalfCircleButton.Value == 1              trajType = 1; end %#ok<SEPEX>
                 if app.FullCircleButton.Value == 1              trajType = 2; end %#ok<SEPEX>
