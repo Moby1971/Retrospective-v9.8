@@ -1,11 +1,15 @@
 classdef retroNav
-    
+        
+    % ---------------------------------------------------------
+    %
     % Navigator data class for retrospective app
     %
     % Gustav Strijkers
     % g.j.strijkers@amsterdamumc.nl
-    % July 2022
-    
+    % Aug 2022
+    %
+    % ---------------------------------------------------------
+ 
     properties
       
         % Raw navigator

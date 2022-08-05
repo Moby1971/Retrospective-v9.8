@@ -1,10 +1,14 @@
 classdef retroData
-    
+
+    % ---------------------------------------------------------
+    %
     % Data and parameter class for retrospective app
     %
     % Gustav Strijkers
     % g.j.strijkers@amsterdamumc.nl
-    % July 2022
+    % Aug 2022
+    %
+    % ---------------------------------------------------------
     
     properties
         
@@ -729,7 +733,7 @@ classdef retroData
             % Read the data
             num2read = no_expts*no_echoes*no_slices*no_views_2*no_views*no_samples*iscomplex; %*datasize;
             [m_total, count] = fread(fid,num2read,dataformat); % reading all the data at once
-       
+
             if iscomplex == 2
                 a=1:count/2;
                 m_real = m_total(2*a-1);
