@@ -104,12 +104,15 @@ classdef retroData
         SQLoffsetY = 0                                          % offset Y
         SQLoffsetZ = 0                                          % offset Z
 
-        % Image shifts
+        % Image shifts & orientations
         xShift = 0                                              % image shift in X direction
         yShift = 0                                              % image shift in Y direction
-
+        LRvec = [1 0 0]'                                        % left-right orientation vector
+        APvec = [0 1 0]'                                        % anterior-posterior orientation vector
+        HFvec = [0 0 1]'                                        % head-feet orientation vector
+        orientationLabels = [' ',' ',' ',' '];                  % orientation labels
         
-    end
+    end % properties
     
     
     
@@ -1742,7 +1745,61 @@ classdef retroData
         end % sqlParameters
 
 
-        
+
+        % ---------------------------------------------------------------------------------
+        % Calculate image orientation labels
+        % ---------------------------------------------------------------------------------
+        function obj = imageOrientLabels(obj, app)
+
+            obj.orientationLabels = [' ',' ',' ',' '];
+
+            try
+
+                if obj.sqlFlag
+
+                    % Start from axial orientation, head first, supine
+                    obj.LRvec = [ 1  0  0 ]';
+                    obj.APvec = [ 0  1  0 ]';
+                    obj.HFvec = [ 0  0  1 ]';
+
+                    % Rotate the vectors according to the angle values
+                    % Add a tiny angle to make the chance of hitting 45 degree angles for which orientation is indetermined very unlikely
+                    tinyAngle = 0.00001;
+                    obj.LRvec = rotz(obj.SQLangleZ+tinyAngle)*roty(-obj.SQLangleY+tinyAngle)*rotx(-obj.SQLangleX+tinyAngle)*obj.LRvec;
+                    obj.APvec = rotz(obj.SQLangleZ+tinyAngle)*roty(-obj.SQLangleY+tinyAngle)*rotx(-obj.SQLangleX+tinyAngle)*obj.APvec;
+                    obj.HFvec = rotz(obj.SQLangleZ+tinyAngle)*roty(-obj.SQLangleY+tinyAngle)*rotx(-obj.SQLangleX+tinyAngle)*obj.HFvec;
+
+                    % Determine the orientation combination
+                    % This is done by determining the main direction of the vectors
+                    [~, indxLR1] = max(abs(obj.LRvec(:)));
+                    [~, indxAP1] = max(abs(obj.APvec(:)));
+                    indxLR2 = sign(obj.LRvec(indxLR1));
+                    indxAP2 = sign(obj.APvec(indxAP1));
+                    indxLR2(indxLR2 == -1) = 2;
+                    indxAP2(indxAP2 == -1) = 2;
+
+                    labelsPrimary   = [ 'L','R' ; 'A','P' ; 'F','H'];
+                    labelsSecondary = [ 'R','L' ; 'P','A' ; 'H','F'];
+
+                    % Sort the labels according to the starting orientation
+                    labelsPrimary   = [labelsPrimary(indxLR1,indxLR2),labelsPrimary(indxAP1,indxAP2)];
+                    labelsSecondary = [labelsSecondary(indxLR1,indxLR2),labelsSecondary(indxAP1,indxAP2)];
+
+                    % Assign the labels
+                    obj.orientationLabels = [labelsPrimary(1),labelsPrimary(2),labelsSecondary(1),labelsSecondary(2)];
+
+                end
+
+            catch ME
+
+                app.TextMessage(ME.message);
+
+            end
+
+        end % imageOrientLabels
+
+
+
 
         % ---------------------------------------------------------------------------------
         % Write physiological data to files

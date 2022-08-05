@@ -512,6 +512,8 @@ classdef retroReco
             end % csReco3Dmatmc
             
             
+
+
             % ---------------------------------------------------------------------------------
             % 3D compressed sensing reconstruction with Bart toolbox
             % ---------------------------------------------------------------------------------
@@ -534,6 +536,7 @@ classdef retroReco
                 TVt = app.TVcineEditField.Value;
                 TVd = app.TVdynEditField.Value;
                 ESPIRiT = app.ESPIRiTCheckBox.Value;
+                objReco.totalVariation = 'T';
 
                 % kSpaceIn = {coil}[frames, x, y, z, dynamics]
                 %                    1      2  3  4     5
@@ -1206,6 +1209,7 @@ classdef retroReco
                 TVt = app.TVcineEditField.Value;
                 TVd = app.TVdynEditField.Value;
                 nrCoils = objData.nr_coils;
+                objReco.totalVariation = 'T';
                 
                 % Retrieve the dimensions from the k-space object
                 dimf = size(objKspace.kSpace{1},1);
