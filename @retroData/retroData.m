@@ -660,7 +660,7 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         % Read MRD file
         % ---------------------------------------------------------------------------------
-        function [im, dim, par, unsortedkspace] = importMRD(obj, filename, reordering1, reordering2)
+        function [im, dim, par, unsortedKspace] = importMRD(obj, filename, reordering1, reordering2)
 
             % Description: Function to open multidimensional MRD/SUR files given a filename with PPR-parsing
             % Read in MRD and SUR file formats
@@ -731,23 +731,48 @@ classdef retroData
             end
           
             % Read the data
-            num2read = no_expts*no_echoes*no_slices*no_views_2*no_views*no_samples*iscomplex; %*datasize;
-            [m_total, count] = fread(fid,num2read,dataformat); % reading all the data at once
+            num2Read = no_expts*no_echoes*no_slices*no_views_2*no_views*no_samples*iscomplex; %*datasize;
+            [m_total, count] = fread(fid,num2Read,dataformat); % Reading all the data at once
+ 
+            % Check if expected size of data was read
+            % If not, this means that the acquisition was prematurely stopped
+            % and only part of the data is available
+            if count < num2Read
+    
+                % Find the end of the data by looking for :PPL string
+                textData = fileread(filename);
+                targetText = ":PPL";
+                amountOfData = strfind(textData,targetText);
+
+                % Number of floats to read
+                newNum2Read = (amountOfData-4)/4 - 512;    
+
+                % Reset the file position indicator to beginning of the data
+                fseek(fid,512,'bof');
+
+                % Read the data again
+                [m_total, count] = fread(fid,newNum2Read ,dataFormat);
+        
+            end
 
             if iscomplex == 2
                 a=1:count/2;
                 m_real = m_total(2*a-1);
                 m_imag = m_total(2*a);
                 clear m_total;
-                m_C = m_real+m_imag*1i;
+                m_C_tmp = m_real+m_imag*1i;
                 clear m_real m_imag;
             else
-                m_C = m_total;
+                m_C_tmp = m_total;
                 clear m_total;
             end
 
-            % Unsorted k-space
-            unsortedkspace = m_C;
+            % Pre-allocate the expected size of m_C, in case of missing data
+            m_C = zeros(num2Read,1);
+            m_C(1:length(m_C_tmp)) = m_C_tmp;
+
+            % The unsorted k-space
+            unsortedKspace = m_C;
             
             % Centric k-space ordering views
             ord=1:no_views;
