@@ -326,7 +326,7 @@ classdef retroReco
                 imageReco = bart(app, picsCommand, kSpacePics, sensitivities);
 
                 % Sum of squares in the coil dimension 
-                imageReco = bart(app,'rss 16', imageReco);
+                imageReco = bart(app,'rss 8', imageReco);
                
                 % Take the absolute value
                 imageReco = abs(imageReco);
@@ -632,7 +632,7 @@ classdef retroReco
                 drawnow;
 
                 % Sum of squares over the coil dimension
-                imageReg = bart(app,'rss 16', imageReg);
+                imageReg = bart(app,'rss 8', imageReg);
 
                 % Absolute value
                 imageReg = abs(imageReg);
