@@ -979,19 +979,19 @@ classdef retroData
 
             % Determine how to flip the data for different orientations
             if isfield(info2.pvm,'spackarrreadorient')
-                if strcmp(info2.pvm.spackarrreadorient,'L_R')
+                if strcmp(info2.pvm.spackarrreadorient(1:3),'L_R')
                     parameters.PHASE_ORIENTATION = 0;
                     flr =  0;
                     pm1 = +1;
                     pm2 = -1;
                 end
-                if strcmp(info2.pvm.spackarrreadorient,'A_P')
+                if strcmp(info2.pvm.spackarrreadorient(1:3),'A_P')
                     parameters.PHASE_ORIENTATION = 1;
                     flr =  0;
                     pm1 = -1;
                     pm2 = -1;
                 end
-                if strcmp(info2.pvm.spackarrreadorient,'H_F')
+                if strcmp(info2.pvm.spackarrreadorient(1:3),'H_F')
                     parameters.PHASE_ORIENTATION = 1;
                     flr =  0;
                     pm1 = -1;
