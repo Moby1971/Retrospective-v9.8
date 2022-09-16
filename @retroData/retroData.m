@@ -963,7 +963,7 @@ classdef retroData
             % Matrix in readout direction
             parameters.NO_SAMPLES = info1.acq.size(1) / 2;
             if isfield(info2.pvm,"matrix")
-                parameters.NO_VIEWS = info2.pvm.encmatrix(1);
+                parameters.NO_SAMPLES = info2.pvm.encmatrix(1);
             end
 
             % Matrix in phase encoding direction
@@ -981,14 +981,14 @@ classdef retroData
             if isfield(info2.pvm,'spackarrreadorient')
                 if strcmp(info2.pvm.spackarrreadorient(1:3),'L_R')
                     parameters.PHASE_ORIENTATION = 0;
-                    flr =  0;
+                    flr =  1;
                     pm1 = +1;
                     pm2 = -1;
                 end
                 if strcmp(info2.pvm.spackarrreadorient(1:3),'A_P')
-                    parameters.PHASE_ORIENTATION = 1;
-                    flr =  0;
-                    pm1 = -1;
+                    parameters.PHASE_ORIENTATION = 0;
+                    flr =  1;
+                    pm1 = +1;
                     pm2 = -1;
                 end
                 if strcmp(info2.pvm.spackarrreadorient(1:3),'H_F')
@@ -1038,18 +1038,22 @@ classdef retroData
 
             % Trajectory 1st phase encoding direction
             if isfield(info2.pvm,'ppggradamparray1')
-                if isfield(info2.pvm,'enczfaccel1') && isfield(info2.pvm,'encpftaccel1')
-                    parameters.gp_var_mul = round(pm1 * info2.pvm.ppggradamparray1 * str2num(info2.pvm.enczfaccel1) * str2num(info2.pvm.encpftaccel1) * (parameters.NO_VIEWS / 2 - 0.5));
-                else
+                parameters.gp_var_mul = round(pm1 * info2.pvm.ppggradamparray1 * (parameters.NO_VIEWS / 2 - 0.5));
+                 if isfield(info2.pvm,'enczfaccel1') && isfield(info2.pvm,'encpftaccel1')
+                     % * str2num(info2.pvm.enczfaccel1)
+                    parameters.gp_var_mul = round(pm1 * info2.pvm.ppggradamparray1 * str2num(info2.pvm.encpftaccel1) * (parameters.NO_VIEWS / 2 - 0.5));
+                 else
                     parameters.gp_var_mul = round(pm1 * info2.pvm.ppggradamparray1 * (parameters.NO_VIEWS / 2 - 0.5));
-                end
+                 end
                 parameters.pe1_order = 3;
             elseif isfield(info2.pvm,'encvalues1')
-                if isfield(info2.pvm,'enczf') && isfield(info2.pvm,'encpft')
-                    parameters.gp_var_mul = round(pm1 * info2.pvm.encvalues1 * info2.pvm.enczf(2) * info2.pvm.encpft(2) * (parameters.NO_VIEWS / 2 - 0.5));
-                else
+                parameters.gp_var_mul = round(pm1 * info2.pvm.encvalues1 * (parameters.NO_VIEWS / 2 - 0.5));
+                 if isfield(info2.pvm,'enczf') && isfield(info2.pvm,'encpft')
+                     % * info2.pvm.enczf(2) 
+                    parameters.gp_var_mul = round(pm1 * info2.pvm.encvalues1 * info2.pvm.encpft(2) * (parameters.NO_VIEWS / 2 - 0.5));
+                 else
                     parameters.gp_var_mul = round(pm1 * info2.pvm.encvalues1 * (parameters.NO_VIEWS / 2 - 0.5));
-                end
+                 end
                 parameters.pe1_order = 3;
             else
                 % Assume linear
@@ -1131,14 +1135,14 @@ classdef retroData
                 navKspace = permute(navKspace,[3,5,1,4,2]);
 
                 % Insert 34 point spacer to make the data compatible with MR Solutions data
-                kSpacer = zeros(parameters.nr_coils,parameters.EXPERIMENT_ARRAY,parameters.NO_SLICES,parameters.NO_VIEWS,34);
+                kSpacer = zeros(parameters.nr_coils,parameters.EXPERIMENT_ARRAY,parameters.NO_SLICES,parameters.NO_VIEWS,35);
 
                 % Combine navigator + spacer + k-space
                 raw = cat(5,navKspace,kSpacer,kSpace);
                 rawData = cell(parameters.nr_coils);
                 for i = 1:parameters.nr_coils
                     rawData{i} = squeeze(raw(i,:,:,:,:));
-                    rawData{i} = reshape(rawData{i},parameters.EXPERIMENT_ARRAY,parameters.NO_SLICES,parameters.NO_VIEWS,parameters.NO_SAMPLES+34+parameters.no_samples_nav);
+                    rawData{i} = reshape(rawData{i},parameters.EXPERIMENT_ARRAY,parameters.NO_SLICES,parameters.NO_VIEWS,parameters.NO_SAMPLES+35+parameters.no_samples_nav);
                 end
      
             end
@@ -1149,7 +1153,7 @@ classdef retroData
                 % 2nd phase encoding direction
                 parameters.NO_VIEWS_2 = info1.acq.size(3);
                 if isfield(info2.pvm,"matrix")
-                    parameters.NO_VIEWS = info2.pvm.encmatrix(3);
+                    parameters.NO_VIEWS_2 = info2.pvm.encmatrix(3);
                 end
 
                 % Phase offset 2
@@ -1193,13 +1197,13 @@ classdef retroData
                 navKspace = permute(navKspace,[1,5,4,3,2]);
 
                 % Insert 34 point spacer to make the data compatible with MR Solutions data
-                kSpacer = zeros(parameters.nr_coils,parameters.EXPERIMENT_ARRAY,parameters.NO_VIEWS_2,parameters.NO_VIEWS,34);
+                kSpacer = zeros(parameters.nr_coils,parameters.EXPERIMENT_ARRAY,parameters.NO_VIEWS_2,parameters.NO_VIEWS,35);
 
                 % Combine navigator + spacer + k-space
                 raw = cat(5,navKspace,kSpacer,kSpace);
                 for i = 1:parameters.nr_coils
                     rawData{i} = squeeze(raw(i,:,:,:,:));
-                    rawData{i} = reshape(rawData{i},parameters.EXPERIMENT_ARRAY,parameters.NO_VIEWS_2,parameters.NO_VIEWS,parameters.NO_SAMPLES+34+parameters.no_samples_nav);
+                    rawData{i} = reshape(rawData{i},parameters.EXPERIMENT_ARRAY,parameters.NO_VIEWS_2,parameters.NO_VIEWS,parameters.NO_SAMPLES+35+parameters.no_samples_nav);
                 end
 
             end
