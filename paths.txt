@@ -1,3 +1,3 @@
-/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/bart-0.7.00/
-/Users/Gustav/Dropbox/Reconstruction_and_analysis_tools/Matlab/bart-0.7.00/
-/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/bart-arm-0.7.01/
+/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/bart-0.8.00-intel/
+/Users/Gustav/Dropbox/Reconstruction_and_analysis_tools/Matlab/bart-0.8.00-intel/
+/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/bart-0.8.00-arm/
