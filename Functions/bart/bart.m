@@ -44,12 +44,15 @@ if ispc
     in_strWSL = WSLPathCorrection(in_str);
     out_strWSL =  WSLPathCorrection(out_str);
 
+    % Execute the BART command
     [ERR,cmdout] = system(['wsl bart ',cmd,in_strWSL,out_strWSL]);
 
-    if ~contains(cmd,"-Rh")
-       app.TextMessage(cmdout);
+    % Return Version
+    if contains(cmd,"version")
+        app.TextMessage(cmdout);
+        app.bartVersion = cmdout;
     end
-
+   
     for i=1:nargin - 2
         if (exist(strcat(in{i}, '.cfl'),'file'))
             delete(strcat(in{i}, '.cfl'));
@@ -60,14 +63,9 @@ if ispc
         end
     end
 
-    % Return Version
-    if contains(cmd,"version")
-        app.bartVersion = cmdout;
-    end
-
     for i=1:nargout
         if ERR==0
-            if contains(cmd,"estdelay") || contains(cmd,"-Rh") 
+            if contains(cmd,"estdelay") || contains(cmd,"-Rh") || contains(cmd,"version") 
                 varargout{1} = cmdout;
             else
                 varargout{i} = readcfl(out{i});
@@ -82,7 +80,7 @@ if ispc
     end
 
     if ERR~=0
-        app.TextMessage('command exited with an error');
+        app.bartVersion = 'none';
     end
 
 end
@@ -143,10 +141,13 @@ if ismac
 
     out_str = sprintf(' %s', out{:});
 
+    % Execute the BART command
     [ERR,cmdout] = system([bart_path, '/bart ', cmd, ' ', in_str, ' ', out_str]);
-
-    if ~contains(cmd,"-Rh")
-       app.TextMessage(cmdout);
+    
+    % Return Version
+    if contains(cmd,"version")
+        app.TextMessage(cmdout);
+        app.bartVersion = cmdout;
     end
 
     for i=1:nargin - 2
@@ -159,15 +160,10 @@ if ismac
         end
     end
 
-    % Return Version
-    if contains(cmd,"version")
-        app.bartVersion = cmdout;
-    end
-
     % Output
     for i=1:nargout
         if ERR==0
-            if contains(cmd,"estdelay") || contains(cmd,"-Rh") 
+            if contains(cmd,"estdelay") || contains(cmd,"-Rh") || contains(cmd,"version")
                 varargout{1} = cmdout;
             else
                 varargout{i} = readcfl(out{i}); %#ok<*AGROW> 
@@ -182,7 +178,7 @@ if ismac
     end
 
     if ERR~=0
-        app.TextMessage('command exited with an error');
+        app.bartVersion = 'none';
     end
 
 end
