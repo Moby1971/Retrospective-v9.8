@@ -186,9 +186,11 @@ else
         rows = dv(round(end/2));
         cols = nrSlices/rows;
         imageCollection = zeros(rows*dimx,cols*dimy,nrFrames,nrDynamics);
+        cnt = 1;
         for i = 1:rows
             for j = 1:cols
-                imageCollection((i-1)*dimx+1:i*dimx,(j-1)*dimy+1:j*dimy,:,:) = squeeze(image((j-1)*i+i,:,:,:,:));
+                imageCollection((i-1)*dimx+1:i*dimx,(j-1)*dimy+1:j*dimy,:,:) = squeeze(image(cnt,:,:,:,:));
+                cnt = cnt + 1;
             end
         end
 
