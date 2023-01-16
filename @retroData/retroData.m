@@ -536,6 +536,11 @@ classdef retroData
                             obj.data{i} = permute(obj.data{i},[4,2,1,3]);
                         end
                     end
+
+                    % Pseudo Cartesion k-space filling / P2ROUD
+                    if obj.pe1_order == 4
+                        obj.dataType = '3Dp2roud';
+                    end
                     
                 else
 
@@ -592,6 +597,8 @@ classdef retroData
                     app.TextMessage('2D single-slice data ...');
                 case '3D'
                     app.TextMessage('3D data ...');
+                case '3Dp2roud'
+                    app.TextMessage('3D P2ROUD data ...');
                 case '2Dms'
                     app.TextMessage('2D multi-slice data ...');
                 case '2Dradial'
@@ -605,7 +612,7 @@ classdef retroData
 
         end % acquisitionType
         
-        
+
 
         
         % ---------------------------------------------------------------------------------
@@ -642,7 +649,7 @@ classdef retroData
                         obj.recoGuess = 'scout';
                     end
 
-                case {'3D','3Dute'}
+                case {'3D','3Dute','3Dp2roud'}
 
                     obj.recoGuess = 'systolic function';
 
@@ -1323,7 +1330,7 @@ classdef retroData
                                     eval(['struct.' lower(paramName(1:findstr(paramName,'_')-1)) '.' lower(paramName(findstr(paramName,'_')+1:length(paramName))) '= paramValue;']);
                                 catch
                                     eval(['struct.' lower(paramName(1:findstr(paramName,'_')-1)) '.' datestr(str2num(paramName(findstr(paramName,'_')+1:findstr(paramName,'_')+2)),9) ...
-                                        paramName(findstr(paramName,'_')+2:length(paramName)) '= paramValue;']); %#ok<*FSTR>
+                                        paramName(findstr(paramName,'_')+2:length(paramName)) '= paramValue;']); %#ok<*DATST,*FSTR>
                                 end
                             end
 
@@ -1691,13 +1698,15 @@ classdef retroData
             % Image dimensions in pixels
             imDimX = size(image,2);
             imDimY = size(image,3);
+            imDimZ = size(image,4);
+
+            relShiftX = ones(imDimZ,1)*imDimX*objData.fov_read_off(1)/4000;
+            relShiftY = ones(imDimZ,1)*imDimY*objData.fov_phase_off(1)/4000;
 
             % Calculate the shift
             for i = 1:length(objData.fov_read_off)
-
-                relShiftX = imDimX*objData.fov_read_off(i)/4000;
-                relShiftY = imDimY*objData.fov_phase_off(i)/4000;
-
+                relShiftX(i) = imDimX*objData.fov_read_off(i)/4000;
+                relShiftY(i) = imDimY*objData.fov_phase_off(i)/4000;
             end
 
             % Report the values back / return the object
@@ -1845,8 +1854,18 @@ classdef retroData
                 writematrix(objNav.heartTrigTime',strcat(exportPath,filesep,'cardtrigpoints.txt'),'Delimiter','tab');
             end
 
+            if ~isempty(objNav.heartRateTime)
+                heartRate = [objData.TR*objNav.heartTrigPoints(1:end-1)/1000 ; objNav.heartRateTime]';
+                writematrix(heartRate,strcat(exportPath,filesep,'heartrate.txt'),'Delimiter','tab');
+            end
+
             if ~isempty(objNav.respTrigTime)
                 writematrix(objNav.respTrigTime',strcat(exportPath,filesep,'resptrigpoints.txt'),'Delimiter','tab');
+            end
+
+            if ~isempty(objNav.respRateTime)
+                respRate = [objData.TR*objNav.respTrigPoints(1:end-1)/1000 ; objNav.respRateTime]';
+                writematrix(respRate,strcat(exportPath,filesep,'resprate.txt'),'Delimiter','tab');
             end
 
             if ~isempty(objNav.respWindowTime)
@@ -1931,7 +1950,7 @@ classdef retroData
                     );
             end
 
-            fid = fopen(strcat(objData.exportDir,filesep,'recoparmeters_',app.tag,'.txt'),'wt');
+            fid = fopen(strcat(objData.exportDir,filesep,'recoparameters_',app.tag,'.txt'),'wt');
             fprintf(fid,pars);
             fclose(fid);
 

@@ -648,8 +648,8 @@ classdef retroReco
                 
                 % Normalize sense map to reasonable value range
                 senseMap1 = senseMap1*4095/max(senseMap1(:));
-                
-                % Shift image in phase-encoding directions if needed
+     
+                % Shift image in phase-encoding directions with integer if needed
                 objReco.movieExp = circshift(imageOut,-objData.pixelshift1,3);
                 objReco.movieExp = circshift(imageOut,-objData.pixelshift2,4);
                 objReco.senseMap = circshift(senseMap1,-objData.pixelshift1,3);
@@ -1033,25 +1033,6 @@ classdef retroReco
 
                 % Normalize sense map to reasonable value range
                 senseMapOut = senseMap1*4095/max(senseMap1(:));
-        
-                % Retrieve the in-plane image shifts
-                objData = objData.get2DimageShift(imageOut, app);
-
-                % Apply the shift on sub-pixel level
-                for frame = 1:size(imageOut,1)
-                    for slice = 1:size(imageOut,4)
-                        for dynamic = 1:size(imageOut,5)
-                            imageOut(frame,:,:,slice,dynamic) = retroReco.image2Dshift(squeeze(imageOut(frame,:,:,slice,dynamic)),objData.yShift,objData.xShift);
-                        end
-                    end
-                end
-                for slice = 1:size(senseMapOut,3)
-                    for map1 = 1:size(senseMapOut,4)
-                        for map2 = 1:size(senseMapOut,5)
-                            senseMapOut(:,:,slice,map1,map2) = retroReco.image2Dshift(squeeze(senseMapOut(:,:,slice,map1,map2)),objData.yShift,objData.xShift);
-                        end
-                    end
-                end
               
                 % Return the movie and sense-map objects
                 objReco.movieExp = imageOut;
@@ -1153,25 +1134,6 @@ classdef retroReco
 
                 % normalize sense map to reasonable value range
                 senseMapOut = senseMap1*4095/max(senseMap1(:));
-
-                % Retrieve the in-plane image shifts
-                objData = objData.get2DimageShift(imageOut, app);
-
-                % Apply the shift on sub-pixel level
-                for frame = 1:size(imageOut,1)
-                    for slice = 1:size(imageOut,4)
-                        for dynamic = 1:size(imageOut,5)
-                            imageOut(frame,:,:,slice,dynamic) = retroReco.image2Dshift(squeeze(imageOut(frame,:,:,slice,dynamic)),objData.yShift,objData.xShift);
-                        end
-                    end
-                end
-                for slice = 1:size(senseMapOut,3)
-                    for map1 = 1:size(senseMapOut,4)
-                        for map2 = 1:size(senseMapOut,5)
-                            senseMapOut(:,:,slice,map1,map2) = retroReco.image2Dshift(squeeze(senseMapOut(:,:,slice,map1,map2)),objData.yShift,objData.xShift);
-                        end
-                    end
-                end
               
                 % Return the image and sense maps objects
                 objReco.movieExp = imageOut;
@@ -1579,8 +1541,38 @@ classdef retroReco
             end
             
         end % normImages
+
+
+
+        % ---------------------------------------------------------------------------------
+        % Apply sub-pixel image shift
+        % ---------------------------------------------------------------------------------
+        function objReco = shiftImages(objReco,objData,app)
+
+            % Retrieve the in-plane image shifts
+            objData = objData.get2DimageShift(objReco.movieExp, app);
+
+            % Apply the shift on sub-pixel level
+            for frame = 1:size(objReco.movieExp,1)
+                for slice = 1:size(objReco.movieExp,4)
+                    for dynamic = 1:size(objReco.movieExp,5)
+                        objReco.movieExp(frame,:,:,slice,dynamic) = retroReco.image2Dshift(squeeze(objReco.movieExp(frame,:,:,slice,dynamic)),objData.yShift(slice),objData.xShift(slice));
+                        objReco.movieApp(frame,:,:,slice,dynamic) = retroReco.image2Dshift(squeeze(objReco.movieApp(frame,:,:,slice,dynamic)),objData.yShift(slice),objData.xShift(slice));
+                    end
+                end
+            end
+
+            for slice = 1:size(objReco.senseMap,3)
+                for map1 = 1:size(objReco.senseMap,4)
+                    for map2 = 1:size(objReco.senseMap,5)
+                        objReco.senseMap(:,:,slice,map1,map2) = retroReco.image2Dshift(squeeze(objReco.senseMap(:,:,slice,map1,map2)),objData.yShift(slice),objData.xShift(slice));
+                    end
+                end
+            end
+
+        end
         
-        
+
 
         % ---------------------------------------------------------------------------------
         % Determine whether movie has multiple slices and/or dynamics
@@ -2020,6 +2012,9 @@ classdef retroReco
             end % LcurveAnalysisFnc
 
         end % recoLcurve
+
+
+
 
 
 

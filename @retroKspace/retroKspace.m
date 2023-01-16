@@ -962,6 +962,7 @@ classdef retroKspace
             % traj                  = the k-space trajectory
             % includewindow         = data which should be include: 1 = yes, 0 = no
 
+            share = app.SharingEditField.Value;
             objKspace.kSpace = cell(objData.nr_coils);
             objKspace.kSpaceAvg = [];
             includeWindow = objData.includeWindow.*objData.excludeWindow;
@@ -1031,24 +1032,109 @@ classdef retroKspace
                     end
                     
                 end
-                
+        
+                % Temp new k-space copy
+                tmpKspace = sortedKspace;
+                tmpAverages = sortedAverages;
+
+                % Find center of k-space
+                kSpaceSum = squeeze(sum(sortedKspace,[1 2 6]));     % Sum over all slices frames and dynamics
+                [~,idx] = max(kSpaceSum(:));
+                [lev, row, col] = ind2sub(size(kSpaceSum),idx);     % Coordinate of k-space maximum = center of k-space
+
+                % Weighted view sharing
+                if (share > 0) && (nrCardFrames > 1 || nrRespFrames > 1)
+
+                    % Respiratory or cardiac frames
+                    nrFrames = nrCardFrames;
+                    if nrRespFrames > 1
+                        nrFrames = nrRespFrames;
+                        tmpKspace = permute(tmpKspace,[2,1,3,4,5,6]);
+                        tmpAverages = permute(tmpAverages,[2,1,3,4,5,6]);
+                        sortedKspace = permute(sortedKspace,[2,1,3,4,5,6]);
+                        sortedAverages = permute(sortedAverages,[2,1,3,4,5,6]);
+                    end
+
+                    % Determine share range
+                    maxShare = round(max([nrCardFrames nrRespFrames])/2); % Maximum number of shares
+                    share(share > maxShare) = maxShare;
+                    weights = retroKspace.gauss(1:share+1,share,0);
+                    weights = weights/max(weights);
+
+                    % Define ellipsoid regions
+                    Rz = round(dimz/share/2);
+                    Ry = round(dimy/share/2);
+                    Rx = round(dimx/share/2);
+                    [Z,Y,X] = ndgrid(1:dimz,1:dimy,1:dimx);
+                    L = zeros(share,dimz,dimy,dimx);
+                    for i = 1:share
+                        L(i,:,:,:) = sqrt( ((lev-Z)/(Rz*i)).^2 + ((row-Y)/(Ry*i)).^2 + ((col-X)/(Rx*i)).^2 ) <= 1;
+                    end
+                    C(1,:,:,:) = L(1,:,:,:);
+                    if share > 1
+                        for i = 2:share
+                            C(i,:,:,:) = L(i,:,:,:) - L(i-1,:,:,:);
+                        end
+                    end
+
+                    % Weights
+                    for i = 1:share
+                        for j = 1:share
+                            weights(i,j) = retroKspace.gauss(i+j-1,share,0);
+                        end
+                    end
+                    weights = 0.5*weights/max(weights(:));
+
+                    % Apply sharing to k-space
+                    for frame = 1:nrFrames
+
+                        for i = -share:share
+
+                            sharedframe = frame + i;
+                            sharedframe(sharedframe < 1) = nrFrames - sharedframe - 1;
+                            sharedframe(sharedframe > nrFrames) = sharedframe - nrFrames;
+
+                            if i~=0
+
+                                for j = 1:share
+
+                                    ROI = reshape(squeeze(C(j,:,:,:)),[1 1 dimz dimy dimx 1])*weights(j,abs(i));
+                                    tmpKspace(:,frame,:,:,:,:)   = tmpKspace(:,frame,:,:,:,:)   + sortedKspace(:,sharedframe,:,:,:,:)   .* ROI;
+                                    tmpAverages(:,frame,:,:,:,:) = tmpAverages(:,frame,:,:,:,:) + sortedAverages(:,sharedframe,:,:,:,:) .* ROI;
+
+                                end
+
+                            end
+
+                        end
+
+                    end
+
+                    % Respiratory of cardiac frames
+                    if nrRespFrames > 1
+                        tmpKspace = permute(tmpKspace,[2,1,3,4,5,6]);
+                        tmpAverages = permute(tmpAverages,[2,1,3,4,5,6]);
+                    end
+
+                end
+
                 % Normalize by number of averages
-                sortedKspace = sortedKspace./sortedAverages;       % Normalize by number of averages
-                sortedKspace(isnan(sortedKspace)) = complex(0);    % Correct for NaN because of division by zero in case of missing k-lines
-                sortedKspace(isinf(sortedKspace)) = complex(0);
-                
+                tmpKspace = tmpKspace./tmpAverages;
+                tmpKspace(isnan(tmpKspace)) = complex(0);     % Correct for NaN because of division by zero in case of missing k-lines
+                tmpKspace(isinf(tmpKspace)) = complex(0);
+
                 % Apply a circular Tukey filter
                 filterWidth = 0.1;
                 tukeyFilter(1,1,:,:,:,1) = retroKspace.circtukey3D(dimz,dimy,dimx,lev,row,col,filterWidth);
-                sortedKspace = sortedKspace.*tukeyFilter;
-                
+                tmpKspace = tmpKspace.*tukeyFilter;
+
                 % Report back
-                objKspace.kSpace{coilnr} = sortedKspace;
-                
+                objKspace.kSpace{coilnr} = tmpKspace;
+               
             end
 
             % Report back
-            objKspace.kSpaceAvg = sortedAverages;
+            objKspace.kSpaceAvg = tmpAverages;
             
         end % fillKspace3Dp2roud
         

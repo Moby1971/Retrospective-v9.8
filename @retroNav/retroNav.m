@@ -16,6 +16,9 @@ classdef retroNav
         navAmplitude                                            % navigator amplitude
         navPhase                                                % navigator phase (not used)
         upDown = 1                                              % flip the navigator up or down
+        minDiscard = 15                                         % minimum number of discarded samples between navigator and echo
+        maxDiscard = 60                                         % maximum number of discarded samples between navigator and echo
+        defaultDiscard = 35                                     % default number of discarded samples between navigator and echo
         
         % Filtering
         physioFilterSettings                                    % filter settings for navigator
@@ -83,6 +86,48 @@ classdef retroNav
             end
             
         end % readFlipSwitch
+
+
+
+        % ---------------------------------------------------------------------------------
+        % Auto determine the number of discarded points between navigator and imaging data
+        % ---------------------------------------------------------------------------------
+        function objNav = autoDiscardNav(objNav, objData, app)
+
+            switch objData.dataType
+                
+                case {'2D','2Dms','3D','3Dp2roud'}
+
+                    % Sum data over all coils
+                    data = zeros(size(objData.data{1}));
+                    for cnt = 1:objData.nr_coils
+                        data = data + abs(objData.data{cnt}); 
+                    end
+
+                    % Sum all the data into 1 echo
+                    data = squeeze(sum(data,[1,2,3]));
+                    data = data(objData.primaryNavigatorPoint:end);
+                    data = smooth(data,5);
+             
+                    % Estimate the location of the echo
+                    echoLocation = round(length(data)/2);
+
+                    % Find the location of the minimum between navigator and echo
+                    [~,idx] = min(data(1:echoLocation));
+
+                    % Return a reasonable value for the number of discarded points
+                    if idx<objNav.minDiscard || idx>objNav.maxDiscard
+                        objData.nrNavPointsDiscarded = objNav.defaultDiscard; % default value
+                    else
+                        objData.nrNavPointsDiscarded = idx;
+                    end
+
+                    % Set the value
+                    app.DiscardEditField.Value = objData.nrNavPointsDiscarded;
+                    
+            end
+
+        end % autoDiscardNav
         
         
         
