@@ -1,1 +1,1 @@
-/Users/Gustav/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps example data/Retrospective
+/Users/Gustav/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps-example-data/
