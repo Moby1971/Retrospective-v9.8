@@ -10,6 +10,7 @@ tag = app.tag;
 recoType = app.RecoTypeDropDown.Value;
 acqDur = app.acqDur;
 
+
 % Which type of movie
 if app.AveragesButton.Value == 1
     movie = app.retroKspacePars.kSpaceAvg;
@@ -28,12 +29,10 @@ else
     cmap = gray(255);
 end
 
-
 % Phase orientation
 if ~parameters.PHASE_ORIENTATION
     movie = permute(rot90(permute(movie,[2,3,4,1,5]),1),[4,1,2,3,5]);
 end
-
 
 % Dimensions
 [nrFrames,~,~,nrSlices,nrDynamics] = size(movie);

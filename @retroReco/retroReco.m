@@ -1,17 +1,17 @@
 classdef retroReco
-    
+
     % ---------------------------------------------------------
     %
     % Reconstruction and movie class for retrospective app
-    %    
+    %
     % Gustav Strijkers
     % g.j.strijkers@amsterdamumc.nl
-    % Aug 2022
+    % May 2023
     %
     % ---------------------------------------------------------
 
     properties
-        
+
         movieExp                                            % Movie for movie export
         movieApp                                            % Movie for viewing in the app
         senseMap                                            % Sense map
@@ -20,36 +20,37 @@ classdef retroReco
         multiSliceFlag = false                              % Multi-slice true or false
         multiDynamicFlag = false                            % Mutli-dynamic true or false
         totalVariation = 'T'                                % Total variation (T) or total generalized variation (G)
-        
+
+
     end
-    
-    
-    
-    
+
+
+
+
     % ---------------------------------------------------------------------------------
     % Public methods
     % -------------------------------------------------------------------------------
-    
+
     methods (Access = public)
-        
+
 
 
         % ---------------------------------------------------------------------------------
         % Object constructor
         % ---------------------------------------------------------------------------------
         function obj = retroReco
-            
+
         end % retroReco
-        
-        
-        
+
+
+
         % ---------------------------------------------------------------------------------
         % 2D reconstruction
         % ---------------------------------------------------------------------------------
         function objReco = reco2D(objReco, objData, objKspace, app)
-            
+
             if app.bartDetectedFlag && ~app.MatlabRecoCheckBox.Value
-                
+
                 % Perform CS reconstruction with the Bart toolbox, preferred option
                 app.TextMessage('Reconstructing the data with the BART toolbox ...');
                 app.ProgressGauge.Value = 0;
@@ -59,9 +60,9 @@ classdef retroReco
                 app.validRecoFlag = true;
                 app.validSenseMapFlag = true;
                 drawnow;
-                
+
             else
-                
+
                 % Perform CS reconstruction in matlab, slower, but works
                 app.TextMessage('WARNING: Reconstructing the data with MATLAB ...');
                 app.TextMessage('Slow reconstruction, please be patient ...');
@@ -73,28 +74,24 @@ classdef retroReco
                 app.validRecoFlag = true;
                 app.validSenseMapFlag = true;
                 drawnow;
-                
+
             end
-            
-            
+
+
             % ---------------------------------------------------------------------------------
             % 2D compressed sensing reconstruction with Matlab
             % ---------------------------------------------------------------------------------
             function csReco2Dmatmc
-                
+
                 kSpaceIn = objKspace.kSpace;
                 averages = objKspace.kSpaceAvg;
                 lambdaTV = app.TVcineEditField.Value;
-                
+
                 % K-space = {coil}[frames, x, y, slice, dynamic]
                 %                    1     2  3    4       5
-                dimf = size(kSpaceIn{1},1);
-                dimx = size(kSpaceIn{1},2);
-                dimy = size(kSpaceIn{1},3);
-                dimz = size(kSpaceIn{1},4);
-                dimd = size(kSpaceIn{1},5);
+                [dimf,dimx,dimy,dimz,dimd] = size(kSpaceIn{1});
                 nrCoils = objData.nr_coils;
-                
+
                 % In case of 1 frame, duplicate that frame to facilitate reconstruction
                 if dimf == 1
                     for i = 1:nrCoils
@@ -106,7 +103,7 @@ classdef retroReco
                 for i = 1:nrCoils
                     kSpaceIn{i} = permute(kSpaceIn{i},[2,3,1,4,5]);
                 end
-            
+
                 % K-space data: x,y,frames,slices,dynamics,coils
                 kSpace = zeros(dimx,dimy,dimf,dimz,dimd,nrCoils);
                 for i = 1:nrCoils
@@ -115,43 +112,40 @@ classdef retroReco
 
                 % Averages data: x,y,frames,slices,dynamics
                 averages = permute(averages,[2,3,1,4,5]);
-                
+
                 % Reset progress counter
                 param.iteration = 0;
-                
-                % Pad to next power of 2
-                dimx = 2^nextpow2(size(kSpace,1));
-                dimy = 2^nextpow2(size(kSpace,2));
-                
-                % For convenience make rectangular matrix size
+
+                % For convenience make rectangular matrix size of power of 2
                 mdimxy = max([dimx,dimy]);
-                dimx = mdimxy;
-                dimy = mdimxy;
+                dimx = 2^nextpow2(mdimxy);
+                dimy = dimx;
                 dimf = size(kSpace,3);
-                
+                app.TextMessage(strcat('Reconstruction matrix =',{' '},num2str(dimx),'x',num2str(dimy)));
+
                 % Pre-allocate memory for image_out
                 imageOut = zeros(dimf,dimx,dimy,dimz,dimd);
-                
+
                 % Slice and dynamic loop
                 for slice = 1:dimz
-                    
+
                     for dynamic = 1:dimd
-                        
+
                         % K-space of slice and dynamic
                         kData = squeeze(kSpace(:,:,:,slice,dynamic,:));
-                        
+
                         % Zero padding
                         padSizex = round((dimx - size(kData,1))/2);
                         padSizey = round((dimy - size(kData,2))/2);
                         kData = padarray(kData,[padSizex,padSizey,0],'both');
                         kData = kData(1:dimx,1:dimy,:,:);
-                        
+
                         % Size of the data
                         [nx,ny,~,nrCoils] = size(kData);
-                        
+
                         % Normalize the data in the range of approx 0 - 1 for better numerical stability
                         kData = kData/max(abs(kData(:)));
-                        
+
                         % K-space mask: 0 = no data, 1 = data, zero-pad to same size as k-space
                         mask = squeeze(averages(:,:,:,slice,dynamic));
                         mask = padarray(mask,[padSizex,padSizey,0],'both');
@@ -159,59 +153,61 @@ classdef retroReco
                         mask = mask./mask;
                         mask(isnan(mask)) = 1;
                         mask = logical(mask);
-                        
+
                         % Coil sensitivity map
                         b1 = ones(nx,ny,nrCoils);
-                        
+
                         % Data
                         param.y = kData;
-                        
+
                         % Reconstruction design matrix
                         param.E = Emat_yxt(mask,b1);
-                        
+
                         % Total variation (TV) constraint in the temporal domain
                         % for 'consistency' with Bart reconstruction, TV seems to be scale empirically by a factor of 8
                         % TV only in the time domain
                         param.TV = TVOP;
                         param.TVWeight = lambdaTV/8;
-                        
+
                         % Number of iterations, 2 x 10 iterations
                         param.nite = 10;
                         param.nouter = 2;
                         param.totaliterations = dimz * dimd * param.nouter * param.nite;
-                        
+
+                        % Add a little bit of randomness, such that linear reco is not exactly right to start with
+                        kData1 = randn(size(kData))/2000 + kData;
+
                         % Linear reconstruction
-                        kData1 = randn(size(kData))/2000 + kData;  % Add a little bit of randomness, such that linear reco is not exactly right
                         reconDft = param.E'*kData1;
-                        
+
                         % Iterative reconstruction
                         reconCS = reconDft;
                         for n = 1:param.nouter
                             [reconCS,param.iteration] = CSL1NlCg(app,reconCS,param);
                         end
-                        
+
                         % Rearrange to correct orientation: frames, x, y
                         imageTmp = flip(permute(squeeze(abs(reconCS)),[3, 1, 2]),2);
 
                         % Output reconstructed image
                         imageOut(:,:,:,slice,dynamic) = imageTmp;
-                        
+
                     end
-                    
+
                 end
-                
+
                 % Correct back to 1 frame reconstruction
                 if dimf == 1
                     imageOut = imageOut(1,:,:,:,:);
                 end
-           
+
                 % Shift image in phase-encoding direction if needed
                 objReco.movieExp = circshift(imageOut,-objData.pixelshift1,3);
                 objReco.senseMap = ones(size(objReco.movieExp));
-                
+
             end % csReco2Dmatmc
-            
-            
+
+
             % ---------------------------------------------------------------------------------
             % 2D compressed sensing reconstruction with Bart toolbox
             % ---------------------------------------------------------------------------------
@@ -226,7 +222,6 @@ classdef retroReco
                 % TVxy = total variation in xy-dimension regularization
                 % TVd = total variation in dynamic dimension
                 % ESPIRiT = reconstruction of multi-coil data with ESPIRiT true or false
-                % SOS = sum of squares reconstruction (1 = yes, 0 = no)
 
                 kSpaceIn = objKspace.kSpace;
                 Wavelet = app.WVxyzEditField.Value;
@@ -235,32 +230,29 @@ classdef retroReco
                 TVt = app.TVcineEditField.Value;
                 TVd = app.TVdynEditField.Value;
                 ESPIRiT = app.ESPIRiTCheckBox.Value;
-                
+
                 % kSpaceIn = {coil}[CINE, x, y, slice, dynamic]
                 %                    1    2  3    4       5
-                dimf = size(kSpaceIn{1},1);
-                dimx = 2^nextpow2(size(kSpaceIn{1},2));
-                dimy = 2^nextpow2(size(kSpaceIn{1},3));
-                dimz = size(kSpaceIn{1},4);
-                dimd = size(kSpaceIn{1},5);
+                [dimf,dimx,dimy,dimz,dimd] = size(kSpaceIn{1});
                 nrCoils = objData.nr_coils;
-                
-                % For convenience make rectangular matrix size
+
+                % For convenience make rectangular matrix size of power of 2
                 mdimxy = max([dimx,dimy]);
-                dimx = mdimxy;
-                dimy = mdimxy;
-                
+                dimx = 2^nextpow2(mdimxy);
+                dimy = dimx;
+                app.TextMessage(strcat('Reconstruction matrix =',{' '},num2str(dimx),'x',num2str(dimy)));
+
                 % Resize k-space to next power of 2
                 for i = 1:nrCoils
                     kSpaceIn{i} = bart(app,['resize -c 1 ',num2str(dimx),' 2 ',num2str(dimy)],kSpaceIn{i});
                 end
-                
+
                 % Put all data in a normal matrix
                 kSpace = zeros(dimf,dimx,dimy,dimz,dimd);
                 for i = 1:nrCoils
                     kSpace(:,:,:,:,:,i) = kSpaceIn{i}(:,:,:,:,:);
                 end
-                
+
                 % Bart dimensions  Bart   Matlab
                 % 	READ_DIM,       0       1   z
                 % 	PHS1_DIM,       1       2   y
@@ -277,19 +269,19 @@ classdef retroReco
                 % 	LEVEL_DIM,      12      13
                 % 	SLICE_DIM,      13      14  slices
                 % 	AVG_DIM,        14      15
-                
+
                 kSpacePics = permute(kSpace,[7,3,2,6,8,9,10,11,12,13,1,5,14,4]);
-                
+
                 % Wavelet in spatial dimensions 2^1+2^2=6
                 % Total variation in spatial dimensions 2^1+2^2=6
                 % Total variation in cine dimension 2^10 = 1024
                 % Total variation in dynamic dimension 2^11 = 2048
 
                 if ESPIRiT && nrCoils>1
-                    
+
                     % ESPIRiT reconstruction
-                    TextMessage(app,'ESPIRiT reconstruction ...');
-                    
+                    app.TextMessage('ESPIRiT reconstruction ...');
+
                     % Calculate coil sensitivity maps with ecalib bart function
                     kSpacePicsSum = sum(kSpacePics,[11,12]);
                     sensitivities = bart(app,'ecalib -S -I -a', kSpacePicsSum);      % Ecalib with softsense
@@ -325,10 +317,8 @@ classdef retroReco
                 % BART reconstruction
                 imageReco = bart(app, picsCommand, kSpacePics, sensitivities);
 
-                % Sum of squares in the coil dimension 
+                % Sum of squares in the coil dimension
                 imageReco = bart(app,'rss 16', imageReco);
-               
-                % Take the absolute value
                 imageReco = abs(imageReco);
 
                 % Reshape the image :           y    x  frames dynamic slices
@@ -348,18 +338,18 @@ classdef retroReco
                 objReco.senseMap = circshift(senseMap1,-objData.pixelshift1,3);
 
             end % csReco2Dmc
-            
+
         end % reco2D
-        
-                
-        
+
+
+
         % ---------------------------------------------------------------------------------
         % 3D reconstruction
         % ---------------------------------------------------------------------------------
         function objReco = reco3D(objReco, objData, objKspace, app)
-            
+
             if app.bartDetectedFlag && ~app.MatlabRecoCheckBox.Value
-                
+
                 % Perform CS reconstruction with the Bart toolbox, preferred option
                 app.TextMessage('Reconstructing the 3D data with the BART toolbox ...');
                 app.ProgressGauge.Value = 0;
@@ -369,9 +359,9 @@ classdef retroReco
                 app.validRecoFlag = true;
                 app.validSenseMapFlag = true;
                 drawnow;
-                
+
             else
-                
+
                 % Perform cs reconstruction in matlab, slower, but works
                 app.TextMessage('WARNING: Reconstructing the data with MATLAB ...');
                 app.TextMessage('Slow reconstruction, please be patient ...');
@@ -382,32 +372,32 @@ classdef retroReco
                 app.validRecoFlag = true;
                 app.validSenseMapFlag = true;
                 drawnow;
-                
+
             end
-            
-            
+
+
             % ---------------------------------------------------------------------------------
             % 3D compressed sensing reconstruction with Matlab
             % ---------------------------------------------------------------------------------
             function csReco3Dmatmc
-                
+
                 kSpaceIn = objKspace.kSpace;
                 averages = objKspace.kSpaceAvg;
                 lambdaTV = app.TVcineEditField.Value;
-     
+
                 % kSpaceIn = {coil}[frames, x, y, z, dynamics]
                 %                      1    2  3  4     5
                 dimf = size(kSpaceIn{1},1);
                 dimd = size(kSpaceIn{1},5);
                 nrCoils = objData.nr_coils;
-                
+
                 % In case of 1 frame, duplicate that frame to facilitate reconstruction
                 if dimf == 1
                     for i = 1:nrCoils
                         kSpaceIn{i}(2,:,:,:,:) = kSpaceIn{i}(1,:,:,:,:);
                     end
                 end
-                
+
                 % K-space data: x,y,z,frames,dynamics
                 for i = 1:nrCoils
                     kSpaceIn{i} = permute(kSpaceIn{i},[2,3,4,1,5]);
@@ -418,45 +408,45 @@ classdef retroReco
                 for i = 1:nrCoils
                     kSpace(:,:,:,:,:,i) = kSpaceIn{i};
                 end
-                
+
                 % Averages data: x,y,z,frames,dynamics
                 averages = permute(averages,[2,3,4,1,5]);
-                
+
                 % Reset progress counter
                 param.iteration = 0;
-                
+
                 % Pad to next power of 2
                 dimx = 2^nextpow2(size(kSpace,1));
                 dimy = 2^nextpow2(size(kSpace,2));
                 dimz = 2^nextpow2(size(kSpace,3));
-                
+
                 % For convenience make rectangular matrix size
                 mdimxy = max([dimx,dimy]);
                 dimx = mdimxy;
                 dimy = mdimxy;
                 dimf = size(kSpace,4);
-                
+
                 % Pre-allocate memory for imageOut
                 imageOut = zeros(dimf,dimx,dimy,dimz,dimd);
-                
+
                 for dynamic = 1:dimd
-                    
+
                     % K-space of slice and dynamic
                     kData = squeeze(kSpace(:,:,:,:,dynamic,:));
-                    
+
                     % Zero padding
                     padSizex = round((dimx - size(kData,1))/2);
                     padSizey = round((dimy - size(kData,2))/2);
                     padSizez = round((dimz - size(kData,3))/2);
                     kData = padarray(kData,[padSizex,padSizey,padSizez,0],'both');
                     kData = kData(1:dimx,1:dimy,1:dimz,:,:);
-                    
+
                     % Size of the data: z,y,x,frames,coils
                     [nx,ny,nz,~,nrCoils] = size(kData);
-                    
+
                     % Normalize the data in the range of approx 0 - 1 for better numerical stability
                     kData = kData/max(abs(kData(:)));
-                    
+
                     % K-space mask: 0 = nodata, 1 = data, zero-pad to same size as k-space
                     mask = squeeze(averages(:,:,:,:,dynamic));
                     mask = padarray(mask,[padSizex,padSizey,padSizez,0],'both');
@@ -464,58 +454,58 @@ classdef retroReco
                     mask = mask./mask;
                     mask(isnan(mask)) = 1;
                     mask = logical(mask);
-                    
+
                     % Coil sensitivity map
                     b1 = ones(nx,ny,nz,nrCoils);
-                    
+
                     % Data
                     param.y = kData;
-                    
+
                     % Reconstruction design matrix
                     param.E = Emat_zyxt(mask,b1);
-                    
+
                     % Total variation (TV) constraint in the temporal domain
                     % for 'consistency' with Bart reconstruction, TV seems to be scale empirically by a factor of 8
                     % TV only in the time domain
                     param.TV = TVOP3D;
                     param.TVWeight = lambdaTV/8;
-                    
+
                     % Number of iterations, 2 x 10 iterations
                     param.nite = 10;
                     param.nouter = 2;
                     param.totaliterations = dimd * param.nouter * param.nite;
-                    
+
                     % Linear reconstruction
                     kData1 = randn(size(kData))/2000 + kData;  % add a little bit of randomness, such that linear reco is not exactly right
                     reconDft = param.E'*kData1;
-                    
+
                     % Iterative reconstruction
                     reconCs=reconDft;
                     for n=1:param.nouter
                         [reconCs,param.iteration] = CSL1NlCg(app,reconCs,param);
                     end
-                    
+
                     % Rearrange to correct orientation: frames, x, y, z
                     imageTmp = flip(permute(abs(reconCs),[4, 1, 2, 3]),2);
 
                     % Output reconstructed image
                     imageOut(:,:,:,:,dynamic) = imageTmp;
-                    
+
                 end
-                
+
                 % Correct back to 1 frame reconstruction
                 if dimf == 1
                     imageOut = imageOut(1,:,:,:,:);
                 end
-                
+
                 % Shift image in phase-encoding directions if needed
                 objReco.movieExp = circshift(imageOut,-objData.pixelshift1,3);
                 objReco.movieExp = circshift(imageOut,-objData.pixelshift2,4);
                 objReco.senseMap = ones(size(objReco.movieExp));
-                
+
             end % csReco3Dmatmc
-            
-            
+
+
 
 
             % ---------------------------------------------------------------------------------
@@ -550,23 +540,23 @@ classdef retroReco
                 dimz = 2^nextpow2(size(kSpaceIn{1},4));
                 dimd = size(kSpaceIn{1},5);
                 nrCoils = objData.nr_coils;
-                
+
                 % For convenience make rectangular matrix size
                 mdimxy = max([dimx,dimy]);
                 dimx = mdimxy;
                 dimy = mdimxy;
-                
+
                 % Resize to next power of 2
                 for i = 1:nrCoils
                     kSpaceIn{i} = bart(app,['resize -c 1 ',num2str(dimx),' 2 ',num2str(dimy),' 3 ',num2str(dimz)],kSpaceIn{i});
                 end
-                
+
                 % K-space suitable for bart
                 kSpace = zeros(dimf,dimx,dimy,dimz,dimd,nrCoils);
                 for i = 1:nrCoils
                     kSpace(:,:,:,:,:,i) = kSpaceIn{i}(:,:,:,:,:);
                 end
-                
+
                 % Bart dimensions
                 % 	READ_DIM,       1   z
                 % 	PHS1_DIM,       2   y
@@ -583,9 +573,9 @@ classdef retroReco
                 % 	LEVEL_DIM,      13
                 % 	SLICE_DIM,      14  slices
                 % 	AVG_DIM,        15
-                
+
                 kSpacePics = permute(kSpace,[4,3,2,6,7,8,9,10,11,12,1,5,13,14]);
-                
+
                 % wavelet in spatial dimensions 2^0+2^1+2^2=7
                 % total variation in spatial dimensions 2^0+2^1+2^2=7
                 % total variation in time 2^10 = 1024
@@ -593,7 +583,7 @@ classdef retroReco
 
                 if ESPIRiT && nrCoils>1
 
-                    TextMessage(app,'ESPIRiT reconstruction ...');
+                    app.TextMessage('ESPIRiT reconstruction ...');
                     kspace_pics_sum = sum(kSpacePics,[11,12]);
                     sensitivities = bart(app,'ecalib -I -S -a', kspace_pics_sum);
 
@@ -641,14 +631,14 @@ classdef retroReco
                 imageReg = reshape(imageReg,[dimz,dimy,dimx,dimf,dimd]);
                 imageOut = flip(flip(permute(imageReg,[4,3,2,1,5]),3),4);
                 imageOut = circshift(imageOut,1,4);
-                
+
                 % Sense map orientations: x, y, z, map1, map2
                 senseMap1 = flip(flip(permute(abs(sensitivities),[3,2,1,4,5,6,7,8,9,10,11,12,13,14]),2),3);
                 senseMap1 = circshift(senseMap1,1,4);
-                
+
                 % Normalize sense map to reasonable value range
                 senseMap1 = senseMap1*4095/max(senseMap1(:));
-     
+
                 % Shift image in phase-encoding directions with integer if needed
                 objReco.movieExp = circshift(imageOut,-objData.pixelshift1,3);
                 objReco.movieExp = circshift(imageOut,-objData.pixelshift2,4);
@@ -657,18 +647,18 @@ classdef retroReco
 
                 app.ProgressGauge.Value = 100;
                 drawnow;
-                
+
             end % csReco3Dmc
-            
+
         end % reco3D
-        
-                
-        
+
+
+
         % ---------------------------------------------------------------------------------
         % 2D radial reconstruction with the Bart toolbox or Matlab
-        % ---------------------------------------------------------------------------------         
+        % ---------------------------------------------------------------------------------
         function objReco = reco2Dradial(objReco, objData, objKspace, app)
-      
+
             if app.bartDetectedFlag && ~app.MatlabRecoCheckBox.Value
 
                 app.TextMessage('Reconstructing 2D radial data with the BART toolbox ...');
@@ -753,7 +743,7 @@ classdef retroReco
 
                     % Calculate k-space and trajectory of a typical frame
                     % and dynamic, remove all zero values
-               
+
                     kSpacePicsSum = kSpacePics(:,:,:,:,:,:,:,:,:,:,floor(dimf/2)+1,floor(dimd/2)+1,:,floor(dimz/2)+1);
                     trajPicsSum = trajPics(:,:,:,:,:,:,:,:,:,:,floor(dimf/2)+1,floor(dimd/2)+1,:,floor(dimz/2)+1);
 
@@ -772,7 +762,7 @@ classdef retroReco
                         % Ring method using estdelay in Bart
                         try
 
-                            dTotal = []; %#ok<NASGU> 
+                            dTotal = []; %#ok<NASGU>
 
                             delaysBart = bart(app,'estdelay -r4 ',trajPicsSum,kSpacePicsSum);
 
@@ -784,9 +774,9 @@ classdef retroReco
                             end
 
                             delaysBart = strrep(delaysBart,':',',');
-                            dTotal = str2num(delaysBart); %#ok<ST2NM> 
+                            dTotal = str2num(delaysBart); %#ok<ST2NM>
                             dTotal(1) = -dTotal(1);
-                        
+
                         catch ME
 
                             app.TextMessage(ME.message);
@@ -800,7 +790,7 @@ classdef retroReco
 
                         % Sent gradient delay vector back to app
                         if ~isempty(dTotal)
-   
+
                             app.GxDelayEditField.Value = double(round(dTotal(1),5));
                             app.GyDelayEditField.Value = double(round(dTotal(2),5));
                             app.GzDelayEditField.Value = double(round(dTotal(3),5));
@@ -814,7 +804,7 @@ classdef retroReco
                             dTotal = zeros(3,1);
 
                         end
-           
+
                     end % Ring method
 
                     % Iterative method
@@ -957,18 +947,18 @@ classdef retroReco
                 trajPics = permute(trajPics,[1 2 3 14 11 12 4 5 6 7 8 9 10 13]);
                 trajPics = objReco.trajInterpolation(trajPics,dTotal);
                 trajPics = ipermute(trajPics,[1 2 3 14 11 12 4 5 6 7 8 9 10 13]);
-            
+
                 % Density correction
                 if app.DensityCorrectCheckBox.Value
-                  app.TextMessage('Calculating density correction ...');
-                  denseOnes = ones(size(kSpacePics));
-                  denseOnes = denseOnes.*avgPics; % Make sure denseOnes contains only 1's when data is available
-                  denseOnes(denseOnes > 1) = 1;
-                  tmpDense = bart(app,strcat('nufft -d',num2str(dimx),':',num2str(dimx),':1 -a'),trajPics,denseOnes);
-                  densityPics = bart(app,'nufft ',trajPics,tmpDense);
-                  densityPics = densityPics.^(-1/2);
-                  densityPics(isnan(densityPics)) = 0;
-                  densityPics(isinf(densityPics)) = 0;
+                    app.TextMessage('Calculating density correction ...');
+                    denseOnes = ones(size(kSpacePics));
+                    denseOnes = denseOnes.*avgPics; % Make sure denseOnes contains only 1's when data is available
+                    denseOnes(denseOnes > 1) = 1;
+                    tmpDense = bart(app,strcat('nufft -d',num2str(dimx),':',num2str(dimx),':1 -a'),trajPics,denseOnes);
+                    densityPics = bart(app,'nufft ',trajPics,tmpDense);
+                    densityPics = densityPics.^(-1/2);
+                    densityPics(isnan(densityPics)) = 0;
+                    densityPics(isinf(densityPics)) = 0;
                 end
 
                 % Sensitivity maps
@@ -1033,7 +1023,7 @@ classdef retroReco
 
                 % Normalize sense map to reasonable value range
                 senseMapOut = senseMap1*4095/max(senseMap1(:));
-              
+
                 % Return the movie and sense-map objects
                 objReco.movieExp = imageOut;
                 objReco.senseMap = senseMapOut;
@@ -1049,7 +1039,7 @@ classdef retroReco
                 app.TextMessage('BART toolbox not available ...');
                 app.TextMessage('2D radial reconstruction using NUFFT ...');
                 app.ProgressGauge.Value = 0;
-                
+
                 dimf = size(objKspace.kSpace{1},1);     % frames
                 dimx = size(objKspace.kSpace{1},2);     % x
                 dimy = dimx;                            % y
@@ -1060,7 +1050,7 @@ classdef retroReco
 
                 app.TextMessage('Slow reconstruction ...');
                 app.TextMessage(strcat('Estimated reconstruction time >',{' '},num2str(loops/2),{' '},'min ...'));
-                
+
                 traj = objKspace.kSpaceTraj;                                        % trajectory
                 image = zeros(dimf,dimz,dimy,dimx,dimd,nrCoils);                    % image pre-allocation
                 sensitivities = ones(dimx,dimy,1,nrCoils,1,1,1,1,1,1,1,1,1,dimz);   % sensitivity maps = 1
@@ -1118,7 +1108,7 @@ classdef retroReco
 
                 end
 
-                % Root sum of squares over coil dimension 
+                % Root sum of squares over coil dimension
                 image = rssq(image,6);
 
                 % ImageOut = frames, x, y, slices, dynamics
@@ -1134,7 +1124,7 @@ classdef retroReco
 
                 % normalize sense map to reasonable value range
                 senseMapOut = senseMap1*4095/max(senseMap1(:));
-              
+
                 % Return the image and sense maps objects
                 objReco.movieExp = imageOut;
                 objReco.senseMap = senseMapOut;
@@ -1145,12 +1135,12 @@ classdef retroReco
                 drawnow;
 
             end
-            
+
         end % reco2Dradial
-        
-        
-         
-        
+
+
+
+
         % ---------------------------------------------------------------------------------
         % 3D UTE reconstruction with the Bart toolbox
         % ---------------------------------------------------------------------------------
@@ -1176,14 +1166,14 @@ classdef retroReco
                 TVd = app.TVdynEditField.Value;
                 nrCoils = objData.nr_coils;
                 objReco.totalVariation = 'T';
-                
+
                 % Retrieve the dimensions from the k-space object
                 dimf = size(objKspace.kSpace{1},1);
                 dimx = size(objKspace.kSpace{1},2);
                 dimy = dimx;
                 dimz = dimx;
                 dimd = size(objKspace.kSpace{1},5);
-               
+
                 % Retrieve k-space, trajectory, and averages
                 kSpace = zeros(size(objKspace.kSpace{1}));
                 for i = 1:nrCoils
@@ -1191,7 +1181,7 @@ classdef retroReco
                 end
                 traj = objKspace.kSpaceTraj;
                 averages = objKspace.kSpaceAvg;
-                
+
                 % Bart dimensions  Bart   Matlab
                 % 	READ_DIM,       0       1   z
                 % 	PHS1_DIM,       1       2   y
@@ -1208,13 +1198,13 @@ classdef retroReco
                 % 	LEVEL_DIM,      12      13
                 % 	SLICE_DIM,      13      14  slices
                 % 	AVG_DIM,        14      15
-             
+
                 % Rearrange for BART         1  2  3  4  5  6  7  8  9 10 11 12 13 14
                 kSpacePics = permute(kSpace,[7, 2, 3, 6,14, 8, 9,10,11,12,1, 5, 13, 4]);
 
                 % Rearrange for BART        1  2  3  4  5  6  7  8  9 10 11 12 13 14
                 avgPics = permute(averages,[7, 2, 3, 6,14, 8, 9,10,11,12,1, 5, 13, 4]);
-                
+
                 % Rearrange for BART     1  2  3  4  5  6  7  8  9 10 11 12 13 14
                 trajPics = permute(traj,[6, 2, 3,14, 7, 8, 9,10,11,12, 1, 5,13, 4]);
 
@@ -1246,14 +1236,14 @@ classdef retroReco
                     kSize = [6,6,6];
                     kSkip = round(length(kSpacePicsSum)/3000);
                     kSkip(kSkip < 1) = 1;
-                
+
                     % M = index in trajectory for which k-space value >= calibSize
                     [~,zm] = find(squeeze(trajPicsSum(1,:,:)) == max(trajPicsSum(:)),1,'first');
                     if isempty(zm)
-                       [~,zm] = find(squeeze(trajPicsSum(2,:,:)) == max(trajPicsSum(:)),1,'first');
+                        [~,zm] = find(squeeze(trajPicsSum(2,:,:)) == max(trajPicsSum(:)),1,'first');
                     end
                     if isempty(zm)
-                       [~,zm] = find(squeeze(trajPicsSum(3,:,:)) == max(trajPicsSum(:)),1,'first');
+                        [~,zm] = find(squeeze(trajPicsSum(3,:,:)) == max(trajPicsSum(:)),1,'first');
                     end
                     M = find(sqrt(trajPicsSum(1,:,zm).^2+trajPicsSum(2,:,zm).^2+trajPicsSum(3,:,zm).^2) >= calibSize(1,1)/2,1);
 
@@ -1271,7 +1261,7 @@ classdef retroReco
                     % Initial image
                     dataCalib = dataCalib(:,:,ze);
                     imCalib = bart(app,['bart nufft -i -l 0.01 ',cSize,' -t'],kTrajCalib,dataCalib);
-    
+
                     % Initialization
                     iteration = 0;
                     incre = 10;
@@ -1311,7 +1301,7 @@ classdef retroReco
 
                         % Direct solver
                         dydt = [real(objReco.vec(dydtx)) real(objReco.vec(dydty)) real(objReco.vec(dydtz)) ; imag(objReco.vec(dydtx)) imag(objReco.vec(dydty)) imag(objReco.vec(dydtz))];
-                        dStep = ((dydt)'*dydt)\(dydt' * [real(objReco.vec(kNew - y)) ; imag(objReco.vec(kNew - y))]); 
+                        dStep = ((dydt)'*dydt)\(dydt' * [real(objReco.vec(kNew - y)) ; imag(objReco.vec(kNew - y))]);
                         dStep(isnan(dStep)) = 0;
 
                         % The accumalated delays
@@ -1320,7 +1310,7 @@ classdef retroReco
                         dTotal(dTotal < -10) = -10;
 
                         % Conversion criterium
-                        incre = norm(real(dStep));  
+                        incre = norm(real(dStep));
 
                         % Message
                         app.TextMessage(strcat('Estimated delays:',{' '},num2str(dTotal(1)),':',num2str(dTotal(2)),':',num2str(dTotal(3))));
@@ -1348,7 +1338,7 @@ classdef retroReco
                         xlim(app.MovieFig, [0 size(im,2)+1]);
                         ylim(app.MovieFig, [0 size(im,1)+1]);
                         imshow(rot90(im),[],'Parent',app.MovieFig);
-                
+
                         % Calculate k-space from new image
                         xOld = objReco.fft3Dmri(squeeze(imCalib));
 
@@ -1364,7 +1354,7 @@ classdef retroReco
                 trajPics = permute(trajPics,[1 2 3 4 11 12 5 6 7 8 9 10]);
                 trajPics = objReco.trajInterpolation(trajPics,dTotal);
                 trajPics = ipermute(trajPics,[1 2 3 4 11 12 5 6 7 8 9 10]);
-            
+
                 % Coil sensitivities from sum of all frames and dynamics
                 if nrCoils > 1
                     kSpacePicsSum = sum(kSpacePics,[11,12]);
@@ -1392,7 +1382,7 @@ classdef retroReco
                     densityPics = densityPics.^(-1/3);
                     densityPics(isnan(densityPics)) = 0;
                     densityPics(isinf(densityPics)) = 0;
-               end
+                end
 
                 % Prepare the PICS reconstruction
                 app.TextMessage('PICS reconstruction ...');
@@ -1422,20 +1412,20 @@ classdef retroReco
                 else
                     igrid = bart(app,picsCommand,'-t',trajPics,kSpacePics,sensitivities);
                 end
-    
+
                 % Root sum of squares over all coils
                 recoImage = bart(app,'rss 8', igrid);
 
                 % Rearrange to correct orientation: frames, x, y, z, dynamics
                 imageReg = reshape(recoImage,[dimz,dimy,dimx,dimf,dimd]);
                 imageOut = flip(flip(permute(imageReg,[4,1,2,3,5]),3),4);
-                
+
                 % Sense map orientations: x, y, z, map1, map2
                 senseMap1 = flip(flip(permute(abs(sensitivities),[3,2,1,4,5,6,7,8,9,10,11,12,13,14]),2),3);
-                
+
                 % Normalize sense map to reasonable value range
                 senseMap1 = senseMap1*4095/max(senseMap1(:));
-                
+
                 % Shift image in phase-encoding directions if needed
                 objReco.movieExp = circshift(imageOut,-objData.pixelshift1,3);
                 objReco.movieExp = circshift(imageOut,-objData.pixelshift2,4);
@@ -1462,11 +1452,11 @@ classdef retroReco
                 loops = dimf*dimd*nrCoils;
                 app.TextMessage('Slow reconstruction ...');
                 app.TextMessage(strcat('Estimated reconstruction time >',{' '},num2str(loops*2),{' '},'min ...'));
-                
+
                 traj = objKspace.kSpaceTraj;
                 image = zeros(dimf,dimx,dimy,dimz,dimd,nrCoils);
                 sensitivities = 4095*ones(dimz,dimy,dimx,1,1,1,1,1,1,1,1,1,1,1);
-              
+
                 maxit = 10;     % 0 or 1 for gridding, higher values for conjugate gradient
                 damp = 0;       % Tikhonov penalty on ||x||
                 weight = [];    % data weighting (optional)
@@ -1479,7 +1469,7 @@ classdef retroReco
                     for frame = 1:dimf
 
                         % NOTE: coils can be incorporated in the NUFFT, need data first
-                        for coil = 1:nrCoils 
+                        for coil = 1:nrCoils
 
                             app.ProgressGauge.Value = round(100*cnt/loops);
                             drawnow;
@@ -1490,9 +1480,9 @@ classdef retroReco
                             data = squeeze(objKspace.kSpace{coil}(frame,:,:,1,dynamic));
                             data = permute(data,[2 1]);
                             data = data(:);
-                       
+
                             image(frame,:,:,:,dynamic,coil) = obj.iNUFT(data,maxit,damp,weight,'phase-constraint',partial,app);
-                    
+
                         end
 
                         cnt = cnt + 1;
@@ -1504,13 +1494,13 @@ classdef retroReco
                 % Root sum of squares over coil dimension and flip
                 image = rssq(image,6);
                 image = flip(image,3);
-    
+
                 % Shift image in phase-encoding directions if needed
                 objReco.movieExp = circshift(image,-objData.pixelshift1,3);
                 objReco.movieExp = circshift(image,-objData.pixelshift2,4);
                 objReco.senseMap = circshift(sensitivities,-objData.pixelshift1,3);
                 objReco.senseMap = circshift(sensitivities,-objData.pixelshift2,4);
-                
+
                 app.validRecoFlag = true;
                 app.validSenseMapFlag = true;
                 app.ProgressGauge.Value = 100;
@@ -1522,24 +1512,136 @@ classdef retroReco
 
 
 
-        
+        % ---------------------------------------------------------------------------------
+        % PCA denoising
+        % ---------------------------------------------------------------------------------
+        function objReco = PCAdenoise(objReco,app)
+
+            try
+
+                app.TextMessage('PCA image denoising ...');
+
+                % Image dimensions (x, y, z, frames, dynamics)
+                imPCA = permute(objReco.movieExp,[2,3,4,1,5]);
+
+                % Image dimensions
+                nSlices = size(imPCA,3);
+                nFrames = size(imPCA,4);
+                nDyn = size(imPCA,5);
+
+                % Denoising window
+                w = app.PCAwindowEditField.Value;
+                window = [w w];
+                if window(1) > size(imPCA,1)/2
+                    window(1) = round(size(imPCA,1)/2);
+                end
+                if window(2) > size(imPCA,2)/2
+                    window(2) = round(size(imPCA,2)/2);
+                end
+
+                % Loop over all slices, dynamics
+                % Choose 2-dim image + extra dimension
+                if nFrames > 1
+
+                    for slice = 1:nSlices
+                        for dyn = 1:nDyn
+                            imPCA(:,:,slice,:,dyn) = denoise(double(squeeze(imPCA(:,:,slice,:,dyn))),window);
+                        end
+                    end
+
+                elseif nDyn > 1
+
+                    for slice = 1:nSlices
+                        imPCA(:,:,slice,1,:) = denoise(double(squeeze(imPCA(:,:,slice,1,:))),window);
+                    end
+
+                elseif nSlices > 1
+
+                    imPCA(:,:,:,1,1) = denoise(double(squeeze(imPCA(:,:,:,1,1))),window);
+
+                else
+
+                    app.TextMessage('Denoising requires multiple dimensions ...');
+                    app.PCACheckBox.Value = 0;
+
+                end
+
+                % Return the images object
+                objReco.movieExp = permute(imPCA,[4,1,2,3,5]);
+
+
+            catch ME
+
+                app.TextMessage(ME.message);
+
+            end
+
+        end % PCAdenoise
+
+
+        % ---------------------------------------------------------------------------------
+        % Suppress Gibbs ringing
+        % ---------------------------------------------------------------------------------
+        function objReco = unRing(objReco,app)
+
+            try
+
+                app.TextMessage('Gibbs ringing suppression ...');
+
+                im = objReco.movieExp;
+
+                % params - 3x1 array with [minW maxW nsh]
+                % nsh discretization of subpixel spaceing (default 20)
+                % minW  left border of window used for TV computation (default 1)
+                % maxW  right border of window used for TV computation (default 3)
+                params = [1 3 20];
+
+                % image dimensions (frames, X, Y, Z, dynamics)
+                nFrames = size(im,1);
+                nSlices = size(im,4);
+                nDyn = size(im,5);
+
+                % unRing
+                for dyn = 1:nDyn
+                    for slice = 1:nSlices
+                        for frame = 1:nFrames
+                            for i = 1:3
+                                im(frame,:,:,slice,dyn) = ringRm(double(squeeze(im(frame,:,:,slice,dyn))),params);
+                            end
+                        end
+                    end
+                end
+
+                objReco.movieExp = im;
+
+            catch ME
+
+                app.TextMessage(ME.message);
+
+            end
+
+        end % unRing
+
+
+
+
         % ---------------------------------------------------------------------------------
         % Normalize movie intensity
         % ---------------------------------------------------------------------------------
         function objReco = normImages(objReco,objData)
-            
+
             % Normalize the images to 2^15 range
 
             objReco.rescaleIntercept = 0;                           % Dicom rescale intercept
             objReco.rescaleSlope = max(objReco.movieExp(:));        % Dicom rescale slope
-   
+
             objReco.movieExp = round(32765*objReco.movieExp/objReco.rescaleSlope);
             objReco.movieApp = objReco.movieExp;
 
             if objData.PHASE_ORIENTATION == 0
                 objReco.movieApp = flip(objReco.movieApp,2);
             end
-            
+
         end % normImages
 
 
@@ -1557,7 +1659,6 @@ classdef retroReco
                 for slice = 1:size(objReco.movieExp,4)
                     for dynamic = 1:size(objReco.movieExp,5)
                         objReco.movieExp(frame,:,:,slice,dynamic) = retroReco.image2Dshift(squeeze(objReco.movieExp(frame,:,:,slice,dynamic)),objData.yShift(slice),objData.xShift(slice));
-                        objReco.movieApp(frame,:,:,slice,dynamic) = retroReco.image2Dshift(squeeze(objReco.movieApp(frame,:,:,slice,dynamic)),objData.yShift(slice),objData.xShift(slice));
                     end
                 end
             end
@@ -1571,14 +1672,14 @@ classdef retroReco
             end
 
         end
-        
+
 
 
         % ---------------------------------------------------------------------------------
         % Determine whether movie has multiple slices and/or dynamics
         % ---------------------------------------------------------------------------------
         function objReco = determineMultiDimensions(objReco)
-            
+
             % Multislice
             if size(objReco.movieApp,4) > 1
                 objReco.multiSliceFlag = true;
@@ -1594,9 +1695,9 @@ classdef retroReco
             end
 
         end % determineMultiDimensions
-        
 
-        
+
+
 
         % ---------------------------------------------------------------------------------
         % Image reconstruction: SUR files
@@ -1636,9 +1737,9 @@ classdef retroReco
             invoke(m_Recon,'Quit');
 
         end % recoSurFiles
-        
 
-        
+
+
 
         % ---------------------------------------------------------------------------------
         % L-curve calculation
@@ -1688,23 +1789,28 @@ classdef retroReco
                         app.TextMessage(strcat('L-curve, WVxyz, iteration =',num2str(iter),', lambda =',num2str(lambda(i))));
 
                         % CS reco
-                        obj.sos = 0;
                         obj = obj.reco2D(objData, objKspace, app);
                         Lmovie = obj.movieExp;
 
+                        disp(size(Lmovie))
+
                         % L1 norm wavelet
                         WVxyz = bart(app,'cdf97 6',Lmovie);
-                        y(i) = norm(WVxyz(:),1);
+                        y(i) = norm(WVxyz(:),1); %#ok<AGROW>
 
                         % L2 norm
                         kSpaceIm = bart(app,'fft -u -i 6',Lmovie);
                         kSpaceIm = bart(app,['resize -c 1 ',num2str(size(objKspace.kSpace{1},2)),' 2 ',num2str(size(objKspace.kSpace{1},3))],kSpaceIm);
-                        x(i) = 0;
+
+                        kSpaceSum = zeros(size(kSpaceIm));
                         for j = 1:objData.nr_coils
-                            mask = objKspace.kSpace{j} ~= 0;
-                            kSpaceDiff = abs(kSpaceIm(:,:,:,:,:,j).*mask) - abs(objKspace.kSpace{j});
-                            x(i) = x(i) + norm(kSpaceDiff(:),2);
+                            kSpaceSum = kSpaceSum + abs(objKspace.kSpace{j});
                         end
+                        kSpaceSum = kSpaceSum/objData.nr_coils;
+
+                        mask = kSpaceSum ~= 0;
+                        kSpaceDiff = abs(kSpaceIm.*mask) - kSpaceSum;
+                        x(i) = norm(kSpaceDiff(:),2); %#ok<AGROW>
 
                         % Plot the data
                         app.PlotLcurveFig(lambda,x,y);
@@ -1738,7 +1844,6 @@ classdef retroReco
                         app.TextMessage(strcat('L-curve, TVxyz, iteration=',num2str(iter),', lambda=',num2str(lambda(i))));
 
                         % CS reco
-                        obj.sos = 0;
                         obj = obj.reco2D(objData, objKspace, app);
                         Lmovie = obj.movieExp;
 
@@ -1748,22 +1853,26 @@ classdef retroReco
                                 for dim5=1:size(Lmovie,5)
                                     for dim6=1:size(Lmovie,6)
                                         [Gx,Gy] = gradient(squeeze(Lmovie(dim1,:,:,dim4,dim5,dim6)));
-                                        TVxyz(dim1,:,:,dim4,dim5,dim6) = sqrt(Gx.^2 + Gy.^2);
+                                        TVxyz(dim1,:,:,dim4,dim5,dim6) = sqrt(Gx.^2 + Gy.^2);  %#ok<AGROW>
                                     end
                                 end
                             end
                         end
-                        y(i) = norm(TVxyz(:),1);
+                        y(i) = norm(TVxyz(:),1); %#ok<AGROW>
 
                         % L2 norm
                         kSpaceIm = bart(app,'fft -u -i 6',Lmovie);
                         kSpaceIm = bart(app,['resize -c 1 ',num2str(size(objKspace.kSpace{1},2)),' 2 ',num2str(size(objKspace.kSpace{1},3))],kSpaceIm);
-                        x(i) = 0;
+
+                        kSpaceSum = zeros(size(kSpaceIm));
                         for j = 1:objData.nr_coils
-                            mask = objKspace.kSpace{j} ~= 0;
-                            kSpaceDiff = abs(kSpaceIm(:,:,:,:,:,j).*mask) - abs(objKspace.kSpace{j});
-                            x(i) = x(i) + norm(kSpaceDiff(:),2);
+                            kSpaceSum = kSpaceSum + abs(objKspace.kSpace{j});
                         end
+                        kSpaceSum = kSpaceSum/objData.nr_coils;
+
+                        mask = kSpaceSum ~= 0;
+                        kSpaceDiff = abs(kSpaceIm.*mask) - kSpaceSum;
+                        x(i) = norm(kSpaceDiff(:),2); %#ok<AGROW>
 
                         % Plot the data
                         app.PlotLcurveFig(lambda,x,y);
@@ -1797,7 +1906,6 @@ classdef retroReco
                         app.TextMessage(strcat('L-curve, LRxyz, iteration=',num2str(iter),', lambda=',num2str(lambda(i))));
 
                         % CS reco
-                        obj.sos = 0;
                         obj = obj.reco2D(objData, objKspace, app);
                         Lmovie = obj.movieExp;
 
@@ -1812,17 +1920,21 @@ classdef retroReco
                                 end
                             end
                         end
-                        y(i) = norm(TVxyz(:),1);
+                        y(i) = norm(TVxyz(:),1); %#ok<AGROW>
 
                         % L2 norm
                         kSpaceIm = bart(app,'fft -u -i 6',Lmovie);
                         kSpaceIm = bart(app,['resize -c 1 ',num2str(size(objKspace.kSpace{1},2)),' 2 ',num2str(size(objKspace.kSpace{1},3))],kSpaceIm);
-                        x(i) = 0;
+
+                        kSpaceSum = zeros(size(kSpaceIm));
                         for j = 1:objData.nr_coils
-                            mask = objKspace.kSpace{j} ~= 0;
-                            kSpaceDiff = abs(kSpaceIm(:,:,:,:,:,j).*mask) - abs(objKspace.kSpace{j});
-                            x(i) = x(i) + norm(kSpaceDiff(:),2);
+                            kSpaceSum = kSpaceSum + abs(objKspace.kSpace{j});
                         end
+                        kSpaceSum = kSpaceSum/objData.nr_coils;
+
+                        mask = kSpaceSum ~= 0;
+                        kSpaceDiff = abs(kSpaceIm.*mask) - kSpaceSum;
+                        x(i) = norm(kSpaceDiff(:),2); %#ok<AGROW>
 
                         % Plot the data
                         app.PlotLcurveFig(lambda,x,y);
@@ -1856,23 +1968,26 @@ classdef retroReco
                         app.TextMessage(strcat('L-curve, TVcine, iteration=',num2str(iter),', lambda=',num2str(lambda(i))));
 
                         % CS reco
-                        obj.sos = 0;
                         obj = obj.reco2D(objData, objKspace, app);
                         Lmovie = obj.movieExp;
 
                         % L1 norm TV
                         TVcine = circshift(Lmovie,1) - Lmovie;
-                        y(i) = norm(TVcine(:),1);
+                        y(i) = norm(TVcine(:),1); %#ok<AGROW>
 
                         % L2 norm
                         kSpaceIm = bart(app,'fft -u -i 6',Lmovie);
                         kSpaceIm = bart(app,['resize -c 1 ',num2str(size(objKspace.kSpace{1},2)),' 2 ',num2str(size(objKspace.kSpace{1},3))],kSpaceIm);
-                        x(i) = 0;
+
+                        kSpaceSum = zeros(size(kSpaceIm));
                         for j = 1:objData.nr_coils
-                            mask = objKspace.kSpace{j} ~= 0;
-                            kSpaceDiff = abs(kSpaceIm(:,:,:,:,:,j).*mask) - abs(objKspace.kSpace{j});
-                            x(i) = x(i) + norm(kSpaceDiff(:),2);
+                            kSpaceSum = kSpaceSum + abs(objKspace.kSpace{j});
                         end
+                        kSpaceSum = kSpaceSum/objData.nr_coils;
+
+                        mask = kSpaceSum ~= 0;
+                        kSpaceDiff = abs(kSpaceIm.*mask) - kSpaceSum;
+                        x(i) = norm(kSpaceDiff(:),2); %#ok<AGROW>
 
                         % Plot the data
                         app.PlotLcurveFig(lambda,x,y);
@@ -1906,23 +2021,26 @@ classdef retroReco
                         app.TextMessage(strcat('L-curve, TVdyn, iteration=',num2str(iter),', lambda=',num2str(lambda(i))));
 
                         % CS reco
-                        obj.sos = 0;
                         obj = obj.reco2D(objData, objKspace, app);
                         Lmovie = obj.movieExp;
 
                         % L1 norm TV in dynamic dimension
                         TVtime = circshift(Lmovie,5) - Lmovie;
-                        y(i) = norm(TVtime(:),1);
+                        y(i) = norm(TVtime(:),1); %#ok<AGROW>
 
                         % L2 norm
                         kSpaceIm = bart(app,'fft -u -i 6',Lmovie);
                         kSpaceIm = bart(app,['resize -c 1 ',num2str(size(objKspace.kSpace{1},2)),' 2 ',num2str(size(objKspace.kSpace{1},3))],kSpaceIm);
-                        x(i) = 0; %#ok<*AGROW>
+
+                        kSpaceSum = zeros(size(kSpaceIm));
                         for j = 1:objData.nr_coils
-                            mask = objKspace.kSpace{j} ~= 0;
-                            kSpaceDiff = abs(kSpaceIm(:,:,:,:,:,j).*mask) - abs(objKspace.kSpace{j});
-                            x(i) = x(i) + norm(kSpaceDiff(:),2);
+                            kSpaceSum = kSpaceSum + abs(objKspace.kSpace{j});
                         end
+                        kSpaceSum = kSpaceSum/objData.nr_coils;
+
+                        mask = kSpaceSum ~= 0;
+                        kSpaceDiff = abs(kSpaceIm.*mask) - kSpaceSum;
+                        x(i) = norm(kSpaceDiff(:),2); %#ok<AGROW>
 
                         % Plot the data
                         app.PlotLcurveFig(lambda,x,y);
@@ -2035,41 +2153,51 @@ classdef retroReco
         % ---------------------------------------------------------------------------------
         function [dydtx,dydty,dydtz] = partialDerivative3D(app,kTraj,xNew,calibSize)
 
+            % Get the number of coils
             nrCoils = size(xNew,4);
 
+            % Extract k-space coordinates
             kx = squeeze(kTraj(1,:,:));
             ky = squeeze(kTraj(2,:,:));
             kz = squeeze(kTraj(3,:,:));
 
+            % Calculate differences between adjacent k-space coordinates
             dkx = zeros(size(kx));
             dky = zeros(size(ky));
             dkz = zeros(size(kz));
-
             dkx(2:end,:) = kx(2:end,:)- kx(1:end-1,:);
             dky(2:end,:) = ky(2:end,:)- ky(1:end-1,:);
             dkz(2:end,:) = kz(2:end,:)- kz(1:end-1,:);
+
+            % Perform 3D inverse FFT on input data
             xNewFFT = 1j*retroReco.ifft3Dmri(xNew);
 
+            % Define arrays for NUFFT gridding
             repX = repmat([0:(calibSize(1)/2-1), 0, -calibSize(1)/2+1:-1]'/calibSize(1),[1 calibSize(1) calibSize(1) nrCoils]);
             repY = permute(repX,[2 1 3]);
             repZ = permute(repX,[3 1 2]);
 
+            % Apply NUFFT gridding in x-direction
             tmp = xNewFFT.*repX;
             tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize nrCoils]));
             dydkx = reshape(tmpCalib,[size(kx) nrCoils]);
 
+            % Apply NUFFT gridding in y-direction
             tmp = xNewFFT.*repY;
             tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize nrCoils]));
             dydky = reshape(tmpCalib,[size(kx) nrCoils]);
 
+            % Apply NUFFT gridding in z-direction
             tmp = xNewFFT.*repZ;
             tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize nrCoils]));
             dydkz = reshape(tmpCalib,[size(kx) nrCoils]);
 
+            % Calculate partial derivatives with respect to kx, ky, and kz
             dydtx = dydkx.*repmat(dkx,[1 1 1 nrCoils]);
             dydty = dydky.*repmat(dky,[1 1 1 nrCoils]);
-            dydtz = -dydkz.*repmat(dkz,[1 1 1 nrCoils]); % positive does not converge
+            dydtz = -dydkz.*repmat(dkz,[1 1 1 nrCoils]); % negative sign used because positive doesn't converge
 
+            % Set NaN values to 0
             dydtx(isnan(dydtx)) = 0;
             dydty(isnan(dydty)) = 0;
             dydtz(isnan(dydtz)) = 0;
@@ -2084,80 +2212,144 @@ classdef retroReco
         % ---------------------------------------------------------------------------------
         function [dydtx,dydty] = partialDerivative2D(app,kTraj,Xnew,calibSize)
 
+            % Get the number of coils
             nrCoils = size(Xnew,3);
 
+            % Extract k-space coordinates from the kTraj variable
             kx = squeeze(kTraj(1,:,:));
             ky = squeeze(kTraj(2,:,:));
 
+            % Compute the difference between neighboring k-space points to get dkx and dky
             dkx = zeros(size(kx));
             dky = zeros(size(ky));
-
             dkx(2:end,:) = kx(2:end,:)- kx(1:end-1,:);
             dky(2:end,:) = ky(2:end,:)- ky(1:end-1,:);
 
-            tmp =(1j*retroReco.ifft2Dmri(Xnew).*repmat([0:(calibSize(1)/2-1), 0, -calibSize(1)/2+1:-1]'/calibSize(1),[1 calibSize(2) nrCoils]));
+            % Compute the derivative of the image along the x direction (dydkx)
+            % by taking the inverse Fourier transform of the image Xnew and multiplying
+            % it by a ramp filter (the frequency ramp filter is created using repmat)
+            % and using the Bart toolbox to perform a non-uniform FFT (nufft)
+            % on the resulting data, and reshaping the data to its original size
+            tmp = (1j*retroReco.ifft2Dmri(Xnew).*repmat([0:(calibSize(1)/2-1), 0, -calibSize(1)/2+1:-1]'/calibSize(1),[1 calibSize(2) nrCoils]));
             tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize 1 nrCoils]));
             dydkx = reshape(tmpCalib,[size(kx) nrCoils]);
 
+            % Compute the derivative of the image along the y direction (dydky)
+            % in a similar way to the computation of dydkx, but using a different frequency ramp filter
             tmp = (1j*retroReco.ifft2Dmri(Xnew).*repmat([0:(calibSize(1)/2-1), 0, -calibSize(1)/2+1:-1]/calibSize(1),[calibSize(1) 1 nrCoils]));
             tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize 1 nrCoils]));
             dydky = reshape(tmpCalib,[size(kx) nrCoils]);
 
+            % Compute the partial derivative of the image along the x direction (dydtx)
+            % by multiplying dydkx by dkx, and replicating dkx along the third dimension
+            % so that it can be multiplied element-wise with dydkx
             dydtx = dydkx.*repmat(dkx,[1 1 nrCoils]);
+
+            % Compute the partial derivative of the image along the y direction (dydty)
+            % by multiplying dydky by dky, and replicating dky along the third dimension
+            % so that it can be multiplied element-wise with dydky
             dydty = dydky.*repmat(dky,[1 1 nrCoils]);
 
+            % Set any NaN values in dydtx and dydty to 0
             dydtx(isnan(dydtx)) = 0;
             dydty(isnan(dydty)) = 0;
 
         end % partialDerivative2D
-        
-        
-        
+
+
+
         % ---------------------------------------------------------------------------------
         % Low rank threshold 3D
         % ---------------------------------------------------------------------------------
         function Xnew = lowRankThresh3D(Xold,kSize,thresh)
+            % This function performs thresholding on a 3D matrix using low-rank
+            % approximation.
+            %
+            % Inputs:
+            %   - Xold: the input 3D matrix
+            %   - kSize: the size of the window used to partition the matrix into
+            %     smaller blocks
+            %   - thresh: the number of singular values to keep
+            %
+            % Output:
+            %   - Xnew: the thresholded 3D matrix
 
+            % round the threshold value to the nearest integer
             thresh = round(thresh);
 
+            % create a vector of indices to keep the top singular values
             keep = 1:thresh;
 
+            % Get the size of the input matrix
             [sx,sy,sz,~] = size(Xold);
+
+            % Partition the matrix into smaller blocks using im2row3D
             tmp = retroReco.im2row3D(Xold,kSize);
             [tsx,tsy,Nc] = size(tmp);
+
+            % Reshape the 3D matrix into a 2D matrix
             A = reshape(retroReco.im2row3D(Xold,kSize),tsx,tsy*Nc);
 
+            % Perform SVD on the 2D matrix
             [U,S,V] = svd(A,'econ');
+
+            % Keep only the largest singular values
             A = U(:,keep)*S(keep,keep)*V(:,keep)';
 
+            % Reshape the 2D matrix back into a 3D matrix
             A = reshape(A,tsx,tsy*Nc);
 
+            % Combine the smaller blocks back into the original matrix
             Xnew = retroReco.row2im3D(A,[sx,sy,sz,Nc],kSize);
 
         end % lowRankThresh3D
-
 
 
         % ---------------------------------------------------------------------------------
         % Low rank threshold 2D
         % ---------------------------------------------------------------------------------
         function Xnew = lowRankThresh2D(Xold,kSize,thresh)
+            % This function applies a thresholding operation to a 2D image Xold to obtain
+            % a low-rank approximation of Xold using singular value decomposition (SVD).
+            % The output Xnew is the thresholded low-rank approximation of Xold.
 
+            % Inputs:
+            % Xold - 2D image to be thresholded
+            % kSize - size of the square patch used for dividing the image into patches
+            % thresh - threshold value for keeping the top singular values
+
+            % Output:
+            % Xnew - thresholded low-rank approximation of Xold
+
+            % round the threshold value to the nearest integer
             thresh = round(thresh);
 
+            % create a vector of indices to keep the top singular values
             keep = 1:thresh;
-       
-            [sx,sy,Nc] = size(Xold);
-            tmp = retroReco.im2row2D(Xold,kSize); 
 
+            % get the size and number of channels of the input image Xold
+            [sx,sy,Nc] = size(Xold);
+
+            % divide the image into patches of size kSize and stack them into a
+            % matrix with each column representing a patch
+            tmp = retroReco.im2row2D(Xold,kSize);
+
+            % get the size of the temporary matrix tmp
             [tsx,tsy,tsz] = size(tmp);
+
+            % reshape the matrix of patches into a matrix with each row
+            % representing a patch
             A = reshape(retroReco.im2row2D(Xold,kSize),tsx,tsy*tsz);
 
+            % perform SVD on matrix A and keep only the top singular values
             [U,S,V] = svd(A,'econ');
             A = U(:,keep)*S(keep,keep)*V(:,keep)';
 
-            A = reshape(A,tsx,tsy,tsz);       
+            % reshape the thresholded matrix back into the shape of the matrix of
+            % patches
+            A = reshape(A,tsx,tsy,tsz);
 
+            % combine the patches back into a 2D image
             Xnew = retroReco.row2im2D(A,[sx,sy,Nc],kSize);
 
         end % lowRankThresh2D
@@ -2165,53 +2357,55 @@ classdef retroReco
 
 
         % ---------------------------------------------------------------------------------
-        % Trajectory interpolation 
+        % Trajectory interpolation
         % ---------------------------------------------------------------------------------
         function kSpaceUpdate = trajInterpolation(kSpaceOld,dShift)
+            % Function that interpolates the k-space data using the specified shifts
+            % in the readout direction. The resulting k-space data is returned as the
+            % kSpaceUpdate variable.
 
+            % Initialize the k-space update variable
             kSpaceUpdate = zeros(size(kSpaceOld));
 
+            % Loop over all the dynamics, frames, slices, and spokes of the input k-space data
             for idx6 = 1:size(kSpaceOld,6) % dynamics
-
                 for idx5 = 1:size(kSpaceOld,5) % frames
-
                     for idx4 = 1:size(kSpaceOld,4) % slices
-
                         for idx3 = 1:size(kSpaceOld,3) % spokes
 
+                            % Perform linear interpolation of k-space data along the
+                            % readout direction
                             kx = interp1((1:size(kSpaceOld,2))+dShift(1),kSpaceOld(1,:,idx3,idx4,idx5,idx6),1:size(kSpaceOld,2),'linear'); % Kx
                             ky = interp1((1:size(kSpaceOld,2))+dShift(2),kSpaceOld(2,:,idx3,idx4,idx5,idx6),1:size(kSpaceOld,2),'linear'); % Ky
                             kz = interp1((1:size(kSpaceOld,2))+dShift(3),kSpaceOld(3,:,idx3,idx4,idx5,idx6),1:size(kSpaceOld,2),'linear'); % Kz
 
+                            % Replace NaN values with either 0 or the original k-space data
+                            % value depending on the sign of the shift value
                             if dShift(1) > 0
                                 kx(isnan(kx)) = 0;
                             else
                                 kx(isnan(kx)) = kSpaceOld(1,isnan(kx),idx3,idx4,idx5,idx6);
                             end
-
                             if dShift(2) > 0
                                 ky(isnan(ky)) = 0;
                             else
                                 ky(isnan(ky)) = kSpaceOld(2,isnan(ky),idx3,idx4,idx5,idx6);
                             end
-
                             if dShift(3) > 0
                                 kz(isnan(kz)) = 0;
                             else
                                 kz(isnan(kz)) = kSpaceOld(3,isnan(kz),idx3,idx4,idx5,idx6);
                             end
 
+                            % Update the k-space data with the interpolated values
                             kSpaceUpdate(1,:,idx3,idx4,idx5,idx6) = kx(:);
                             kSpaceUpdate(2,:,idx3,idx4,idx5,idx6) = ky(:);
                             kSpaceUpdate(3,:,idx3,idx4,idx5,idx6) = kz(:);
 
-                        end
-
-                    end
-
-                end
-
-            end
+                        end % end loop over spokes
+                    end % end loop over slices
+                end % end loop over frames
+            end % end loop over dynamics
 
         end % kSpaceInterpolation
 
@@ -2222,15 +2416,28 @@ classdef retroReco
         % image to rows 3D
         % ---------------------------------------------------------------------------------
         function res = im2row3D(im, winSize)
+            % Function to convert 3D image into a matrix of patches of size winSize
+            % Inputs:
+            %   - im: 3D input image
+            %   - winSize: patch size, [w1 w2 w3]
+            % Outputs:
+            %   - res: matrix of image patches
 
+            % Get size of input image
             [sx,sy,sz,nc] = size(im);
+
+            % Initialize output matrix with the right dimensions
             res = zeros((sx-winSize(1)+1)*(sy-winSize(2)+1)*(sz-winSize(3)+1),prod(winSize),nc);
 
+            % Initialize count to keep track of patch number
             count=0;
+
+            % Loop over all patches
             for z=1:winSize(3)
                 for y=1:winSize(2)
                     for x=1:winSize(1)
                         count = count+1;
+                        % Reshape each patch into a column vector and store it in the output matrix
                         res(:,count,:) = reshape(im(x:sx-winSize(1)+x,y:sy-winSize(2)+y,z:sz-winSize(3)+z),...
                             (sx-winSize(1)+1)*(sy-winSize(2)+1)*(sz-winSize(3)+1),nc);
                     end
@@ -2240,21 +2447,49 @@ classdef retroReco
         end % im2row3D
 
 
-                
+
         % ---------------------------------------------------------------------------------
         % image to rows 2D
         % ---------------------------------------------------------------------------------
         function res = im2row2D(im, winSize)
+            % This function takes a 2D image and a window size, and returns a matrix
+            % where each row corresponds to a sliding window of pixels from the
+            % original image.
+            %
+            % Inputs:
+            % - im: the 2D image to be converted
+            % - winSize: a 2-element vector specifying the size of the sliding window
+            %
+            % Outputs:
+            % - res: a matrix with size (num_windows x window_size x num_channels)
+            %   where num_windows is the number of sliding windows that can be
+            %   extracted from the image, window_size is the product of the elements
+            %   in winSize, and num_channels is the number of color channels in the
+            %   image
+            %
 
+            % Get the size of the input image
             [sx,sy,sz] = size(im);
+
+            % Allocate space for the output matrix
             res = zeros((sx-winSize(1)+1)*(sy-winSize(2)+1),prod(winSize),sz);
 
+            % Initialize a counter for the rows of the output matrix
             count=0;
+
+            % Loop over each pixel in the window
             for y=1:winSize(2)
                 for x=1:winSize(1)
+
+                    % Increment the row counter
                     count = count+1;
+
+                    % Extract the pixels corresponding to the current
+                    % window position and store them as a column in the
+                    % output matrix
                     res(:,count,:) = reshape(im(x:sx-winSize(1)+x,y:sy-winSize(2)+y,:),...
                         (sx-winSize(1)+1)*(sy-winSize(2)+1),1,sz);
+
                 end
             end
 
@@ -2267,24 +2502,41 @@ classdef retroReco
         % ---------------------------------------------------------------------------------
         function [res,W] = row2im3D(mtx, imSize, winSize)
 
+            % Extract the number of coils (channels) in the matrix
             nrCoils = size(mtx,4);
+
+            % Extract the image size along the x, y, and z dimensions
             sx = imSize(1);
             sy = imSize(2);
             sz = imSize(3);
+
+            % Initialize result and weight matrices
             res = zeros(imSize(1),imSize(2),imSize(3),nrCoils);
             W = res;
 
+            % Loop over all windows of the specified size, moving one pixel at a time
             count=0;
+
             for z=1:winSize(3)
                 for y=1:winSize(2)
                     for x=1:winSize(1)
+
+                        % Increment the row counter
                         count = count+1;
-                        res(x:sx-winSize(1)+x,y:sy-winSize(2)+y,z:sz-winSize(3)+z,:) = res(x:sx-winSize(1)+x,y:sy-winSize(2)+y,z:sz-winSize(3)+z,:) + reshape(mtx(:,count,:,:),(sx-winSize(1)+1),(sy-winSize(2)+1),(sz-winSize(3)+1),nrCoils);
-                        W(x:sx-winSize(1)+x,y:sy-winSize(2)+y,z:sz-winSize(3)+z,:) = W(x:sx-winSize(1)+x,y:sy-winSize(2)+y,z:sz-winSize(3)+z,:)+1;
+
+                        % Compute the sum of matrix elements within the current window
+                        % and add the resulting sum to the corresponding region in the result matrix
+                        res(x:sx-winSize(1)+x,y:sy-winSize(2)+y,z:sz-winSize(3)+z,:) = res(x:sx-winSize(1)+x,y:sy-winSize(2)+y,z:sz-winSize(3)+z,:) + reshape(mtx(:,count,:,:),...
+                            (sx-winSize(1)+1),(sy-winSize(2)+1),(sz-winSize(3)+1),nrCoils);
+
+                        % Increment the weight matrix at the corresponding region
+                        W(x:sx-winSize(1)+x,y:sy-winSize(2)+y,z:sz-winSize(3)+z,:) = W(x:sx-winSize(1)+x,y:sy-winSize(2)+y,z:sz-winSize(3)+z,:) + 1;
+
                     end
                 end
             end
 
+            % Compute the average of the result matrix using the weight matrix
             res = res./W;
 
         end % row2im3D
@@ -2293,26 +2545,40 @@ classdef retroReco
         % ---------------------------------------------------------------------------------
         % rows to image 2D
         % ---------------------------------------------------------------------------------
+
         function [res,W] = row2im2D(mtx,imSize, winSize)
 
+            % Extract the number of channels (depth) in the matrix
             sz = size(mtx,3);
-            sx = imSize(1); 
+
+            % Extract the image size along the x and y dimensions
+            sx = imSize(1);
             sy = imSize(2);
+
+            % Initialize result and weight matrices
             res = zeros(imSize(1),imSize(2),sz);
             W = res;
 
+            % Loop over all windows of the specified size, moving one pixel at a time
             count=0;
             for y=1:winSize(2)
                 for x=1:winSize(1)
                     count = count+1;
+
+                    % Compute the sum of matrix elements within the current window
+                    % and add the resulting sum to the corresponding region in the result matrix
                     res(x:sx-winSize(1)+x,y:sy-winSize(2)+y,:) = res(x:sx-winSize(1)+x,y:sy-winSize(2)+y,:) + reshape(mtx(:,count,:),(sx-winSize(1)+1),(sy-winSize(2)+1),sz);
-                    W(x:sx-winSize(1)+x,y:sy-winSize(2)+y,:) = W(x:sx-winSize(1)+x,y:sy-winSize(2)+y,:)+1;
+
+                    % Increment the weight matrix at the corresponding region
+                    W(x:sx-winSize(1)+x,y:sy-winSize(2)+y,:) = W(x:sx-winSize(1)+x,y:sy-winSize(2)+y,:) + 1;
                 end
             end
 
+            % Compute the average of the result matrix using the weight matrix
             res = res./W;
 
         end % row2im
+
 
 
 
@@ -2356,7 +2622,7 @@ classdef retroReco
         end
 
 
-       
+
         % ---------------------------------------------------------------------------------
         % FFT 2D
         % ---------------------------------------------------------------------------------
@@ -2364,7 +2630,7 @@ classdef retroReco
 
             X=fftshift(ifft(fftshift(x,1),[],1),1)*sqrt(size(x,1));
             X=fftshift(ifft(fftshift(X,2),[],2),2)*sqrt(size(x,2));
-        
+
         end % FFT 2D
 
 
@@ -2376,7 +2642,7 @@ classdef retroReco
 
             x=fftshift(fft(fftshift(X,1),[],1),1)/sqrt(size(X,1));
             x=fftshift(fft(fftshift(x,2),[],2),2)/sqrt(size(X,2));
-   
+
         end
 
 
@@ -2385,7 +2651,7 @@ classdef retroReco
         % Fractional 2D image shift
         % ---------------------------------------------------------------------------------
         function y = image2Dshift(im, xShift, yShift)
-            
+
             % Shift in pixels, can be fractional
             H = retroReco.ifft2Dmri(im);
 
@@ -2394,7 +2660,8 @@ classdef retroReco
 
             % Perform the shift
             H = H.*exp(-1i*2*pi.*(xF*xShift/size(im,2)+yF*yShift/size(im,1)));
-            
+
+            % Take the absolute value
             y = abs(retroReco.fft2Dmri(H));
 
         end % image2Dshift

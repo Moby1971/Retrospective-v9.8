@@ -1,17 +1,17 @@
 classdef retroNav
-        
+    
     % ---------------------------------------------------------
     %
     % Navigator data class for retrospective app
     %
     % Gustav Strijkers
     % g.j.strijkers@amsterdamumc.nl
-    % Aug 2022
+    % May 2023
     %
     % ---------------------------------------------------------
- 
+    
     properties
-      
+        
         % Raw navigator
         navAmplitude                                            % navigator amplitude
         navPhase                                                % navigator phase (not used)
@@ -86,47 +86,47 @@ classdef retroNav
             end
             
         end % readFlipSwitch
-
-
-
+        
+        
+        
         % ---------------------------------------------------------------------------------
         % Auto determine the number of discarded points between navigator and imaging data
         % ---------------------------------------------------------------------------------
         function objNav = autoDiscardNav(objNav, objData, app)
-
+            
             switch objData.dataType
                 
                 case {'2D','2Dms','3D','3Dp2roud'}
-
+                    
                     % Sum data over all coils
                     data = zeros(size(objData.data{1}));
                     for cnt = 1:objData.nr_coils
-                        data = data + abs(objData.data{cnt}); 
+                        data = data + abs(objData.data{cnt});
                     end
-
+                    
                     % Sum all the data into 1 echo
                     data = squeeze(sum(data,[1,2,3]));
                     data = data(objData.primaryNavigatorPoint:end);
                     data = smooth(data,5);
-             
+                    
                     % Estimate the location of the echo
                     echoLocation = round(length(data)/2);
-
+                    
                     % Find the location of the minimum between navigator and echo
                     [~,idx] = min(data(1:echoLocation));
-
+                    
                     % Return a reasonable value for the number of discarded points
                     if idx<objNav.minDiscard || idx>objNav.maxDiscard
                         objData.nrNavPointsDiscarded = objNav.defaultDiscard; % default value
                     else
                         objData.nrNavPointsDiscarded = idx;
                     end
-
+                    
                     % Set the value
                     app.DiscardEditField.Value = objData.nrNavPointsDiscarded;
                     
             end
-
+            
         end % autoDiscardNav
         
         
@@ -143,19 +143,19 @@ classdef retroNav
                     
                 case '2Dms'
                     extractNavigator2Dms;
-
+                    
                 case {'3D','3Dp2roud'}
                     extractNavigator3D;
-
+                    
                 case '2Dradial'
                     extractNavigator2Dradial;
-
+                    
                 case '2Dradialms'
                     extractNavigator2Dradialms;
-
+                    
                 case '3Dute'
                     extractNavigator3Dute;
-
+                    
             end
             
             
@@ -163,14 +163,14 @@ classdef retroNav
             % ----- 2D single-slice data -------------------------------------------------------
             % ---------------------------------------------------------------------------------
             function amplitude = extractNavigator2D
-
+                
                 % Extracts the navigator data from the raw k-space data
                 % Outputs a 1D array of doubles
-
+                
                 objNav.navAmplitude = cell(objData.nr_coils);
-
+                
                 for coilnr = 1:objData.nr_coils
-
+                    
                     % Size of the input data, 4th dimension is the readout direction which contains the navigator
                     [nrEperiments,dimz,dimy,dimx] = size(objData.data{coilnr});
                     
@@ -224,14 +224,14 @@ classdef retroNav
             % ----- 2D multi-slice data -------------------------------------------------------
             % ---------------------------------------------------------------------------------
             function amplitude = extractNavigator2Dms
-
+                
                 % Extracts the navigator data from the raw k-space data of multi-slice 2D data
                 % Outputs a 1D array of doubles
-
+                
                 objNav.navAmplitude = cell(objData.nr_coils);
-
+                
                 for coilnr = 1:objData.nr_coils
-
+                    
                     % Size of the input data, 4th dimension is the readout direction which contains the navigator
                     [nrExperiments,dimz,dimy,dimx] = size(objData.data{coilnr});
                     
@@ -298,23 +298,23 @@ classdef retroNav
             end % extractNavigator2Dms
             
             
-
+            
             
             % ---------------------------------------------------------------------------------
             % ----- 3D data -------------------------------------------------------------------
             % ---------------------------------------------------------------------------------
             function amplitude = extractNavigator3D
-
+                
                 % Extracts the navigator data from the raw k-space data
                 % Outputs a 1D array of doubles
-
+                
                 objNav.navAmplitude = cell(objData.nr_coils);
-
+                
                 for coilnr = 1:objData.nr_coils
-
+                    
                     % Size of the input data, 4th dimension is the readout direction which contains the navigator
                     [nrRepetitions,dimz,dimy,dimx] = size(objData.data{coilnr});
-
+                    
                     % Extract the navigator and put it in a long array
                     navDataAmplitude = reshape(permute(objData.data{coilnr},[2,3,1,4]),nrRepetitions*dimy*dimz,dimx);
                     
@@ -364,14 +364,14 @@ classdef retroNav
             % ----- 2D radial data ------------------------------------------------------------
             % ---------------------------------------------------------------------------------
             function extractNavigator2Dradial
-
+                
                 % Extracts the navigator data from the raw k-space data
                 % Outputs a 1D array of doubles
-
+                
                 objNav.navAmplitude = cell(objData.nr_coils);
-
+                
                 for coilnr = 1:objData.nr_coils
-
+                    
                     % Size of the input data, 4th dimension is the readout direction which contains the navigator
                     [nrRepetitions,dimz,dimy,dimx] = size(objData.data{coilnr});
                     
@@ -422,21 +422,21 @@ classdef retroNav
                 end
                 
             end % extractNavigator2Dradial
-
-
-
+            
+            
+            
             % ---------------------------------------------------------------------------------
             % ----- 2D muslti-slice radial data ------------------------------------------------------------
             % ---------------------------------------------------------------------------------
             function extractNavigator2Dradialms
-
+                
                 % Extracts the navigator data from the raw k-space data
                 % Outputs a 1D array of doubles
-
+                
                 objNav.navAmplitude = cell(objData.nr_coils);
-
+                
                 for coilnr = 1:objData.nr_coils
-
+                    
                     % Size of the input data, 4th dimension is the readout direction which contains the navigator
                     [nrExperiments,dimz,dimy,dimx] = size(objData.data{coilnr});
                     
@@ -501,21 +501,21 @@ classdef retroNav
                 end
                 
             end % extractNavigator2Dradialms
-
-
-
+            
+            
+            
             % ---------------------------------------------------------------------------------
             % ----- 3D UTE data ---------------------------------------------------------------
             % ---------------------------------------------------------------------------------
             function extractNavigator3Dute
-
+                
                 % Extracts the navigator data from the raw k-space data
                 % Outputs a 1D array of doubles
-
+                
                 objNav.navAmplitude = cell(objData.nr_coils);
-
+                
                 for coilnr = 1:objData.nr_coils
-
+                    
                     % Size of the input data, 4th dimension is the readout direction which contains the navigator
                     [nrRepetitions,~,~,dimx] = size(objData.data{coilnr});
                     
@@ -566,13 +566,13 @@ classdef retroNav
                 end
                 
             end % extractNavigator3Dute
-
-
+            
+            
             
         end % extractNavigator
-       
-       
-       
+        
+        
+        
         % ---------------------------------------------------------------------------------
         % Determine the power-frequency spectrum of the navigator
         % ---------------------------------------------------------------------------------
@@ -595,23 +595,23 @@ classdef retroNav
                 amplitude = objNav.navAmplitude{1}';
                 
             end
-
+            
             % Include only those navigators when includewindow == 1 and excludewindow == 1
             amplitude = amplitude.*objData.includeWindow.*objData.excludeWindow;
-
+            
             % Determine the frequency power spectrum
             y = fft(amplitude);
             fs = 1000/objData.TR;                       % Sample frequency in Hz
             n = length(amplitude);                      % Number of samples
             objNav.frequency = (0:n-1)*(fs/n)*60;       % Frequency range in bpm
             power = abs(y).^2/n;                        % Power of the DFT
-
+            
             % Determine frequency and harmonics of k-space trajectory and set those to zero
             if objData.NO_VIEWS > 1
-
+                
                 kfreq = 60/(0.001*objData.NO_VIEWS*objData.TR);
                 ifreq = (fs/n)*60;
-
+                
                 for i = 1:10
                     try
                         power(round(i*kfreq/ifreq)+1) = 0;
@@ -620,9 +620,9 @@ classdef retroNav
                     catch
                     end
                 end
-
+                
             end
-
+            
             % Smooth the power spectrum with moving average
             power = medfilt1(power,6);
             objNav.powerSpectrum = power;
@@ -794,9 +794,9 @@ classdef retroNav
             catch
                 objNav.heartTrigPoints = []; % Failure
             end
-
+            
             % Trigger points are in units of samples (actual time is thus heartTrigPoints*TR)
-         
+            
             % Backup plan in case peakFinder fails = slower
             if length(objNav.heartTrigPoints)<20
                 
@@ -819,7 +819,7 @@ classdef retroNav
                 objNav.heartTrigPoints = locs/interPolationFactor;
                 
             end
-
+            
             objNav.heartTrigTime = objNav.heartTrigPoints*objData.TR - objData.TR; % Time starts at zero
             
         end % trigPointsHeart
@@ -839,7 +839,7 @@ classdef retroNav
             catch
                 objNav.respTrigPoints = []; % Failure
             end
-
+            
             % Backup plan in case peakFinder fails
             if length(objNav.respTrigPoints)<10
                 
@@ -853,12 +853,12 @@ classdef retroNav
                 
                 % Recalculate orginal fractional time point peak positions
                 objNav.respTrigPoints = locs/interPolationFactor;
-                         
+                
             end
-         
+            
             % Trigger points are in units of samples (actual time is thus heartTrigPoints*TR - TR)
             objNav.respTrigTime = objNav.respTrigPoints*objData.TR  - objData.TR; % Time starts at zero
-
+            
         end % trigPointsResp
         
         
@@ -867,31 +867,36 @@ classdef retroNav
         % Determine average heart rate
         % ---------------------------------------------------------------------------------
         function objNav = calcHeartRate(objNav, objData)
+            % This function calculates heart rate as a function of time in bpm
+            % Inputs:
+            % - objNav: navigation object containing heart trigger points and other navigation data
+            % - objData: data object containing data windows and other data input
+            % Output:
+            % - objNav: updated navigation object with heart rate and heart rate data
             
-            % Determine heart rate as function of time in bpm
+            nrLocs = size(objNav.heartTrigPoints,2); % Determine the number of trigger points
             
-            nrLocs = size(objNav.heartTrigPoints,2);
-            
-            rate = zeros(nrLocs-1,1);
+            rate = zeros(nrLocs-1,1); % Initialize the heart rate array
             for i=1:nrLocs-1
+                % Calculate heart rate using adjacent trigger points and TR (repetition time)
                 rate(i) = 60/((objNav.heartTrigPoints(i+1)-objNav.heartTrigPoints(i))*(objData.TR/1000));
             end
             
-            hr = rate';
-            hrf = movmedian(hr,32); % Smooth trendline
+            hr = rate'; % Transpose the heart rate array
+            hrf = movmedian(hr,32); % Smooth the trendline using a moving median filter
             
             % Determine the mean cardiac rate
-            includeData = objData.includeWindow.*objData.excludeWindow;                         % Data-window which is included
+            includeData = objData.includeWindow.*objData.excludeWindow; % Determine the included data window
             try
-                includeData = round(resample(includeData,2*length(hr),length(includeData)));    
+                includeData = round(resample(includeData,2*length(hr),length(includeData)));
             catch
-                includeData = round(resample(includeData,3*length(hr),length(includeData)));    % Resample the data-window to nr samples heartrate
+                includeData = round(resample(includeData,3*length(hr),length(includeData))); % Resample the data-window to match the number of samples in the heart rate
             end
-            includeData = round(resample(includeData,length(hr),length(includeData)));          % In 2 steps, to prevent an overflow error
+            includeData = round(resample(includeData,length(hr),length(includeData))); % Resample again to prevent overflow error
             
-            objNav.meanHeartRate = round(median(nonzeros(includeData'.*hr)));                   % Take the median of the heartrate
-            objNav.heartRateTime = hr;
-            objNav.heartRateTimeFiltered = hrf;
+            objNav.meanHeartRate = round(median(nonzeros(includeData'.*hr))); % Calculate the median heart rate using the included data
+            objNav.heartRateTime = hr; % Store the heart rate array
+            objNav.heartRateTimeFiltered = hrf; % Store the filtered heart rate array
             
         end % calcHeartRate
         
@@ -913,7 +918,7 @@ classdef retroNav
             
             resp = rate';
             respf = movmedian(resp,32);     % Smooth trendline
-
+            
             % Determine the mean respiration rate
             includeData = objData.includeWindow.*objData.excludeWindow;                         % Data-window which is included
             try
@@ -922,7 +927,7 @@ classdef retroNav
                 includeData = round(resample(includeData,3*length(resp),length(includeData)));  % Resample the data-window to nr samples respiration rate
             end
             includeData = round(resample(includeData,length(resp),length(includeData)));        % In 2 steps, to prevent an overflow error
-
+            
             objNav.meanRespRate = round(median(nonzeros(includeData'.*resp)));                  % Take the median of the respirationrate
             objNav.respRateTime = resp;
             objNav.respRateTimeFiltered = respf;
@@ -944,38 +949,38 @@ classdef retroNav
             
             % This function creates an array (time line) of rectangular boxes of 0's and 1's around the detected respiratory signals
             % Later on 1 means that there is a respiration, for which the k-lines will be discarded
-
+            
             respWin = 0.5*(respPercent/100)*(60/meanResp)*1000/objData.TR;   % 1/2 window width around respiratory peak locations
-
+            
             window = zeros(nrKlines,1);   % Fill array with zeros
-
+            
             if ~app.IgnoreRespirationToggleCheckBox.Value
-
+                
                 for i = 1 : size(rLocs,2)
-
+                    
                     % Center of the respiration window
                     center = rLocs(1,i);
-
+                    
                     % Beginning and end of the respiration window in ms, time starts at zero
                     objNav.respWindowTime(i,1) = (center - respWin)*objData.TR  - objData.TR;
                     objNav.respWindowTime(i,2) = (center + respWin)*objData.TR  - objData.TR;
-
+                    
                     % Set respiration window mask to 1 during respiration
                     for j = round(center - respWin) : round(center + respWin)
                         if (j>0) && (j<=nrKlines)
                             window(j) = 1;
                         end
                     end
-
+                    
                 end
-
+                
                 % Set window to expiration (0) or inspiration (1)
                 if app.RespirationToggleCheckBox.Value
                     window = 1 - window;
                 end
-
+                
             end
-
+            
             objNav.respWindow = window;
             
         end % makeRespWindow
@@ -983,7 +988,7 @@ classdef retroNav
         
         
     end % methods (public)
-        
+    
     
     
     
@@ -993,15 +998,48 @@ classdef retroNav
     
     methods (Static)
         
-
+        
         % ---------------------------------------------------------------------------------
         % peakFinder
         % ---------------------------------------------------------------------------------
-    
         function varargout = peakFinder(x0, sel, thresh, extrema, includeEndpoints, interpolate)
+            % peakFinder Find peaks and valleys in data
+            %
+            % This function is a simple implementation of a peak finder. It
+            % finds peaks and valleys in the data, returning the indices of
+            % those points. It can find local maxima and minima, or global
+            % maxima and minima.
+            %
+            % This function is not particularly robust to noise. It is best
+            % suited for finding peaks and valleys in relatively smooth data.
+            %
+            % Usage:
+            %   ind = peakFinder(x0, sel, thresh, extrema, includeEndpoints, interpolate)
+            %
+            % Inputs:
+            %   x0 - The data to search for peaks and valleys in.
+            %   sel - The size of the window to use when searching for peaks.
+            %       This value should be odd.
+            %   thresh - The threshold to use when searching for peaks. This
+            %       value is used to eliminate peaks that are too small to be
+            %       significant. This value is a fraction of the maximum value
+            %       in the data. A value of 0.1 is a good starting point.
+            %   extrema - Set this to 'max' to find local maxima, or 'min' to
+            %       find local minima. Set this to 'gmax' to find the global
+            %       maximum, or 'gmin' to find the global minimum.
+            %   includeEndpoints - Set this to true to include the two
+            %       endpoints in the set of points to search for peaks. This
+            %       can be useful when searching for peaks in data that has
+            %       been smoothed.
+            %   interpolate - Set this to true to use a parabolic fit to
+            %       interpolate the location of each peak. This can be useful
+            %       when the data is noisy, or when you need to find the peak
+            %       location with greater accuracy than the sampling rate
+            %       allows.
+            %
+            % Outputs:
+            %   ind - The indices of the peaks and valleys in the data.
             
-            % This function finds peaks in a signal
-
             narginchk(1, 6);
             nargoutchk(0, 2);
             
@@ -1068,7 +1106,7 @@ classdef retroNav
             % X only has the peaks, valleys, and possibly endpoints
             len = numel(x);
             
-            if len > 2 
+            if len > 2
                 % Function with peaks and valleys
                 % Set initial parameters for loop
                 tempMag = minMag;
@@ -1076,14 +1114,14 @@ classdef retroNav
                 
                 if includeEndpoints
                     signDx = sign(diff(x(1:3)));
-                    if signDx(1) <= 0 
+                    if signDx(1) <= 0
                         % The first point is larger or equal to the second
                         if signDx(1) == signDx(2) % Want alternating signs
                             x(2) = [];
                             ind(2) = [];
                             len = len-1;
                         end
-                    else 
+                    else
                         % First point is smaller than the second
                         if signDx(1) == signDx(2) % Want alternating signs
                             x(1) = [];
@@ -1105,11 +1143,11 @@ classdef retroNav
                 peakLoc = zeros(maxPeaks,1);
                 peakMag = zeros(maxPeaks,1);
                 cInd = 1;
-
+                
                 % Loop through extrema which should be peaks and then valleys
                 while ii < len
-
-                    ii = ii+1; 
+                    
+                    ii = ii+1;
                     % This is a peak
                     % Reset peak finding if we had a peak and the next peak is bigger
                     % than the last or the left min was small enough to reset.
@@ -1127,11 +1165,11 @@ classdef retroNav
                     
                     % Make sure we don't iterate past the length of our vector
                     if ii == len
-                        break; 
+                        break;
                         % We assign the last point differently out of the loop
                     end
                     
-                    ii = ii+1; 
+                    ii = ii+1;
                     % Move onto the valley
                     % Come down at least sel from peak
                     if ~foundPeak && tempMag > sel + x(ii)
@@ -1140,29 +1178,29 @@ classdef retroNav
                         peakLoc(cInd) = tempLoc; % Add peak to index
                         peakMag(cInd) = tempMag;
                         cInd = cInd+1;
-                    elseif x(ii) < leftMin 
+                    elseif x(ii) < leftMin
                         % New left minima
                         leftMin = x(ii);
                     end
-
+                    
                 end
                 
                 % Check end point
                 if includeEndpoints
-
+                    
                     if x(end) > tempMag && x(end) > leftMin + sel
                         peakLoc(cInd) = len;
                         peakMag(cInd) = x(end);
                         cInd = cInd + 1;
-                    elseif ~foundPeak && tempMag > minMag 
+                    elseif ~foundPeak && tempMag > minMag
                         % Check if we still need to add the last point
                         peakLoc(cInd) = tempLoc;
                         peakMag(cInd) = tempMag;
                         cInd = cInd + 1;
                     end
-
+                    
                 elseif ~foundPeak
-
+                    
                     if x(end) > tempMag && x(end) > leftMin + sel
                         peakLoc(cInd) = len;
                         peakMag(cInd) = x(end);
@@ -1172,7 +1210,7 @@ classdef retroNav
                         peakMag(cInd) = tempMag;
                         cInd = cInd + 1;
                     end
-
+                    
                 end
                 
                 % Create output
@@ -1183,8 +1221,8 @@ classdef retroNav
                     peakInds = [];
                     peakMags = [];
                 end
-
-            else 
+                
+            else
                 
                 % This is a monotone function where an endpoint is the only peak
                 [peakMags,xInd] = max(x);
@@ -1194,7 +1232,7 @@ classdef retroNav
                     peakMags = [];
                     peakInds = [];
                 end
-
+                
             end
             
             % Apply threshold value.  Since always finding maxima it will always be
@@ -1226,7 +1264,7 @@ classdef retroNav
             % Change sign of data if was finding minima
             if extrema < 0
                 peakMags = -peakMags;
-                x0 = -x0; %#ok<NASGU> 
+                x0 = -x0; %#ok<NASGU>
             end
             
             % Plot if no output desired
@@ -1237,8 +1275,8 @@ classdef retroNav
             
         end % peakFinder
         
-
-
+        
+        
         
     end % methods (static)
     

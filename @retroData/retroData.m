@@ -1,5 +1,5 @@
 classdef retroData
-
+    
     % ---------------------------------------------------------
     %
     % Data and parameter class for retrospective app
@@ -15,7 +15,7 @@ classdef retroData
         % Data
         data                                                    % raw k-space data
         mrdFooter                                               % original MRD file footer
-        newMrdFooter                                            % new MRD file footer    
+        newMrdFooter                                            % new MRD file footer
         rprFile = []                                            % original RPR file data
         sqlFile = []                                            % SQL file data
         newRprFile                                              % new RPR file data
@@ -23,7 +23,7 @@ classdef retroData
         exportDir                                               % export directory
         includeWindow                                           % data include window
         excludeWindow                                           % data exclude window
-        nrKlines                                                % number of k-lines 
+        nrKlines                                                % number of k-lines
         
         % Sequence parameters mostly from MRD file header
         PPL                                                     % PPL name
@@ -59,19 +59,19 @@ classdef retroData
         radial_on = 0                                           % radial on (1) or off (0)
         slice_nav = 0                                           % slice navigator on (1) or off (0)
         date                                                    % scan date
-        pixelshift1 = 0                                         % image shift in views direction 
+        pixelshift1 = 0                                         % image shift in views direction
         pixelshift2 = 0                                         % image shift in views_2 direction
         coil_scaling = 1                                        % coil intensity scaling parameter
         scanner = 'MRS'                                         % scanner type
         no_samples_nav = 10                                     % number of navigator samples
         fov_read_off = 0                                        % read-offset from MRD file, relative offset = value/4000
         fov_phase_off = 0                                       % phase-offset from MRD file, relative offset = value/4000
-        SAMPLE_PERIOD                                           % sample period 
+        SAMPLE_PERIOD                                           % sample period
         
         % K-space trajectory related
-        pe1_order = 3                                           % phase-encoding order 
+        pe1_order = 3                                           % phase-encoding order
         pe2_centric_on = 1                                      % phase-encoding 2 centric order on (1) or off (0)
-        pe2_traj = 0                                            % phase-encoding 2 trajectory type    
+        pe2_traj = 0                                            % phase-encoding 2 trajectory type
         gp_var_mul = []                                         % trajectory array
         interpFactor = 16                                       % k-space data interpolation factor
         
@@ -97,7 +97,7 @@ classdef retroData
         % Data and reconstruction type
         dataType = '2D'                                         % type of data
         recoGuess = 'systolic function'                         % type of reconstruction
-
+        
         % Parameters from SQL file
         SQLnumberOfSlices = 1                                   % number of slices
         SQLsliceGap = 0                                         % slice gap
@@ -107,7 +107,7 @@ classdef retroData
         SQLoffsetX = 0                                          % offset X
         SQLoffsetY = 0                                          % offset Y
         SQLoffsetZ = 0                                          % offset Z
-
+        
         % Image shifts & orientations
         xShift = 0                                              % image shift in X direction
         yShift = 0                                              % image shift in Y direction
@@ -301,15 +301,15 @@ classdef retroData
                 if isfield(parameter,'scanner')
                     obj.scanner = parameter.scanner;
                 end
-
+                
                 if isfield(parameter,'fov_read_off')
                     obj.fov_read_off = parameter.fov_read_off;
                 end
-
+                
                 if isfield(parameter,'fov_phase_off')
                     obj.fov_phase_off = parameter.fov_phase_off;
                 end
-
+                
                 if isfield(parameter,'SAMPLE_PERIOD')
                     obj.SAMPLE_PERIOD = parameter.SAMPLE_PERIOD;
                 end
@@ -337,7 +337,7 @@ classdef retroData
         
         
         
-
+        
         % ---------------------------------------------------------------------------------
         % Check the number of averages
         % ---------------------------------------------------------------------------------
@@ -352,7 +352,7 @@ classdef retroData
         end % checkNumberOfAverages
         
         
-
+        
         
         % ---------------------------------------------------------------------------------
         % Check for multi-slab data
@@ -367,8 +367,8 @@ classdef retroData
             
         end % checkForMultiSlab
         
-
-
+        
+        
         % ---------------------------------------------------------------------------------
         % Check for TR > 0
         % ---------------------------------------------------------------------------------
@@ -384,7 +384,7 @@ classdef retroData
         end % checkTR
         
         
-
+        
         % ---------------------------------------------------------------------------------
         % Check for variable flip angle data
         % ---------------------------------------------------------------------------------
@@ -396,7 +396,7 @@ classdef retroData
                 obj = setVariableFlipAngles(obj);
                 app.TextMessage(strcat('INFO:',{' '},num2str(obj.VFA_size),{' '},'flip angles detected ...'));
             end
-
+            
             % Set number of flip angles to 1 if obj.VFA_size = 0
             if obj.VFA_size == 0
                 app.NrFlipAnglesViewField.Value = 1;
@@ -407,7 +407,7 @@ classdef retroData
         end % checkForVFA
         
         
-
+        
         
         % ---------------------------------------------------------------------------------
         % Set the variable flip angles, sort the angles in groups
@@ -415,7 +415,7 @@ classdef retroData
         function obj = setVariableFlipAngles(obj)
             
             % The different flip angles in a variable flip-angle experiment can be ordered in different ways
-            % Here they are sorted, such that they can be combined 
+            % Here they are sorted, such that they can be combined
             a = obj.VFA_size;
             b = unique(obj.VFA_angles(1:obj.VFA_size),'Stable');
             c = length(b);
@@ -437,38 +437,38 @@ classdef retroData
         
         
         
-
+        
         % ---------------------------------------------------------------------------------
         % Check if the data is a valid file with a motion navigator acquisition
         % ---------------------------------------------------------------------------------
         function obj = acquisitionType(obj, app)
             
             % Determine acquisition type and put the data in the right order
-
+            
             if obj.NO_VIEWS == 1 && obj.NO_VIEWS_2 == 1 && obj.EXPERIMENT_ARRAY > 1000
-
+                
                 % 3D UTE data
-
+                
                 obj.validDataFlag = true;
-
+                
                 obj.dataType = '3Dute';
-
+                
                 for i=1:obj.nr_coils
                     %                             spokes,1,1,X
                     obj.data{i} = permute(obj.data{i},[1,4,3,2]);
                 end
-
+                
                 obj.primaryNavigatorPoint = 1;
                 obj.nr_repetitions = size(obj.data{1},1);
-
+                
             elseif obj.radial_on == 1
-
+                
                 % 2D radial data
                 
                 obj.validDataFlag = true;
-
+                
                 obj.dataType = '2Dradial';
-
+                
                 for i=1:obj.nr_coils
                     if ismatrix(obj.data{i})
                         %                                  1 1 Y X
@@ -488,65 +488,82 @@ classdef retroData
                         % obj.data{i} = permute(obj.data{i},[1,2,3,4]);
                         obj.dataType = '2Dradialms';
                     end
-
+                    
                 end
-
+                
                 % Center the echo for the navigator
                 % This is needed to know that the navigator is the center k-space point
                 % For out-of-center points the navigator is disturbed by the radial frequency
-                dims = size(obj.data{1},4);
-                for i = 1:obj.nr_coils
-                    for dynamic = 1:size(obj.data{1},1)
-                        for slice = 1:size(obj.data{1},2)
-                            for spoke = 1:size(obj.data{1},3)
-                                tmpKline1 = squeeze(obj.data{i}(dynamic,slice,spoke,:));    % Take a k-line (spoke)
-                                tmpKline2 = interp(tmpKline1,obj.interpFactor);             % Interpolate
-                                [~,kCenter] = max(abs(tmpKline2));                          % Determine the center
-                                kShift = floor(dims/2)-kCenter/obj.interpFactor;            % Calculate the shift
-                                tmpKline1 = retroData.fracCircShift(tmpKline1,kShift);      % Apply the shift on sub-sample level
-                                obj.data{i}(dynamic,slice,spoke,:) = tmpKline1;             % Return the result
-                            end
+                % Loop through each dynamic (time point) in the data
+                for dynamic = 1:size(obj.data{1},1)
+                    
+                    % Loop through each slice in the data
+                    for slice = 1:size(obj.data{1},2)
+                        
+                        % Loop through each spoke (k-space line) in the data
+                        for spoke = 1:size(obj.data{1},3)
+                            
+                            % Extract the current k-line (spoke) from the data for the current coil, dynamic, slice
+                            tmpKline1 = squeeze(obj.data{i}(dynamic,slice,spoke,:));
+                            
+                            % Interpolate the k-line to increase the resolution
+                            tmpKline2 = interp(tmpKline1,obj.interpFactor);
+                            
+                            % Find the index of the maximum absolute value of the interpolated k-line, which represents the center of k-space
+                            [~,kCenter] = max(abs(tmpKline2));
+                            
+                            % Calculate the amount of shift needed to center the k-line by subtracting the k-center from the midpoint of k-space
+                            kShift = floor(dims/2)-kCenter/obj.interpFactor;
+                            
+                            % Shift the k-line by the calculated amount, using a circular shift to avoid edge effects
+                            tmpKline1 = retroData.fracCircShift(tmpKline1,kShift);
+                            
+                            % Replace the original k-line with the shifted one in the data for the current coil, dynamic, slice, spoke
+                            obj.data{i}(dynamic,slice,spoke,:) = tmpKline1;
+                            
                         end
+                        
                     end
+                    
                 end
-
+                
                 kSpaceSum = squeeze(sum(abs(obj.data{1}),[1,2,3]));     % Sum over all dimensions
                 [~,kCenter] = max(kSpaceSum);                           % Determine the center
                 obj.primaryNavigatorPoint = kCenter;                    % Navigator = k-space center
                 obj.nrNavPointsUsed = 1;                                % Number of navigator points = 1
-
+                
                 obj.nr_repetitions = size(obj.data{1},1);               % Number of k-space repetitions
                 
             elseif (obj.slice_nav == 1) && (obj.no_samples_nav > 0)
                 
                 % 3D Cartesian data
-
+                
                 obj.validDataFlag = true;
                 
                 if obj.NO_VIEWS_2 > 1
                     
-                    obj.dataType = '3D';                                        
-                 
+                    obj.dataType = '3D';
+                    
                     for i=1:obj.nr_coils
                         if obj.EXPERIMENT_ARRAY > 1
-                            %                                 NR Z Y X  
+                            %                                 NR Z Y X
                             obj.data{i} = permute(obj.data{i},[1,3,2,4]);
                         else
-                            %                                  1 Z Y X 
+                            %                                  1 Z Y X
                             obj.data{i} = permute(obj.data{i},[4,2,1,3]);
                         end
                     end
-
+                    
                     % Pseudo Cartesion k-space filling / P2ROUD
                     if obj.pe1_order == 4
                         obj.dataType = '3Dp2roud';
                     end
                     
                 else
-
+                    
                     % 2D single-slice Cartesian data
-
-                    obj.dataType = '2D';  
+                    
+                    obj.dataType = '2D';
                     
                     for i=1:obj.nr_coils
                         if ismatrix(obj.data{i})
@@ -561,12 +578,12 @@ classdef retroData
                             %                                  1 Z Y X
                             obj.data{i} = permute(obj.data{i},[4,1,2,3]);
                         end
-
+                        
                     end
-
+                    
                     % 2D multi-slice data
-
-                    if obj.NO_SLICES > 1                                        
+                    
+                    if obj.NO_SLICES > 1
                         obj.dataType = '2Dms';
                         obj.multi2DFlag = true;
                     else
@@ -574,25 +591,25 @@ classdef retroData
                     end
                     
                 end
-
+                
                 % Set the navigator points
                 obj.primaryNavigatorPoint = obj.no_samples_nav;
                 if obj.nrNavPointsUsed > obj.primaryNavigatorPoint
                     obj.nrNavPointsUsed = obj.primaryNavigatorPoint;
                 end
                 % Number of k-space repetitions
-                obj.nr_repetitions = size(obj.data{1},1); 
+                obj.nr_repetitions = size(obj.data{1},1);
                 
             else
                 
                 % If not one of the above, data cannot be used
                 obj.validDataFlag = false;
-
+                
             end
-
+            
             % Message the user on the type of data
             switch obj.dataType
-
+                
                 case '2D'
                     app.TextMessage('2D single-slice data ...');
                 case '3D'
@@ -607,40 +624,40 @@ classdef retroData
                     app.TextMessage('2D multi-slice radial data ...');
                 case '3Dute'
                     app.TextMessage('3D UTE data ...');
-            
+                    
             end
-
+            
         end % acquisitionType
         
-
-
+        
+        
         
         % ---------------------------------------------------------------------------------
         % Guess which reconstruction type (systolic function, diastolic
         % function, scout, VFA
         % ---------------------------------------------------------------------------------
         function obj = guessRecoType(obj)
-
+            
             % Guess which type of reconstruction would be suitable for the data
-
+            
             switch obj.dataType
-
+                
                 case {'2D','2Dradial'}
-
+                    
                     if obj.nr_repetitions > 200
                         obj.recoGuess = 'diastolic function';
                     else
                         obj.recoGuess = 'systolic function';
                     end
-
+                    
                 case {'2Dms','2Dradialms'}
-
+                    
                     if obj.nr_repetitions > 200
                         obj.recoGuess = 'diastolic function';
                     else
                         obj.recoGuess = 'systolic function';
                     end
-
+                    
                     % Check if there is more than one slice orientation
                     % Then it is probably a scout measurement
                     slices = [obj.s_angle_var ; obj.p_angle_var ; obj.r_angle_var]';
@@ -648,27 +665,27 @@ classdef retroData
                     if nr_unique_slices > 1
                         obj.recoGuess = 'scout';
                     end
-
+                    
                 case {'3D','3Dute','3Dp2roud'}
-
+                    
                     obj.recoGuess = 'systolic function';
-
+                    
                     if obj.vfaDataFlag
                         obj.recoGuess = 'variable flip-angle';
                     end
-
+                    
             end
-
+            
         end % guessRecoType
         
-
-
-
+        
+        
+        
         % ---------------------------------------------------------------------------------
         % Read MRD file
         % ---------------------------------------------------------------------------------
         function [im, dim, par, unsortedKspace] = importMRD(obj, filename, reordering1, reordering2)
-
+            
             % Description: Function to open multidimensional MRD/SUR files given a filename with PPR-parsing
             % Read in MRD and SUR file formats
             % Inputs: string filename, reordering1, reordering2
@@ -681,7 +698,7 @@ classdef retroData
             % 30 April 2014 - support for reading orientations added
             % 11 September 2014 - swapped views and views2 in the array (otherwise the images are rotated)
             % 13 October 2015 - scaling added as a parameter
-
+            
             fid = fopen(filename,'r');      % Define the file id
             val = fread(fid,4,'int32');
             xdim = val(1);
@@ -700,16 +717,16 @@ classdef retroData
             dim6 = val(2);
             fseek(fid,256,'bof');
             text = fread(fid,256);
-            no_samples = xdim;  
-            no_views = ydim;    
-            no_views_2 = zdim;  
+            no_samples = xdim;
+            no_views = ydim;
+            no_views_2 = zdim;
             no_slices = dim4;
             no_echoes = dim5;
             no_expts = dim6;
-
+            
             % Read in the complex image data
             dim = [no_expts,no_echoes,no_slices,no_views_2,no_views,no_samples];
-
+            
             if size(datatype,2)>1
                 onlydatatype = datatype(2);
                 iscomplex = 2;
@@ -717,51 +734,51 @@ classdef retroData
                 onlydatatype = datatype(1);
                 iscomplex = 1;
             end
-
+            
             switch onlydatatype
                 case '0'
-                    dataformat = 'uchar';   
+                    dataformat = 'uchar';
                 case '1'
-                    dataformat = 'schar';   
+                    dataformat = 'schar';
                 case '2'
-                    dataformat = 'short';   
+                    dataformat = 'short';
                 case '3'
-                    dataformat = 'int16';   
+                    dataformat = 'int16';
                 case '4'
-                    dataformat = 'int32';   
+                    dataformat = 'int32';
                 case '5'
-                    dataformat = 'float32'; 
+                    dataformat = 'float32';
                 case '6'
-                    dataformat = 'double';  
+                    dataformat = 'double';
                 otherwise
-                    dataformat = 'int32';   
+                    dataformat = 'int32';
             end
-          
+            
             % Read the data
             num2Read = no_expts*no_echoes*no_slices*no_views_2*no_views*no_samples*iscomplex; %*datasize;
             [m_total, count] = fread(fid,num2Read,dataformat); % Reading all the data at once
- 
+            
             % Check if expected size of data was read
             % If not, this means that the acquisition was prematurely stopped
             % and only part of the data is available
             if count < num2Read
-    
+                
                 % Find the end of the data by looking for :PPL string
                 textData = fileread(filename);
                 targetText = ":PPL";
                 amountOfData = strfind(textData,targetText);
-
+                
                 % Number of floats to read
-                newNum2Read = (amountOfData-4)/4 - 512;    
-
+                newNum2Read = (amountOfData-4)/4 - 512;
+                
                 % Reset the file position indicator to beginning of the data
                 fseek(fid,512,'bof');
-
+                
                 % Read the data again
                 [m_total, count] = fread(fid,newNum2Read ,dataFormat);
-        
+                
             end
-
+            
             if iscomplex == 2
                 a=1:count/2;
                 m_real = m_total(2*a-1);
@@ -773,11 +790,11 @@ classdef retroData
                 m_C_tmp = m_total;
                 clear m_total;
             end
-
+            
             % Pre-allocate the expected size of m_C, in case of missing data
             m_C = zeros(num2Read,1);
             m_C(1:length(m_C_tmp)) = m_C_tmp;
-
+            
             % The unsorted k-space
             unsortedKspace = m_C;
             
@@ -799,7 +816,7 @@ classdef retroData
                     ord2(2*g)=no_views_2/2-g+1;
                 end
             end
-
+            
             % Pre-allocating the data matrix speeds up this function significantly
             m_C_1=zeros(no_expts,no_echoes,no_slices,max(ord(:)),max(ord2(:)),no_samples);
             n = 0;
@@ -815,7 +832,7 @@ classdef retroData
                     end
                 end
             end
-
+            
             clear ord;
             clear ord2;
             m_C = squeeze(m_C_1);
@@ -825,10 +842,10 @@ classdef retroData
             sample_filename = char(fread(fid,120,'uchar')');
             ppr_text = char(fread(fid,Inf,'uchar')');
             fclose(fid);
-
+            
             % Parse fields in ppr section of the MRD file
             if numel(ppr_text)>0
-
+                
                 cell_text = textscan(ppr_text,'%s','delimiter',char(13));
                 PPR_keywords = {'BUFFER_SIZE','DATA_TYPE','DECOUPLE_FREQUENCY','DISCARD','DSP_ROUTINE','EDITTEXT','EXPERIMENT_ARRAY','FOV','FOV_READ_OFF','FOV_PHASE_OFF','FOV_SLICE_OFF','GRADIENT_STRENGTH','MULTI_ORIENTATION','Multiple Receivers','NO_AVERAGES','NO_ECHOES','NO_RECEIVERS','NO_SAMPLES','NO_SLICES','NO_VIEWS','NO_VIEWS_2','OBLIQUE_ORIENTATION','OBSERVE_FREQUENCY','ORIENTATION','PHASE_CYCLE','READ/PHASE/SLICE_SELECTION','RECEIVER_FILTER','SAMPLE_PERIOD','SAMPLE_PERIOD_2','SCROLLBAR','SLICE_BLOCK','SLICE_FOV','SLICE_INTERLEAVE','SLICE_THICKNESS','SLICE_SEPARATION','SPECTRAL_WIDTH','SWEEP_WIDTH','SWEEP_WIDTH_2','VAR_ARRAY','VIEW_BLOCK','VIEWS_PER_SEGMENT','SMX','SMY','SWX','SWY','SMZ','SWZ','VAR','PHASE_ORIENTATION','X_ANGLE','Y_ANGLE','Z_ANGLE','PPL','IM_ORIENTATION','IM_OFFSETS','FOV_OFFSETS'};
                 %PPR_type_0 keywords have text fields only, e.g. ":PPL C:\ppl\smisim\1ge_tagging2_1.PPL"
@@ -844,7 +861,7 @@ classdef retroData
                 % KEYWORD [pre-prompt,] [post-prompt,] [min,] [max,] default, variable [,scale] [,further parameters ...];
                 PPR_type_6 = [9:11 39 50:52]; % VAR_ARRAY and angles keywords
                 PPR_type_7 = [54 55 56]; % IM_ORIENTATION and IM_OFFSETS (SUR only)
-
+                
                 par = struct('filename',filename);
                 for j=1:size(cell_text{1},1)
                     
@@ -854,44 +871,44 @@ classdef retroData
                         C = textscan(char1, '%*c%s %s', 1);
                         field_ = char(C{1});
                     end
-
+                    
                     % Find matching number in PPR_keyword array:
                     num = find(strcmp(field_,PPR_keywords));
                     
                     if num>0
-
+                        
                         if find(PPR_type_3==num) % :VAR keyword
                             C = textscan(char1, '%*s %s %f');
                             field_title = char(C{1}); field_title(numel(field_title)) = [];
                             numeric_field = C{2};
-                            par = setfield(par, field_title, numeric_field); %#ok<*SFLD> 
-
+                            par = setfield(par, field_title, numeric_field); %#ok<*SFLD>
+                            
                         elseif find(PPR_type_1==num)
                             C = textscan(char1, '%*s %f');
                             numeric_field = C{1};
                             par = setfield(par, field_, numeric_field);
-
+                            
                         elseif find(PPR_type_2==num)
                             C = textscan(char1, '%*s %s %f');
                             numeric_field = C{2};
                             par = setfield(par, field_, numeric_field);
-
+                            
                         elseif find(PPR_type_4==num)
                             C = textscan(char1, '%*s %s %n %n %s');
-                            field_title = char(C{1}); field_title(numel(field_title)) = []; %#ok<*NASGU> 
+                            field_title = char(C{1}); field_title(numel(field_title)) = []; %#ok<*NASGU>
                             numeric_field = C{2};
                             par = setfield(par, field_, numeric_field);
-
+                            
                         elseif find(PPR_type_0==num)
                             C = textscan(char1, '%*s %[^\n]');
                             text_field = char(C{1}); %text_field = reshape(text_field,1,[]);
                             par = setfield(par, field_, text_field);
-
+                            
                         elseif  find(PPR_type_5==num)
                             C = textscan(char1, '%*s %s %f %c %f');
                             numeric_field = C{4};
                             par = setfield(par, field_, numeric_field);
-
+                            
                         elseif  find(PPR_type_6==num)
                             C = textscan(char1, '%*s %s %f %c %f', 100);
                             field_ = char(C{1}); field_(end) = [];% the name of the array
@@ -907,24 +924,24 @@ classdef retroData
                             while (~contains(tline, pattern))
                                 tline = char(cell_text{1}(j+k,:));
                                 arr = textscan(tline, '%*s %f', num_elements);
-                                multiplier = [multiplier, arr{1}']; %#ok<*AGROW> 
+                                multiplier = [multiplier, arr{1}']; %#ok<*AGROW>
                                 k = k+1;
                                 tline = char(cell_text{1}(j+k,:));
                             end
                             par = setfield(par, field_, multiplier);
-
+                            
                         elseif find(PPR_type_7==num) % :IM_ORIENTATION keyword
                             C = textscan(char1, '%s %f %f %f');
                             field_title = char(C{1}); field_title(1) = [];
                             numeric_field = [C{2}, C{3}, C{4}];
                             par = setfield(par, field_title, numeric_field);
-
+                            
                         end
-
+                        
                     end
-
+                    
                 end
-
+                
                 if isfield('OBSERVE_FREQUENCY','par')
                     C = textscan(par.OBSERVE_FREQUENCY, '%q');
                     text_field = char(C{1});
@@ -936,54 +953,54 @@ classdef retroData
                 par.datatype = datatype;
                 file_pars = dir(filename);
                 par.date = file_pars.date;
-            
+                
             else
                 par = [];
             end
             
             par.scaling = scaling;
-
+            
         end % ImportMRD
-
-
-       
+        
+        
+        
         
         % ---------------------------------------------------------------------------------
         % Import B-type scanner data
         % ---------------------------------------------------------------------------------
-        function [obj, rawData, parameters] = importB(obj, app) %#ok<*INUSL> 
-
+        function [obj, rawData, parameters] = importB(obj, app) %#ok<*INUSL>
+            
             % Import path
             importPath = app.mrdImportPath;
-
+            
             % Parameters
             info1 = jCampRead(strcat(importPath,'acqp'));
             info2 = jCampRead(strcat(importPath,'method'));
-
+            
             % Scanner type
             parameters.scanner = 'B-type';
-
+            
             % Slices
             parameters.NO_SLICES = str2num(info1.NSLICES);
             parameters.SLICE_THICKNESS = str2num(info2.pvm.slicethick) * parameters.NO_SLICES;
-
+            
             % Matrix in readout direction
             parameters.NO_SAMPLES = info1.acq.size(1) / 2;
             if isfield(info2.pvm,"matrix")
                 parameters.NO_SAMPLES = info2.pvm.encmatrix(1);
             end
-
+            
             % Matrix in phase encoding direction
             parameters.NO_VIEWS = info1.acq.size(2);
             if isfield(info2.pvm,"matrix")
                 parameters.NO_VIEWS = info2.pvm.encmatrix(2);
             end
-
+            
             % Phase encoding orientation
             parameters.PHASE_ORIENTATION = 1;
             pm1 = -1;
             pm2 = -1;
-
+            
             % Determine how to flip the data for different orientations
             if isfield(info2.pvm,'spackarrreadorient')
                 if strcmp(info2.pvm.spackarrreadorient(1:3),'L_R')
@@ -1005,68 +1022,68 @@ classdef retroData
                     pm2 = -1;
                 end
             end
-
+            
             % Matrix in 2nd phase encoding direction
             parameters.NO_VIEWS_2 = 1;
             parameters.pe2_centric_on = 0;
-
+            
             % FOV
             parameters.FOV = info1.acq.fov(1)*10;
             parameters.FOV2 = info1.acq.fov(2)*10;
             parameters.FOVf = round(8*parameters.FOV2/parameters.FOV);
-
+            
             % Sequence parameters
             parameters.tr = info1.acq.repetition_time;
             parameters.te = info1.acq.echo_time;
             parameters.alpha = str2num(info1.acq.flip_angle);
             parameters.NO_ECHOES = 1;
             parameters.NO_AVERAGES = str2num(info1.NA);
-
+            
             % Other parameters
             parameters.date = datetime;
             parameters.nucleus = '1H';
             parameters.PPL = 'Navigator Sequence';
             parameters.filename = 'Proton';
-            parameters.field_strength = str2num(info1.BF1)/42.58; %#ok<*ST2NM> 
+            parameters.field_strength = str2num(info1.BF1)/42.58; %#ok<*ST2NM>
             parameters.filename = 111;
             parameters.pe1_order = 2;
             parameters.radial_on = 0;
             parameters.slice_nav = 1;
-
+            
             % Number of navigator points
             if isfield(info2.pvm,"navpoints")
                 parameters.no_samples_nav = str2num(info2.pvm.navpoints);
             else
                 parameters.no_samples_nav = str2num(info2.NavSize) / 2;
             end
-
+            
             % Number of receiver coils
             parameters.nr_coils = str2num(info2.pvm.encnreceivers);
-
+            
             % Trajectory 1st phase encoding direction
             if isfield(info2.pvm,'ppggradamparray1')
                 parameters.gp_var_mul = round(pm1 * info2.pvm.ppggradamparray1 * (parameters.NO_VIEWS / 2 - 0.5));
-                 if isfield(info2.pvm,'enczfaccel1') && isfield(info2.pvm,'encpftaccel1')
-                     % * str2num(info2.pvm.enczfaccel1)
+                if isfield(info2.pvm,'enczfaccel1') && isfield(info2.pvm,'encpftaccel1')
+                    % * str2num(info2.pvm.enczfaccel1)
                     parameters.gp_var_mul = round(pm1 * info2.pvm.ppggradamparray1 * str2num(info2.pvm.encpftaccel1) * (parameters.NO_VIEWS / 2 - 0.5));
-                 else
+                else
                     parameters.gp_var_mul = round(pm1 * info2.pvm.ppggradamparray1 * (parameters.NO_VIEWS / 2 - 0.5));
-                 end
+                end
                 parameters.pe1_order = 3;
             elseif isfield(info2.pvm,'encvalues1')
                 parameters.gp_var_mul = round(pm1 * info2.pvm.encvalues1 * (parameters.NO_VIEWS / 2 - 0.5));
-                 if isfield(info2.pvm,'enczf') && isfield(info2.pvm,'encpft')
-                     % * info2.pvm.enczf(2) 
+                if isfield(info2.pvm,'enczf') && isfield(info2.pvm,'encpft')
+                    % * info2.pvm.enczf(2)
                     parameters.gp_var_mul = round(pm1 * info2.pvm.encvalues1 * info2.pvm.encpft(2) * (parameters.NO_VIEWS / 2 - 0.5));
-                 else
+                else
                     parameters.gp_var_mul = round(pm1 * info2.pvm.encvalues1 * (parameters.NO_VIEWS / 2 - 0.5));
-                 end
+                end
                 parameters.pe1_order = 3;
             else
                 % Assume linear
                 parameters.pe1_order = 1;
             end
-
+            
             % Data type
             datatype = 'int32';
             if isfield(info1.acq,'word_size')
@@ -1077,7 +1094,7 @@ classdef retroData
                     datatype = 'int16';
                 end
             end
-
+            
             % Read data
             if isfile(strcat(importPath,'fid.orig'))
                 fileID = fopen(strcat(importPath,'fid.orig'));
@@ -1089,7 +1106,7 @@ classdef retroData
             kReal = dataRaw(1:2:end);
             kIm = dataRaw(2:2:end);
             kSpace = kReal + 1j*kIm;
-
+            
             % Read navigator
             if isfile(strcat(importPath,'fid.NavFid'))
                 fileID = fopen(strcat(importPath,'fid.NavFid'));
@@ -1101,20 +1118,20 @@ classdef retroData
             kReal = navdata(1:2:end);
             kIm = navdata(2:2:end);
             navKspace = kReal + 1j*kIm;
-
+            
             % Phase offset
             if isfield(info1.acq,'phase1_offset')
                 parameters.pixelshift1 = round(pm1 * parameters.NO_VIEWS * info1.acq.phase1_offset / parameters.FOV);
             end
-
+            
             % 2D data
             if strcmp(info2.pvm.spatdimenum,"2D") || strcmp(info2.pvm.spatdimenum,"<2D>")
-
+                
                 % In case k-space trajectory was hacked by macro
                 if isfield(info2.pvm,'ppggradamparray1')
                     parameters.NO_VIEWS = length(info2.pvm.ppggradamparray1);
                 end
-
+                
                 % Imaging k-space
                 singleRep = parameters.NO_SLICES*parameters.NO_SAMPLES*parameters.nr_coils*parameters.NO_VIEWS;
                 parameters.EXPERIMENT_ARRAY = floor(length(kSpace)/singleRep);
@@ -1123,27 +1140,27 @@ classdef retroData
                 
                 parameters.EXPERIMENT_ARRAY = size(kSpace,5);
                 kSpace = permute(kSpace,[3,5,1,4,2]); % nc, nr, ns, np, nf
-
+                
                 % Flip readout if needed
                 if flr
                     kSpace = flip(kSpace,5);
                 end
-
+                
                 % Coil intensity scaling
                 if isfield(info2.pvm,'encchanscaling')
                     for i = 1:parameters.nr_coils
                         kSpace(i,:) = kSpace(i,:) * info2.pvm.encchanscaling(i);
                     end
                 end
-
+                
                 % Navigator
                 navKspace = navKspace(1:parameters.NO_SLICES*parameters.no_samples_nav*parameters.nr_coils*parameters.NO_VIEWS*parameters.EXPERIMENT_ARRAY);
                 navKspace = reshape(navKspace,parameters.NO_SLICES,parameters.no_samples_nav,parameters.nr_coils,parameters.NO_VIEWS,parameters.EXPERIMENT_ARRAY);
                 navKspace = permute(navKspace,[3,5,1,4,2]);
-
+                
                 % Insert 34 point spacer to make the data compatible with MR Solutions data
                 kSpacer = zeros(parameters.nr_coils,parameters.EXPERIMENT_ARRAY,parameters.NO_SLICES,parameters.NO_VIEWS,35);
-
+                
                 % Combine navigator + spacer + k-space
                 raw = cat(5,navKspace,kSpacer,kSpace);
                 rawData = cell(parameters.nr_coils);
@@ -1151,26 +1168,26 @@ classdef retroData
                     rawData{i} = squeeze(raw(i,:,:,:,:));
                     rawData{i} = reshape(rawData{i},parameters.EXPERIMENT_ARRAY,parameters.NO_SLICES,parameters.NO_VIEWS,parameters.NO_SAMPLES+35+parameters.no_samples_nav);
                 end
-     
+                
             end
-
+            
             % 3D data
             if strcmp(info2.pvm.spatdimenum,"3D") || strcmp(info2.pvm.spatdimenum,"<3D>")
-
+                
                 % 2nd phase encoding direction
                 parameters.NO_VIEWS_2 = info1.acq.size(3);
                 if isfield(info2.pvm,"matrix")
                     parameters.NO_VIEWS_2 = info2.pvm.encmatrix(3);
                 end
-
+                
                 % Phase offset 2
                 if isfield(info1.acq,'phase2_offset')
                     parameters.pixelshift2 = round(pm2 * parameters.NO_VIEWS_2 * info1.acq.phase2_offset/parameters.FOV);
                 end
-
+                
                 % Slice thickness
                 parameters.SLICE_THICKNESS = str2num(info2.pvm.slicethick);
-
+                
                 % 2nd phase encoding trajectory
                 parameters.pe2_centric_on = 0;
                 if isfield(info2.pvm,"encsteps2")
@@ -1181,72 +1198,72 @@ classdef retroData
                     parameters.pe2_traj = round(info2.pvm.encvalues2 * (parameters.NO_VIEWS_2/2-0.5));
                     parameters.pe2_centric_on = 2;
                 end
-
+                
                 % K-space
                 kSpace = reshape(kSpace,parameters.nr_coils,parameters.NO_SAMPLES,parameters.NO_VIEWS,parameters.NO_VIEWS_2,[]);
                 parameters.EXPERIMENT_ARRAY = size(kSpace,5);
                 kSpace = permute(kSpace,[1,5,4,3,2]);
-
+                
                 % Flip readout if needed
                 if flr
                     kSpace = flip(kSpace,5);
                 end
-
+                
                 % Coil intesnity scaling
                 if isfield(info2.pvm,'encchanscaling')
                     for i = 1:parameters.nr_coils
                         kSpace(i,:) = kSpace(i,:) * info2.pvm.encchanscaling(i);
                     end
                 end
-
+                
                 % Navigator
                 navKspace = reshape(navKspace,parameters.nr_coils,parameters.no_samples_nav,parameters.NO_VIEWS,parameters.NO_VIEWS_2,parameters.EXPERIMENT_ARRAY);
                 navKspace = permute(navKspace,[1,5,4,3,2]);
-
+                
                 % Insert 34 point spacer to make the data compatible with MR Solutions data
                 kSpacer = zeros(parameters.nr_coils,parameters.EXPERIMENT_ARRAY,parameters.NO_VIEWS_2,parameters.NO_VIEWS,35);
-
+                
                 % Combine navigator + spacer + k-space
                 raw = cat(5,navKspace,kSpacer,kSpace);
                 for i = 1:parameters.nr_coils
                     rawData{i} = squeeze(raw(i,:,:,:,:));
                     rawData{i} = reshape(rawData{i},parameters.EXPERIMENT_ARRAY,parameters.NO_VIEWS_2,parameters.NO_VIEWS,parameters.NO_SAMPLES+35+parameters.no_samples_nav);
                 end
-
+                
             end
-
-
+            
+            
             % Read reco files to a structure
-            function struct = jCampRead(filename) %#ok<STOUT> 
-
+            function struct = jCampRead(filename) %#ok<STOUT>
+                
                 % Open file read-only big-endian
                 fid = fopen(filename,'r','b');
                 skipLine = 0;
-
+                
                 % Loop through separate lines
                 if fid~=-1
-
+                    
                     while 1
-
+                        
                         if skipLine
                             line = nextLine;
                             skipLine = 0;
                         else
                             line = fgetl(fid);
                         end
-
+                        
                         % Testing the text lines
                         while length(line) < 2
                             line = fgetl(fid);
                         end
-
+                        
                         % Parameters and optional size of parameter are on lines starting with '##'
-                        if line(1:2) == '##' %#ok<*BDSCA> 
+                        if line(1:2) == '##' %#ok<*BDSCA>
                             
                             % Parameter extracting and formatting
                             % Read parameter name
                             paramName = fliplr(strtok(fliplr(strtok(line,'=')),'#'));
-                        
+                            
                             % Check for illegal parameter names starting with '$' and correct (Matlab does not accepts variable names starting with $)
                             if paramName(1) == '$'
                                 paramName = paramName(2:length(paramName));
@@ -1254,10 +1271,10 @@ classdef retroData
                             elseif paramName(1:3) == 'END'
                                 break
                             end
-
+                            
                             % Parameter value formatting
                             paramValue = fliplr(strtok(fliplr(line),'='));
-
+                            
                             % Check if parameter values are in a matrix and read the next line
                             if paramValue(1) == '('
                                 
@@ -1267,7 +1284,7 @@ classdef retroData
                                 if ~isempty(paramValueSize)
                                     
                                     if size(paramValueSize,2) == 1
-                                        paramValueSize = [paramValueSize,1];  
+                                        paramValueSize = [paramValueSize,1];
                                     end
                                     
                                     % Read the next line
@@ -1275,53 +1292,53 @@ classdef retroData
                                     
                                     % See whether next line contains a character array
                                     if nextLine(1) == '<'
-                                        paramValue = fliplr(strtok(fliplr(strtok(nextLine,'>')),'<')); %#ok<*NASGU> 
+                                        paramValue = fliplr(strtok(fliplr(strtok(nextLine,'>')),'<')); %#ok<*NASGU>
                                     elseif strcmp(nextLine(1),'L') || strcmp(nextLine(1),'A') || strcmp(nextLine(1),'H')
                                         paramValue = nextLine;
                                     else
                                         
                                         % Check if matrix has more then one dimension
                                         if paramValueSize(2) ~= 1
-
+                                            
                                             paramValueLong = str2num(nextLine);
-                                            while (length(paramValueLong)<(paramValueSize(1)*paramValueSize(2))) & (nextLine(1:2) ~= '##') %#ok<*AND2> 
+                                            while (length(paramValueLong)<(paramValueSize(1)*paramValueSize(2))) & (nextLine(1:2) ~= '##') %#ok<*AND2>
                                                 nextLine = fgetl(fid);
-                                                paramValueLong = [paramValueLong str2num(nextLine)];  
+                                                paramValueLong = [paramValueLong str2num(nextLine)];
                                             end
-
+                                            
                                             if (length(paramValueLong) == (paramValueSize(1)*paramValueSize(2))) & (~isempty(paramValueLong))
                                                 paramValue=reshape(paramValueLong,paramValueSize(1),paramValueSize(2));
                                             else
                                                 paramValue = paramValueLong;
                                             end
-
+                                            
                                             if length(nextLine) > 1
                                                 if (nextLine(1:2) ~= '##')
                                                     skipLine = 1;
                                                 end
                                             end
-
+                                            
                                         else
-
+                                            
                                             % If only 1 dimension just assign whole line to paramvalue
                                             paramValue = str2num(nextLine);
                                             if ~isempty(str2num(nextLine))
                                                 while length(paramValue)<paramValueSize(1)
                                                     line = fgetl(fid);
-                                                    paramValue = [paramValue str2num(line)];  
+                                                    paramValue = [paramValue str2num(line)];
                                                 end
                                             end
-
+                                            
                                         end
-
+                                        
                                     end
-
+                                    
                                 else
                                     paramValue = '';
                                 end
-
+                                
                             end
-
+                            
                             % Add paramvalue to structure.paramname
                             if isempty(findstr(paramName,'_'))
                                 eval(['struct.' paramName '= paramValue;']); %#ok<*EVLDOT>
@@ -1333,24 +1350,24 @@ classdef retroData
                                         paramName(findstr(paramName,'_')+2:length(paramName)) '= paramValue;']); %#ok<*DATST,*FSTR>
                                 end
                             end
-
+                            
                         elseif line(1:2) == '$$'
                             % The two $$ lines are not parsed for now
                         end
-
+                        
                     end
-
+                    
                     % Close file
                     fclose(fid);
-          
+                    
                 end
-
+                
             end
-
+            
         end % importB
-
-
-
+        
+        
+        
         
         % ---------------------------------------------------------------------------------
         % Read the MRD footer
@@ -1433,7 +1450,7 @@ classdef retroData
         % Write MRD file
         % ---------------------------------------------------------------------------------
         function obj = writeDataToMrd(obj, objKspace, filename, parameters)
-
+            
             % Description: Function to convert multidimensional complex data to MRD format file
             % Author: Ruslan Garipov / MR Solutions Ltd
             % Date: 17/04/2020
@@ -1447,37 +1464,37 @@ classdef retroData
             % Footer - int8 data type footer as copied from an MRD containing a copy of
             % The PPR file, including preceeding 120-byte zeros
             % Output: 1 if write was successful, 0 if not, -1 if failed early (e.g. the dimension checks)
-
+            
             % Data: multidimensional, complex float, with dimensions arranged
             % Dimensions: structure
-
+            
             kSpaceMRDdata = objKspace.kSpaceMrd;
             footer = obj.newMrdFooter;
-
-            header1 = zeros(128,1); 
+            
+            header1 = zeros(128,1);
             header1(1)  = parameters.NoSamples;
             header1(2)  = parameters.NoViews;
             header1(3)  = parameters.NoViews2;
             header1(4)  = parameters.NoSlices;
             header1(39) = parameters.NoEchoes;
             header1(40) = parameters.NoExperiments;
-
+            
             % Set datatype - 'complex float'
             header1(5)  = hex2dec('150000');
-
+            
             % Open new file for writing
             fid1 = fopen(filename,'wb');
-
+            
             % Write 512 byte header
             fwrite(fid1,header1,'int32');
             
-            if strcmp(obj.dataType,'3D') 
+            if strcmp(obj.dataType,'3D')
                 kSpaceMRDdata = flip(permute(kSpaceMRDdata,[1,3,2,4,5,6,7]),1);
             else
-
+                
                 kSpaceMRDdata = flip(kSpaceMRDdata,1);
             end
-
+            
             % Convert to 1D array with alternating real and imag part of the data
             temp = kSpaceMRDdata;
             temp = temp(:);
@@ -1485,28 +1502,28 @@ classdef retroData
             b = imag(temp);
             temp = transpose([a b]);
             temp = temp(:);
-
+            
             % Write data at once
             fwrite(fid1,temp,'float32');
-
+            
             % write the footer
             fwrite(fid1,footer,'int8');
-
+            
             % close file
             fclose(fid1);
-
+            
         end % writeDataToMrd
-
-
         
-
+        
+        
+        
         % ---------------------------------------------------------------------------------
         % Make MRD footer
         % ---------------------------------------------------------------------------------
         function obj = makeMrdFooter(obj, par)
-
+            
             inputFooter = obj.mrdFooter;
-
+            
             % Parameter names
             parameters = {':NO_SAMPLES no_samples, ',':NO_VIEWS no_views, ',':NO_VIEWS_2 no_views_2, ', ...
                 ':NO_ECHOES no_echoes, ',':EXPERIMENT_ARRAY no_experiments, ',':NO_AVERAGES no_averages, ', ...
@@ -1516,7 +1533,7 @@ classdef retroData
                 ':VAR VFA_size, ',':VAR ti, ',':VAR pe2_centric_on, ', ...
                 ':VAR tr_extra_us, '
                 };
-
+            
             % Parameter replacement values
             replacePars = {par.NoSamples,par.NoViews,par.NoViews2, ...
                 par.NoEchoes,par.NoExperiments,par.NoAverages, ...
@@ -1526,31 +1543,31 @@ classdef retroData
                 par.vfasize, par.ti, par.pe2_centric_on, ...
                 par.tr_extra_us
                 };
-
+            
             % Replace all simple valued parameters
             for i = 1:length(parameters)
-
-                txt = parameters{i};
-                var = replacePars{i};
-                pos = strfind(inputFooter,txt);
-
-                if ~isempty(pos)
+                
+                txt = parameters{i}; % parameter name
+                var = replacePars{i}; % parameter value
+                pos = strfind(inputFooter,txt); % find position of parameter name in the footer
+                
+                if ~isempty(pos) % if parameter name is found
                     try
-                        oldTextLength = strfind(inputFooter(pos+length(txt):pos+length(txt)+6),char(13))-1;
-                        if isempty(oldTextLength)
+                        oldTextLength = strfind(inputFooter(pos+length(txt):pos+length(txt)+6),char(13))-1; % find length of the old parameter value
+                        if isempty(oldTextLength) 
                             oldTextLength = strfind(inputFooter(pos+length(txt):pos+length(txt)+6),newline)-1;
                         end
-
+                        
                         newText = [num2str(var),'     '];
                         newText = newText(1:6);
                         inputFooter = replaceBetween(inputFooter,pos+length(txt),pos+length(txt)+oldTextLength-1,newText);
                     catch
                     end
                 end
-
+                
             end
-
-
+            
+            
             % VFA array replace
             newText = '';
             for i = 1:length(par.vfaangles)
@@ -1567,15 +1584,15 @@ classdef retroData
                 pos3 = pos1+pos2(1)-2;
                 inputFooter = replaceBetween(inputFooter,pos1+length(txt)-2,pos3,newText);
             end
-
+            
             % Return the object
             obj.newMrdFooter  = inputFooter;
-
+            
         end % makeMrdFooter
-
-
-
-
+        
+        
+        
+        
         % ---------------------------------------------------------------------------------
         % Read RPR file
         % ---------------------------------------------------------------------------------
@@ -1591,33 +1608,39 @@ classdef retroData
                 obj.rprFlag = false;
                 app.TextMessage('WARNING: RPR file not found ...');
             end
-
+            
         end % readRPRfile
-
-
-
-
+        
+        
+        
+        
         % ---------------------------------------------------------------------------------
         % Write RPR file
         % ---------------------------------------------------------------------------------
         function obj = writeToRprFile(obj, filename)
-
+            
             fid = fopen(filename,'wb');
             fwrite(fid,obj.newRprFile,'int8');
             fclose(fid);
-
+            
         end % writeToRprFile
         
-
-
-
+        
+        
+        
         % ---------------------------------------------------------------------------------
         % Make RPR file
         % ---------------------------------------------------------------------------------
         function obj = makeRprFile(obj, par)
-
+            % This function makes a new RPR file from an existing RPR file
+            % and a parameter structure.  The parameter structure can contain
+            % any fields that the RPR file can contain.  If a field is not
+            % specified, the existing value is used.  If a field is specified,
+            % the new value is used.  If a field is specified as [], the field
+            % is removed from the RPR file.
+            
             inputRpr = obj.rprFile;
-
+            
             % Parameter names
             parameters = {
                 ':EDITTEXT LAST_ECHO ',':EDITTEXT MAX_ECHO ', ...
@@ -1629,7 +1652,7 @@ classdef retroData
                 ':COMBOBOX FFT_DIM1 ',':COMBOBOX FFT_DIM2 ',':COMBOBOX FFT_DIM3 ', ...
                 ':RADIOBUTTON VIEW_ORDER_1',':RADIOBUTTON VIEW_ORDER_2'
                 };
-
+            
             % Parameter replacement values
             replacePars = {par.NoEchoes,par.NoEchoes, ...
                 par.NoExperiments, par.NoExperiments, ...
@@ -1640,19 +1663,19 @@ classdef retroData
                 par.NoSamples, par.NoViews, par.NoViews2, ...
                 par.View1order, par.View2order
                 };
-
+            
             % Search for all parameters and replace values
             for i = 1:length(parameters)
-
+                
                 txt = parameters{i};
                 var = replacePars{i};
-
+                
                 pos = strfind(inputRpr,txt);
-
+                
                 if ~isempty(pos)
-
+                    
                     if ~isstring(var)
-    
+                        
                         try
                             oldTxtLength = strfind(inputRpr(pos+length(txt):pos+length(txt)+15),char(13))-1;
                             if isempty(oldTxtLength)
@@ -1663,9 +1686,9 @@ classdef retroData
                             inputRpr = replaceBetween(inputRpr,pos+length(txt),pos+length(txt)+oldTxtLength-1,newText);
                         catch
                         end
-
+                        
                     else
-
+                        
                         try
                             oldTxtLength = strfind(inputRpr(pos+length(txt):pos+length(txt)+15),char(13))-1;
                             if isempty(oldTxtLength)
@@ -1676,50 +1699,50 @@ classdef retroData
                             inputRpr = replaceBetween(inputRpr,pos+length(txt),pos+length(txt)+oldTxtLength-1,newText);
                         catch
                         end
-
+                        
                     end
-
+                    
                 end
-
+                
             end
-
+            
             obj.newRprFile = inputRpr;
-
+            
         end % makeRprFile
-
-
-
-
+        
+        
+        
+        
         % ---------------------------------------------------------------------------------
         % Retrieve the 2D image shift for off-center and oblique Radial sequence
         % ---------------------------------------------------------------------------------
         function objData = get2DimageShift(objData, image, app)
-
+            
             % Image dimensions in pixels
             imDimX = size(image,2);
             imDimY = size(image,3);
             imDimZ = size(image,4);
-
-            relShiftX = ones(imDimZ,1)*imDimX*objData.fov_read_off(1)/4000;
+            
+            relShiftX = ones(imDimZ,1)*imDimX*objData.fov_read_off(1)/4000; 
             relShiftY = ones(imDimZ,1)*imDimY*objData.fov_phase_off(1)/4000;
-
+            
             % Calculate the shift
             for i = 1:length(objData.fov_read_off)
                 relShiftX(i) = imDimX*objData.fov_read_off(i)/4000;
                 relShiftY(i) = imDimY*objData.fov_phase_off(i)/4000;
             end
-
+            
             % Report the values back / return the object
             objData.xShift = relShiftX;
             objData.yShift = -relShiftY;
-
+            
             app.TextMessage(sprintf('Image shift ΔX = %.2f, ΔY = %.2f pixels ...',relShiftX(1),-relShiftY(1)));
-
+            
         end % get2DimageShift
         
-
-
-
+        
+        
+        
         % ---------------------------------------------------------------------------------
         % Read SQL file
         % ---------------------------------------------------------------------------------
@@ -1735,25 +1758,25 @@ classdef retroData
                 obj.sqlFlag = false;
                 app.TextMessage('WARNING: SQL file not found ...');
             end
-
+            
         end % readSQLfile
-
-
-
-
+        
+        
+        
+        
         % ---------------------------------------------------------------------------------
         % Get some parameters from SQL file
         % ---------------------------------------------------------------------------------
         function obj = sqlParameters(obj, app)
-
+            
             if obj.sqlFlag
-
+                
                 if ~isempty(obj.sqlFile)
-
+                    
                     sqlData = obj.sqlFile;
-
+                    
                     try
-
+                        
                         % Group settings
                         groupSettings = strfind(sqlData,'[GROUP SETTINGS]');
                         posStart = strfind(sqlData(groupSettings:end),'VALUES(');
@@ -1762,7 +1785,7 @@ classdef retroData
                         posEnd = posEnd(1)+posStart-2;
                         groupData = sqlData(posStart:posEnd);
                         values = textscan(groupData, '%f %s %f %f %f %f %f %f %f %f %f %f','Delimiter',',');
-
+                        
                         obj.SQLnumberOfSlices = values{4};
                         obj.SQLsliceGap = values{5};
                         obj.SQLangleX = values{6};
@@ -1771,46 +1794,46 @@ classdef retroData
                         obj.SQLoffsetX = values{9};
                         obj.SQLoffsetY = values{10};
                         obj.SQLoffsetZ = values{11};
-
+                        
                     catch ME
-
+                        
                         app.TextMessage(ME.message);
                         app.TextMessage('WARNING: Something went wrong analyzing SQL file group settings ...');
                         app.SetStatus(1);
-
+                        
                     end
-
+                    
                 end
-
+                
             end
-
+            
         end % sqlParameters
-
-
-
+        
+        
+        
         % ---------------------------------------------------------------------------------
         % Calculate image orientation labels
         % ---------------------------------------------------------------------------------
         function obj = imageOrientLabels(obj, app)
-
+            
             obj.orientationLabels = [' ',' ',' ',' '];
-
+            
             try
-
+                
                 if obj.sqlFlag
-
+                    
                     % Start from axial orientation, head first, supine
                     obj.LRvec = [ 1  0  0 ]';
                     obj.APvec = [ 0  1  0 ]';
                     obj.HFvec = [ 0  0  1 ]';
-
+                    
                     % Rotate the vectors according to the angle values
                     % Add a tiny angle to make the chance of hitting 45 degree angles for which orientation is indetermined very unlikely
                     tinyAngle = 0.00001;
                     obj.LRvec = rotz(obj.SQLangleZ+tinyAngle)*roty(-obj.SQLangleY+tinyAngle)*rotx(-obj.SQLangleX+tinyAngle)*obj.LRvec;
                     obj.APvec = rotz(obj.SQLangleZ+tinyAngle)*roty(-obj.SQLangleY+tinyAngle)*rotx(-obj.SQLangleX+tinyAngle)*obj.APvec;
                     obj.HFvec = rotz(obj.SQLangleZ+tinyAngle)*roty(-obj.SQLangleY+tinyAngle)*rotx(-obj.SQLangleX+tinyAngle)*obj.HFvec;
-
+                    
                     % Determine the orientation combination
                     % This is done by determining the main direction of the vectors
                     [~, indxLR1] = max(abs(obj.LRvec(:)));
@@ -1819,68 +1842,68 @@ classdef retroData
                     indxAP2 = sign(obj.APvec(indxAP1));
                     indxLR2(indxLR2 == -1) = 2;
                     indxAP2(indxAP2 == -1) = 2;
-
+                    
                     labelsPrimary   = [ 'L','R' ; 'A','P' ; 'F','H'];
                     labelsSecondary = [ 'R','L' ; 'P','A' ; 'H','F'];
-
+                    
                     % Sort the labels according to the starting orientation
                     labelsPrimary   = [labelsPrimary(indxLR1,indxLR2),labelsPrimary(indxAP1,indxAP2)];
                     labelsSecondary = [labelsSecondary(indxLR1,indxLR2),labelsSecondary(indxAP1,indxAP2)];
-
+                    
                     % Assign the labels
                     obj.orientationLabels = [labelsPrimary(1),labelsPrimary(2),labelsSecondary(1),labelsSecondary(2)];
-
+                    
                 end
-
+                
             catch ME
-
+                
                 app.TextMessage(ME.message);
-
+                
             end
-
+            
         end % imageOrientLabels
-
-
-
-
+        
+        
+        
+        
         % ---------------------------------------------------------------------------------
         % Write physiological data to files
         % ---------------------------------------------------------------------------------
         function objData = writePhysLog(objData,objNav,exportPath)
-
+            
             % Write the cardiac triggering, respiratory triggering and window values to files
-
+            
             if ~isempty(objNav.heartTrigTime)
                 writematrix(objNav.heartTrigTime',strcat(exportPath,filesep,'cardtrigpoints.txt'),'Delimiter','tab');
             end
-
+            
             if ~isempty(objNav.heartRateTime)
                 heartRate = [objData.TR*objNav.heartTrigPoints(1:end-1)/1000 ; objNav.heartRateTime]';
                 writematrix(heartRate,strcat(exportPath,filesep,'heartrate.txt'),'Delimiter','tab');
             end
-
+            
             if ~isempty(objNav.respTrigTime)
                 writematrix(objNav.respTrigTime',strcat(exportPath,filesep,'resptrigpoints.txt'),'Delimiter','tab');
             end
-
+            
             if ~isempty(objNav.respRateTime)
                 respRate = [objData.TR*objNav.respTrigPoints(1:end-1)/1000 ; objNav.respRateTime]';
                 writematrix(respRate,strcat(exportPath,filesep,'resprate.txt'),'Delimiter','tab');
             end
-
+            
             if ~isempty(objNav.respWindowTime)
                 writematrix(objNav.respWindowTime,strcat(exportPath,filesep,'respwindow.txt'),'Delimiter','tab');
             end
-
+            
         end % writePhysLog
-
-
-
+        
+        
+        
         % Export the reconstruction settings
         function objData = ExportRecoParametersFcn(objData,app)
-
+            
             % Write the reconstruction information to a file
-
+            
             pars = strcat(...
                 "------------------------- \n\n", ...
                 "RETROSPECTIVE ", app.appVersion,"\n\n", ...
@@ -1924,7 +1947,7 @@ classdef retroData
                 "respiration rate = ",num2str(app.FinalRespirationViewField.Value), " bpm\n", ...
                 "heart rate = ",num2str(app.FinalHeartViewField.Value), " bpm\n" ...
                 );
-
+            
             if strcmp(objData.dataType,'3Dute')
                 pars = strcat(pars,...
                     "\n3D UTE\n\n", ...
@@ -1934,13 +1957,13 @@ classdef retroData
                     "offset = ",num2str(app.DataOffsetRadialEditField.Value),"\n" ...
                     );
             end
-
+            
             if strcmp(objData.dataType,'2Dradial') || strcmp(objData.dataType,'2Dradialms')
-
+                
                 if app.HalfCircleButton.Value == 1              trajType = 1; end %#ok<SEPEX>
                 if app.FullCircleButton.Value == 1              trajType = 2; end %#ok<SEPEX>
                 if app.FullCircleInterleavedButton.Value == 1   trajType = 3; end %#ok<SEPEX>
-
+                
                 pars = strcat(pars,...
                     "\n2D radial\n\n", ...
                     "Gx delay = ",num2str(app.GxDelayEditField.Value),"\n",...
@@ -1949,58 +1972,68 @@ classdef retroData
                     "trajectory = ",num2str(trajType)...
                     );
             end
-
+            
             fid = fopen(strcat(objData.exportDir,filesep,'recoparameters_',app.tag,'.txt'),'wt');
             fprintf(fid,pars);
             fclose(fid);
-
+            
         end % ExportRecoParametersFcn
-
-
+        
+        
     end % Public methods
-
-
-
-
+    
+    
+    
+    
     % ---------------------------------------------------------------------------------
     % Static methods
     % ---------------------------------------------------------------------------------
     methods (Static)
-
-
-
-
+        
+        
+        
+        
         % ---------------------------------------------------------------------------------
         % Fractional circshift
         % ---------------------------------------------------------------------------------
         function output = fracCircShift(input,shiftsize)
-
             % Shift an array on a sub-index level
-
+            
+            % Find the integer and fractional portions of the shift size for each dimension
             int = floor(shiftsize);     % Integer portions of shiftsize
             fra = shiftsize - int;      % Fractional portions of shiftsize
+            
+            % Get the number of dimensions of the input array
             dim = numel(shiftsize);
+            
+            % Initialize the output array as the input array
             output = input;
-            for n = 1:numel(shiftsize)  % The dimensions are treated one after another.
+            
+            % Loop through each dimension of the array
+            for n = 1:numel(shiftsize)
+                % Get the integer and fractional portions of the shift size for the current dimension
                 intn = int(n);
                 fran = fra(n);
+                
+                % Create two vectors for circular shift: one with the integer shift amount and one with the integer shift amount plus 1
                 shift1 = zeros(dim,1);
                 shift1(n) = intn;
                 shift2 = zeros(dim,1);
                 shift2(n) = intn+1;
+                
                 % Linear interpolation:
+                % Perform a circular shift for both shift vectors and interpolate the results based on the fractional shift amount
                 output = (1-fran)*circshift(output,shift1) + fran*circshift(output,shift2);
             end
-
         end % fracCircShift
-
-
-
+        
+        
+        
     end % Static methods
-
-
-
-
-
+    
+    
+    
+    
+    
 end % retroData
 
