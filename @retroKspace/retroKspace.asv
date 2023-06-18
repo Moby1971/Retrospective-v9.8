@@ -1770,7 +1770,7 @@ classdef retroKspace
                         for k = 1:nrSlices
                             for i = 1:nrReps
                                 for j = 1:nrPE
-                                    traject(cnt) = 90 + (j-1)*radialAngle;
+                                    traject(cnt) = 90 + (cnt-1)*radialAngle;
                                     cnt = cnt + 1;
                                 end
                             end

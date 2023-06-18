@@ -57,6 +57,7 @@ classdef retroData
         VFA_size = 0                                            % flip angle array size (0 = 1 flip angle)
         frame_loop_on                                           % CINE loop on (1) or off (0)
         radial_on = 0                                           % radial on (1) or off (0)
+        spoke_increment = 1                                     % radial spoke angle increment (not always used)
         slice_nav = 0                                           % slice navigator on (1) or off (0)
         date                                                    % scan date
         pixelshift1 = 0                                         % image shift in views direction
@@ -73,7 +74,7 @@ classdef retroData
         pe2_centric_on = 1                                      % phase-encoding 2 centric order on (1) or off (0)
         pe2_traj = 0                                            % phase-encoding 2 trajectory type
         gp_var_mul = []                                         % trajectory array
-        interpFactor = 16                                       % k-space data interpolation factor
+        interpFactor = 4                                        % k-space data interpolation factor
         
         % Navigator related
         primaryNavigatorPoint = 10                              % primary navigator point
@@ -126,7 +127,7 @@ classdef retroData
         % Object constructor
         % ---------------------------------------------------------------------------------
         function obj = retroData(parameter, mridata)
-            
+
             if nargin == 2
                 
                 obj.data = mridata;
@@ -262,6 +263,10 @@ classdef retroData
                 
                 if isfield(parameter,'radial_on')
                     obj.radial_on = parameter.radial_on;
+                end
+
+                if isfield(parameter,'spoke_increment')
+                    obj.spoke_increment = parameter.spoke_increment/10;
                 end
                 
                 if isfield(parameter,'slice_nav')
@@ -484,54 +489,62 @@ classdef retroData
                         obj.dataType = '2Dradialms';
                     end
                     if ndims(obj.data{i}) == 4 && obj.NO_SLICES > 1
-                        %                                   NR Z Y X
-                        % obj.data{i} = permute(obj.data{i},[1,2,3,4]);
+                        %                                 NR Z Y X
+                        obj.data{i} = permute(obj.data{i},[1,2,3,4]);
                         obj.dataType = '2Dradialms';
                     end
                     
                 end
-                
+
                 % Center the echo for the navigator
                 % This is needed to know that the navigator is the center k-space point
                 % For out-of-center points the navigator is disturbed by the radial frequency
                 % Loop through each dynamic (time point) in the data
-                for dynamic = 1:size(obj.data{1},1)
-                    
-                    % Loop through each slice in the data
-                    for slice = 1:size(obj.data{1},2)
-                        
-                        % Loop through each spoke (k-space line) in the data
-                        for spoke = 1:size(obj.data{1},3)
-                            
-                            % Extract the current k-line (spoke) from the data for the current coil, dynamic, slice
-                            tmpKline1 = squeeze(obj.data{i}(dynamic,slice,spoke,:));
-                            
-                            % Interpolate the k-line to increase the resolution
-                            tmpKline2 = interp(tmpKline1,obj.interpFactor);
-                            
-                            % Find the index of the maximum absolute value of the interpolated k-line, which represents the center of k-space
-                            [~,kCenter] = max(abs(tmpKline2));
-                            
-                            % Calculate the amount of shift needed to center the k-line by subtracting the k-center from the midpoint of k-space
-                            kShift = floor(dims/2)-kCenter/obj.interpFactor;
-                            
-                            % Shift the k-line by the calculated amount, using a circular shift to avoid edge effects
-                            tmpKline1 = retroData.fracCircShift(tmpKline1,kShift);
-                            
-                            % Replace the original k-line with the shifted one in the data for the current coil, dynamic, slice, spoke
-                            obj.data{i}(dynamic,slice,spoke,:) = tmpKline1;
-                            
+        
+                pcorr = true;
+
+                if pcorr
+
+                    dims = size(obj.data{1},4);
+
+                    for dynamic = 1:size(obj.data{1},1)
+
+                        % Loop through each slice in the data
+                        for slice = 1:size(obj.data{1},2)
+
+                            % Loop through each spoke (k-space line) in the data
+                            for spoke = 1:size(obj.data{1},3)
+
+                                % Extract the current k-line (spoke) from the data for the current coil, dynamic, slice
+                                tmpKline1 = squeeze(obj.data{i}(dynamic,slice,spoke,:));
+
+                                % Interpolate the k-line to increase the resolution
+                                tmpKline2 = interp(tmpKline1,obj.interpFactor);
+
+                                % Find the index of the maximum absolute value of the interpolated k-line, which represents the center of k-space
+                                [~,kCenter] = max(abs(tmpKline2));
+
+                                % Calculate the amount of shift needed to center the k-line by subtracting the k-center from the midpoint of k-space
+                                kShift = floor(dims/2)-kCenter/obj.interpFactor;
+
+                                % Shift the k-line by the calculated amount, using a circular shift to avoid edge effects
+                                tmpKline1 = retroData.fracCircShift(tmpKline1,kShift);
+
+                                % Replace the original k-line with the shifted one in the data for the current coil, dynamic, slice, spoke
+                                obj.data{i}(dynamic,slice,spoke,:) = tmpKline1;
+
+                            end
+
                         end
-                        
+
                     end
-                    
+
                 end
-                
+
                 kSpaceSum = squeeze(sum(abs(obj.data{1}),[1,2,3]));     % Sum over all dimensions
                 [~,kCenter] = max(kSpaceSum);                           % Determine the center
                 obj.primaryNavigatorPoint = kCenter;                    % Navigator = k-space center
                 obj.nrNavPointsUsed = 1;                                % Number of navigator points = 1
-                
                 obj.nr_repetitions = size(obj.data{1},1);               % Number of k-space repetitions
                 
             elseif (obj.slice_nav == 1) && (obj.no_samples_nav > 0)

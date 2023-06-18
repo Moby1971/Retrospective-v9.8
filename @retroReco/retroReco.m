@@ -713,10 +713,10 @@ classdef retroReco
                 % 	AVG_DIM,        14      15
 
                 % Rearrange for BART         1  2  3  4  5  6  7  8  9 10 11 12 13 14
-                kSpacePics = permute(kSpace,[7, 2, 3, 6,14, 8, 9,10,11,12,1, 5, 13, 4]);
+                kSpacePics = permute(kSpace,[7, 2, 3, 6,14, 8, 9,10,11,12, 1, 5,13, 4]);
 
                 % Rearrange for BART        1  2  3  4  5  6  7  8  9 10 11 12 13 14
-                avgPics = permute(averages,[7, 2, 3, 6,14, 8, 9,10,11,12,1, 5, 13, 4]);
+                avgPics = permute(averages,[7, 2, 3, 6,14, 8, 9,10,11,12, 1, 5,13, 4]);
 
                 % Rearrange for BART     1  2  3  4  5  6  7  8  9 10 11 12 13 14
                 trajPics = permute(traj,[6, 2, 3,14, 7, 8, 9,10,11,12, 1, 5,13, 4]);
@@ -1791,8 +1791,6 @@ classdef retroReco
                         % CS reco
                         obj = obj.reco2D(objData, objKspace, app);
                         Lmovie = obj.movieExp;
-
-                        disp(size(Lmovie))
 
                         % L1 norm wavelet
                         WVxyz = bart(app,'cdf97 6',Lmovie);
