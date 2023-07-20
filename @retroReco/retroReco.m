@@ -979,7 +979,7 @@ classdef retroReco
 
                 % Prepare the 2D radial PICS reconstruction
                 app.TextMessage('PICS reconstruction ...');
-                picsCommand = 'pics -i20 -e ';
+                picsCommand = 'pics -S -i20 -e ';
                 if Wavelet>0
                     picsCommand = [picsCommand,' -RW:6:0:',num2str(Wavelet)];
                 end

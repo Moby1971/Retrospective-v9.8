@@ -1209,7 +1209,7 @@ classdef retroKspace
                         
                         % Phase correction for k-space center
                         if app.PhaseCorrectCheckBox.Value
-                            kCenterPhase = angle(tmpKline1(floor(dimx/2)+1));
+                            kCenterPhase = mean(angle(tmpKline1((floor(dimx/2)+1)-1:(floor(dimx/2)+1)+1)));
                             tmpKline1 = tmpKline1.*exp(-1j.*kCenterPhase);
                         end
                         
@@ -1328,9 +1328,10 @@ classdef retroKspace
                         
                         % Phase correction for k-space center
                         if app.PhaseCorrectCheckBox.Value
-                            kCenterPhase = angle(tmpKline1(floor(dimx/2)+1));
+                            kCenterPhase = mean(angle(tmpKline1((floor(dimx/2)+1)-1:(floor(dimx/2)+1)+1)));
                             tmpKline1 = tmpKline1.*exp(-1j.*kCenterPhase);
                         end
+                      
                         
                         % Reshape for adding to sortedKspace
                         tmpKline1 = reshape(tmpKline1,[1 1 1 1 dimx 1]);
@@ -1770,7 +1771,10 @@ classdef retroKspace
                         for k = 1:nrSlices
                             for i = 1:nrReps
                                 for j = 1:nrPE
-                                    traject(cnt) = 90 + (j-1)*radialAngle;
+                                    traject(cnt) = mod(j*radialAngle,360);
+                                    if traject(cnt) > 180
+                                        traject(cnt) = traject(cnt) - 180;
+                                    end
                                     cnt = cnt + 1;
                                 end
                             end
