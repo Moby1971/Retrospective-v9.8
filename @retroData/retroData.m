@@ -67,6 +67,8 @@ classdef retroData
         no_samples_nav = 10                                     % number of navigator samples
         fov_read_off = 0                                        % read-offset from MRD file, relative offset = value/4000
         fov_phase_off = 0                                       % phase-offset from MRD file, relative offset = value/4000
+        fov_slice_off = 0                                       % slice-offset idem
+        fov_offsets = [0 0 0]                                   % fov offsets
         SAMPLE_PERIOD                                           % sample period
         
         % K-space trajectory related
@@ -112,6 +114,7 @@ classdef retroData
         % Image shifts & orientations
         xShift = 0                                              % image shift in X direction
         yShift = 0                                              % image shift in Y direction
+        zShift = 0                                              % image shift in Z direction
         LRvec = [1 0 0]'                                        % left-right orientation vector
         APvec = [0 1 0]'                                        % anterior-posterior orientation vector
         HFvec = [0 0 1]'                                        % head-feet orientation vector
@@ -314,11 +317,19 @@ classdef retroData
                 if isfield(parameter,'fov_phase_off')
                     obj.fov_phase_off = parameter.fov_phase_off;
                 end
+
+                if isfield(parameter,'fov_slice_off')
+                    obj.fov_slice_off = parameter.fov_slice_off;
+                end
                 
+                if isfield(parameter,'FOV_OFFSETS')
+                    obj.fov_offsets = parameter.FOV_OFFSETS;
+                end
+
                 if isfield(parameter,'SAMPLE_PERIOD')
                     obj.SAMPLE_PERIOD = parameter.SAMPLE_PERIOD;
                 end
-                
+          
             end
             
         end % retroData
@@ -946,9 +957,11 @@ classdef retroData
                         elseif find(PPR_type_7==num) % :IM_ORIENTATION keyword
                             C = textscan(char1, '%s %f %f %f');
                             field_title = char(C{1}); field_title(1) = [];
-                            numeric_field = [C{2}, C{3}, C{4}];
+                            char2 = char(cell_text{1}(j+1,:));
+                            C = textscan(char2, ',%f, %f, %f');
+                            numeric_field = [C{1}, C{2}, C{3}];
                             par = setfield(par, field_title, numeric_field);
-                            
+
                         end
                         
                     end
@@ -1727,31 +1740,24 @@ classdef retroData
         
         
         % ---------------------------------------------------------------------------------
-        % Retrieve the 2D image shift for off-center and oblique Radial sequence
+        % Retrieve the 3D image shift for off-center and oblique Radial and P2ROUD sequences
         % ---------------------------------------------------------------------------------
-        function objData = get2DimageShift(objData, image, app)
+        function objData = get3DimageShift(objData, image, app)
             
             % Image dimensions in pixels
             imDimX = size(image,2);
             imDimY = size(image,3);
             imDimZ = size(image,4);
             
-            relShiftX = ones(imDimZ,1)*imDimX*objData.fov_read_off(1)/4000; 
-            relShiftY = ones(imDimZ,1)*imDimY*objData.fov_phase_off(1)/4000;
-            
             % Calculate the shift
-            for i = 1:length(objData.fov_read_off)
-                relShiftX(i) = imDimX*objData.fov_read_off(i)/4000;
-                relShiftY(i) = imDimY*objData.fov_phase_off(i)/4000;
-            end
+            objData.xShift = imDimX*objData.fov_offsets(1)/objData.FOV;
+            objData.yShift = imDimY*objData.fov_offsets(2)/(objData.FOV/objData.aspectratio);
+            objData.zShift = imDimZ*objData.fov_offsets(3)/objData.SLICE_THICKNESS;
+             
+            % Textmessage
+            app.TextMessage(sprintf('Image shift ΔX = %.2f, ΔY = %.2f pixels, ΔZ = %.2f pixels ...',objData.xShift,objData.yShift,objData.zShift));
             
-            % Report the values back / return the object
-            objData.xShift = relShiftX;
-            objData.yShift = -relShiftY;
-            
-            app.TextMessage(sprintf('Image shift ΔX = %.2f, ΔY = %.2f pixels ...',relShiftX(1),-relShiftY(1)));
-            
-        end % get2DimageShift
+        end % get3DimageShift
         
         
         
@@ -1973,9 +1979,9 @@ classdef retroData
             
             if strcmp(objData.dataType,'2Dradial') || strcmp(objData.dataType,'2Dradialms')
                 
-                if app.HalfCircleButton.Value == 1              trajType = 1; end %#ok<SEPEX>
-                if app.FullCircleButton.Value == 1              trajType = 2; end %#ok<SEPEX>
-                if app.FullCircleInterleavedButton.Value == 1   trajType = 3; end %#ok<SEPEX>
+                if app.HalfCircleRadialButton.Value == 1    trajType = 1; end %#ok<SEPEX>
+                if app.FullCircleRadialButton.Value == 1    trajType = 2; end %#ok<SEPEX>
+                if app.UserDefinedRadialButton.Value == 1   trajType = 3; end %#ok<SEPEX>
                 
                 pars = strcat(pars,...
                     "\n2D radial\n\n", ...

@@ -1023,7 +1023,7 @@ classdef retroKspace
                                 kLineZ = traj3Dz(cnt);            % The 2nd phase-encoding
                                 
                                 sortedKspace(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt)) = sortedKspace(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt)) + unsortedKspace(1,i,k,j,:,1);     % add the data to the correct k-position
-                                sortedAverages(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt)) = sortedAverages(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt)) + 1;                            % increase the number of averages with 1
+                                sortedAverages(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt)) = sortedAverages(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt)) + 1;                           % increase the number of averages with 1
                                 
                             end
                             
@@ -1330,9 +1330,10 @@ classdef retroKspace
                         if app.PhaseCorrectCheckBox.Value
                             kCenterPhase = mean(angle(tmpKline1((floor(dimx/2)+1)-1:(floor(dimx/2)+1)+1)));
                             tmpKline1 = tmpKline1.*exp(-1j.*kCenterPhase);
+                            % kCenterAmp = mean(abs(tmpKline1((floor(dimx/2)+1)-1:(floor(dimx/2)+1)+1)));
+                            % tmpKline1 = tmpKline1./kCenterAmp;
                         end
                       
-                        
                         % Reshape for adding to sortedKspace
                         tmpKline1 = reshape(tmpKline1,[1 1 1 1 dimx 1]);
                         

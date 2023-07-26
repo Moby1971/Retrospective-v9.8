@@ -6,7 +6,7 @@ classdef retroReco
     %
     % Gustav Strijkers
     % g.j.strijkers@amsterdamumc.nl
-    % May 2023
+    % July 2023
     %
     % ---------------------------------------------------------
 
@@ -979,7 +979,7 @@ classdef retroReco
 
                 % Prepare the 2D radial PICS reconstruction
                 app.TextMessage('PICS reconstruction ...');
-                picsCommand = 'pics -S -i20 -e ';
+                picsCommand = 'pics -S -i20 ';
                 if Wavelet>0
                     picsCommand = [picsCommand,' -RW:6:0:',num2str(Wavelet)];
                 end
@@ -1647,12 +1647,12 @@ classdef retroReco
 
 
         % ---------------------------------------------------------------------------------
-        % Apply sub-pixel image shift
+        % Apply sub-pixel 2D image shift (2D radial)
         % ---------------------------------------------------------------------------------
-        function objReco = shiftImages(objReco,objData,app)
+        function objReco = shiftImages2D(objReco,objData,app)
 
             % Retrieve the in-plane image shifts
-            objData = objData.get2DimageShift(objReco.movieExp, app);
+            objData = objData.get3DimageShift(objReco.movieExp, app);
 
             % Apply the shift on sub-pixel level
             for frame = 1:size(objReco.movieExp,1)
@@ -1673,6 +1673,49 @@ classdef retroReco
 
         end
 
+
+        % ---------------------------------------------------------------------------------
+        % Apply sub-pixel 3D image shift (3D UTE ?) - not tested, needs work
+        % ---------------------------------------------------------------------------------
+        function objReco = shiftImages3D(objReco,objData,app)
+
+            % Retrieve the in-plane image shifts
+            objData = objData.get3DimageShift(objReco.movieExp, app);
+
+            % Apply the shift on sub-pixel level
+            for frame = 1:size(objReco.movieExp,1)
+                for slice = 1:size(objReco.movieExp,4)
+                    for dynamic = 1:size(objReco.movieExp,5)
+                        objReco.movieExp(frame,:,:,slice,dynamic) = retroReco.image2Dshift(squeeze(objReco.movieExp(frame,:,:,slice,dynamic)),objData.yShift(1),objData.xShift(1));
+                    end
+                end
+            end
+
+            for frame = 1:size(objReco.movieExp,1)
+                for readout = 1:size(objReco.movieExp,2)
+                    for dynamic = 1:size(objReco.movieExp,5)
+                        objReco.movieExp(frame,readout,:,:,dynamic) = retroReco.image2Dshift(squeeze(objReco.movieExp(frame,readout,:,:,dynamic)),objData.zShift(1),0);
+                    end
+                end
+            end
+
+            for slice = 1:size(objReco.senseMap,3)
+                for map1 = 1:size(objReco.senseMap,4)
+                    for map2 = 1:size(objReco.senseMap,5)
+                        objReco.senseMap(:,:,slice,map1,map2) = retroReco.image2Dshift(squeeze(objReco.senseMap(:,:,slice,map1,map2)),objData.yShift(1),objData.xShift(1));
+                    end
+                end
+            end
+
+             for readout = 1:size(objReco.senseMap,1)
+                for map1 = 1:size(objReco.senseMap,4)
+                    for map2 = 1:size(objReco.senseMap,5)
+                        objReco.senseMap(readout,:,:,map1,map2) = retroReco.image2Dshift(squeeze(objReco.senseMap(readout,:,:,map1,map2)),objData.zShift(1),0);
+                    end
+                end
+            end
+
+        end
 
 
         % ---------------------------------------------------------------------------------
