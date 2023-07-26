@@ -498,9 +498,14 @@ classdef retroReco
                     imageOut = imageOut(1,:,:,:,:);
                 end
 
+                % If p2roud scan shift z-dimension by half FOV, no idea why 
+                if strcmp(objData.dataType,'3Dp2roud')
+                    imageOut = circshift(imageOut,-1-round(size(imageOut,4)/2),4);
+                end
+
                 % Shift image in phase-encoding directions if needed
-                objReco.movieExp = circshift(imageOut,-objData.pixelshift1,3);
-                objReco.movieExp = circshift(imageOut,-objData.pixelshift2,4);
+                objReco.movieExp = circshift(imageOut,-2-objData.pixelshift1,3);
+                objReco.movieExp = circshift(imageOut,1-objData.pixelshift2,4);
                 objReco.senseMap = ones(size(objReco.movieExp));
 
             end % csReco3Dmatmc
@@ -627,8 +632,15 @@ classdef retroReco
                 % Absolute value
                 imageReg = abs(imageReg);
 
-                % Rearrange to correct orientation: frames, x, y, z, dynamics
+                % Reshape to proper dimensions
                 imageReg = reshape(imageReg,[dimz,dimy,dimx,dimf,dimd]);
+
+                % If p2roud scan shift z-dimension by half FOV, no idea why 
+                if strcmp(objData.dataType,'3Dp2roud')
+                    imageReg = circshift(imageReg,-round(size(imageReg,1)/2),1);
+                end
+
+                % Rearrange to correct orientation: frames, x, y, z, dynamics
                 imageOut = flip(flip(permute(imageReg,[4,3,2,1,5]),3),4);
                 imageOut = circshift(imageOut,1,4);
 

@@ -996,13 +996,11 @@ classdef retroKspace
                 cnt1 = 1;
                 for i = 1:nrReps
                     cnt2 = 1;
-                    for j = 1:nrKsteps
-                        for k = 1:dimz
-                            traj3Dy(cnt1) = traj(cnt2)   + offset1; %#ok<*AGROW>
-                            traj3Dz(cnt1) = traj(cnt2+1) + offset2;
-                            cnt1 = cnt1 + 1;
-                            cnt2 = cnt2 + 2;
-                        end
+                    for j = 1:nrKsteps*dimz
+                        traj3Dy(cnt1) = traj(cnt2)   + offset1; %#ok<*AGROW>
+                        traj3Dz(cnt1) = traj(cnt2+1) + offset2;
+                        cnt1 = cnt1 + 1;
+                        cnt2 = cnt2 + 2;
                     end
                 end
                 
