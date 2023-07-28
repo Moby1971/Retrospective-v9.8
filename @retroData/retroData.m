@@ -30,6 +30,8 @@ classdef retroData
         NO_SAMPLES = 1                                          % number of samples
         NO_VIEWS = 1                                            % number of views / phase encoding 1
         NO_VIEWS_2 = 1                                          % number of views 2 / phase encoding 2
+        oversample = 0                                          % oversample factor in readout direction
+        slab_ratio = 100                                        % slab ratio (oversampling)
         EXPERIMENT_ARRAY = 1                                    % number of experiments
         nr_repetitions = 1                                      % number of repetitions / experiments
         NO_AVERAGES = 1                                         % number of averages
@@ -329,7 +331,15 @@ classdef retroData
                 if isfield(parameter,'SAMPLE_PERIOD')
                     obj.SAMPLE_PERIOD = parameter.SAMPLE_PERIOD;
                 end
-          
+
+                if isfield(parameter,'oversample')
+                    obj.oversample = parameter.oversample;
+                end
+
+                if isfield(parameter,'slab_ratio')
+                    obj.slab_ratio = parameter.slab_ratio;
+                end
+
             end
             
         end % retroData
@@ -1744,15 +1754,37 @@ classdef retroData
         % ---------------------------------------------------------------------------------
         function objData = get3DimageShift(objData, image, app)
             
-            % Image dimensions in pixels
-            imDimX = size(image,2);
-            imDimY = size(image,3);
-            imDimZ = size(image,4);
-            
+         % Image dimensions in pixels
+            dx = size(image,2);
+            dy = size(image,3);
+            dz = size(image,4);
+
             % Calculate the shift
-            objData.xShift = imDimX*objData.fov_offsets(1)/objData.FOV;
-            objData.yShift = imDimY*objData.fov_offsets(2)/(objData.FOV/objData.aspectratio);
-            objData.zShift = imDimZ*objData.fov_offsets(3)/objData.SLICE_THICKNESS;
+             for i = 1:length(objData.fov_read_off)
+                 relShiftX = dx*objData.fov_read_off(i)/4000;      % Relative offset, scaling from PPL file
+                 relShiftY = dy*objData.fov_phase_off(i)/4000;
+                 relShiftZ = dz*objData.fov_slice_off(i)/400;     
+             end
+       
+            % Different readout / phase depending on phase_orientation value
+            if objData.PHASE_ORIENTATION
+
+                shiftInX =  relShiftX; 
+                shiftInY = -relShiftY; 
+                shiftInZ = -relShiftZ;
+
+            else
+
+                shiftInX = -relShiftX; 
+                shiftInY = -relShiftY; 
+                shiftInZ = -relShiftZ;
+
+            end
+
+            % Report the values back / return the object
+            objData.xShift = shiftInX;
+            objData.yShift = shiftInY;
+            objData.zShift = shiftInZ;
              
             % Textmessage
             app.TextMessage(sprintf('Image shift ΔX = %.2f, ΔY = %.2f pixels, ΔZ = %.2f pixels ...',objData.xShift,objData.yShift,objData.zShift));

@@ -418,7 +418,9 @@ classdef retroReco
                 % Pad to next power of 2
                 dimx = 2^nextpow2(size(kSpace,1));
                 dimy = 2^nextpow2(size(kSpace,2));
-                dimz = 2^nextpow2(size(kSpace,3));
+                % dimz = 2^nextpow2(size(kSpace,3));
+                dimz = size(kSpace,3);
+
 
                 % For convenience make rectangular matrix size
                 mdimxy = max([dimx,dimy]);
@@ -498,11 +500,6 @@ classdef retroReco
                     imageOut = imageOut(1,:,:,:,:);
                 end
 
-                % If p2roud scan shift z-dimension by half FOV, no idea why 
-                if strcmp(objData.dataType,'3Dp2roud')
-                    imageOut = circshift(imageOut,-1-round(size(imageOut,4)/2),4);
-                end
-
                 % Shift image in phase-encoding directions if needed
                 objReco.movieExp = circshift(imageOut,-2-objData.pixelshift1,3);
                 objReco.movieExp = circshift(imageOut,1-objData.pixelshift2,4);
@@ -542,7 +539,8 @@ classdef retroReco
                 dimf = size(kSpaceIn{1},1);
                 dimx = 2^nextpow2(size(kSpaceIn{1},2));
                 dimy = 2^nextpow2(size(kSpaceIn{1},3));
-                dimz = 2^nextpow2(size(kSpaceIn{1},4));
+                % dimz = 2^nextpow2(size(kSpaceIn{1},4));
+                dimz = size(kSpaceIn{1},4);
                 dimd = size(kSpaceIn{1},5);
                 nrCoils = objData.nr_coils;
 
@@ -553,7 +551,8 @@ classdef retroReco
 
                 % Resize to next power of 2
                 for i = 1:nrCoils
-                    kSpaceIn{i} = bart(app,['resize -c 1 ',num2str(dimx),' 2 ',num2str(dimy),' 3 ',num2str(dimz)],kSpaceIn{i});
+                    % kSpaceIn{i} = bart(app,['resize -c 1 ',num2str(dimx),' 2 ',num2str(dimy),' 3 ',num2str(dimz)],kSpaceIn{i});
+                    kSpaceIn{i} = bart(app,['resize -c 1 ',num2str(dimx),' 2 ',num2str(dimy)],kSpaceIn{i});
                 end
 
                 % K-space suitable for bart
@@ -634,11 +633,6 @@ classdef retroReco
 
                 % Reshape to proper dimensions
                 imageReg = reshape(imageReg,[dimz,dimy,dimx,dimf,dimd]);
-
-                % If p2roud scan shift z-dimension by half FOV, no idea why 
-                if strcmp(objData.dataType,'3Dp2roud')
-                    imageReg = circshift(imageReg,-round(size(imageReg,1)/2),1);
-                end
 
                 % Rearrange to correct orientation: frames, x, y, z, dynamics
                 imageOut = flip(flip(permute(imageReg,[4,3,2,1,5]),3),4);
@@ -1687,7 +1681,7 @@ classdef retroReco
 
 
         % ---------------------------------------------------------------------------------
-        % Apply sub-pixel 3D image shift (3D UTE ?) - not tested, needs work
+        % Apply sub-pixel 3D image shift (3D P2ROUD)
         % ---------------------------------------------------------------------------------
         function objReco = shiftImages3D(objReco,objData,app)
 
