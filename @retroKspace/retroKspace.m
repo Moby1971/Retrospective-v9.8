@@ -19,6 +19,7 @@ classdef retroKspace
         kSpaceAvg                                               % k-space averages
         kSpaceTraj                                              % trajectory points for entire k-space
         trajectory                                              % k-space trajectory
+        trajectoryFileName = "none"                             % trajectory filename
         gradTrajectory                                          % gradient calibration trajectory
         
         % Cardiac and respiratory binning
@@ -1170,7 +1171,7 @@ classdef retroKspace
                     spoke(1,1,cnt,z,:,1,2) = (-floor(dimx/2)+0.5:floor(dimx/2)-0.5)*sin(objKspace.trajectory(cnt)*pi/180);
                 end
             end
-         
+  
             for coilnr = 1:objData.nr_coils
                 
                 rawData = permute(objKspace.raw{coilnr},[3 2 1 4]); % needed to be able to rearrange according to spokes, readout
@@ -1281,11 +1282,12 @@ classdef retroKspace
             
             % Create spokes from trajectory list of angles
             spoke = zeros(1,1,objData.nrKsteps,dimz,dimx,1,3);
-            
+            srange = floor(dimx/2);
+
             for z = 1:dimz
                 for cnt = 1:objData.nrKsteps
-                    spoke(1,1,cnt,z,:,1,1) = (-floor(dimx/2)+0.5:floor(dimx/2)-0.5)*cos(objKspace.trajectory(cnt)*pi/180);
-                    spoke(1,1,cnt,z,:,1,2) = (-floor(dimx/2)+0.5:floor(dimx/2)-0.5)*sin(objKspace.trajectory(cnt)*pi/180);
+                    spoke(1,1,cnt,z,:,1,1) = (-srange:srange-1)*cos(objKspace.trajectory(cnt)*pi/180);
+                    spoke(1,1,cnt,z,:,1,2) = (-srange:srange-1)*sin(objKspace.trajectory(cnt)*pi/180);
                 end
             end
             
@@ -1631,7 +1633,7 @@ classdef retroKspace
         % K-space trajectory
         % ---------------------------------------------------------------------------------
         function [objKspace, objData] = getKspaceTrajectory(objKspace, objData, app)
-            
+
             % Trajectory (linear, zigzag, user-defined, radial)
             switch objData.pe1_order
                 
@@ -1644,9 +1646,10 @@ classdef retroKspace
                 case 3
                     objKspace.trajectory = arrayTrajectory(objData.NO_VIEWS,objData.gp_var_mul);
                     
-                case 4 % reserved for 3D P2ROUD acquisition
+                case {4, 5} % reserved for 3D P2ROUD acquisition
                     flist = dir(fullfile(app.mrdImportPath,'*.txt'));
                     if ~isempty(flist)
+                        objKspace.trajectoryFileName = flist(1).name;
                         objKspace.trajectory = load([flist(1).folder,filesep,flist(1).name]);
                         objData.dataType = '3Dp2roud';
                         app.TextMessage(strcat('P2ROUD trajectory: ',{' '},flist(1).name));
