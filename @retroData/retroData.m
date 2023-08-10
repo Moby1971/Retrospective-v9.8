@@ -386,7 +386,7 @@ classdef retroData
         function obj = checkForMultiSlab(obj, app)
             
             % 3D multi-slab data is not supported
-            if strcmp(obj.dataType,'3D') && obj.NO_SLICES > 1
+            if contains(obj.dataType,{'3D','3Dp2roud'}) && obj.NO_SLICES > 1
                 obj.validDataFlag = false;
                 app.TextMessage('ERROR: Only 3D single-slab data supported ...');
             end
@@ -417,7 +417,7 @@ classdef retroData
         function obj = checkForVFA(obj, app)
             
             % Variable flip-angle data in 3D is supported
-            if strcmp(obj.dataType,'3D') && obj.VFA_size > 0
+            if contains(obj.dataType,{'3D','3Dp2roud'}) && obj.VFA_size > 0
                 obj.vfaDataFlag = true;
                 obj = setVariableFlipAngles(obj);
                 app.TextMessage(strcat('INFO:',{' '},num2str(obj.VFA_size),{' '},'flip angles detected ...'));
@@ -1523,14 +1523,16 @@ classdef retroData
             
             % Write 512 byte header
             fwrite(fid1,header1,'int32');
-            
-            if strcmp(obj.dataType,'3D')
-                kSpaceMRDdata = flip(permute(kSpaceMRDdata,[1,3,2,4,5,6,7]),1);
-            else
-                
-                kSpaceMRDdata = flip(kSpaceMRDdata,1);
+
+            switch obj.dataType
+
+                case {'3D','3Dp2roud'}
+                    kSpaceMRDdata = flip(permute(kSpaceMRDdata,[1,3,2,4,5,6,7]),1);
+
+                otherwise
+                    kSpaceMRDdata = flip(kSpaceMRDdata,1);
             end
-            
+
             % Convert to 1D array with alternating real and imag part of the data
             temp = kSpaceMRDdata;
             temp = temp(:);
@@ -1769,7 +1771,7 @@ classdef retroData
             % Different readout / phase depending on phase_orientation value
             if objData.PHASE_ORIENTATION
 
-                shiftInX =  relShiftX; 
+                shiftInX = +relShiftX; 
                 shiftInY = -relShiftY; 
                 shiftInZ = -relShiftZ;
 
