@@ -21,7 +21,7 @@ mask = true(size(image,1),size(image,2)); % set mask to all true if not given
 
 [image,mask] = imageAssert(image,mask); % assert image dimensions
 
-dnwindow = [window(1), window(2), 1]; % set window size for denoising
+dnwindow = [window(1), window(2), 2]; % set window size for denoising
 
 dims = size(image); % save new dimensions
 
