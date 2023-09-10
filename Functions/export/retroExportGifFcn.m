@@ -39,9 +39,11 @@ end
 
 
 % Create folder if not exist, and clear
-folder_name = [gifExportPath,[filesep,'RETRO_GIFS_',num2str(nrFrames),'_',num2str(nrSlices),'_',num2str(nrDynamics),'_',tag]];
-if (~exist(folder_name, 'dir')); mkdir(folder_name); end
-delete([folder_name,filesep,'*']);
+folder_name = strcat(gifExportPath,'RETRO_GIFS_',num2str(nrFrames),'_',num2str(nrSlices),'_',num2str(nrDynamics),'_',tag,filesep);
+if ~exist(folder_name, 'dir')
+    mkdir(folder_name); 
+end
+delete(strcat(folder_name,filesep,'*'));
 
 
 % Scale from 0 to 255
@@ -68,6 +70,7 @@ fct = max([dimx dimy]);
 dimx = round(gifImageSize * dimx / fct);
 dimy = round(gifImageSize * dimy / fct);
 
+
 % Variable flip-angle
 if parameters.VFA_size > 1
     dynamiclabel = '_flipangle_';
@@ -76,6 +79,7 @@ else
 end
 
 if strcmp(recoType,'realtime')
+
 
     % Dynamic movie
 
@@ -97,9 +101,9 @@ if strcmp(recoType,'realtime')
                 image = imresize(image,[dimx,dimy]);
 
                 if idx == 1
-                    imwrite(image,cmap,[folder_name,filesep,'movie_',tag,'_slice_',slice,'frame',dyn,'.gif'],'DelayTime',delayTime,'LoopCount',inf);
+                    imwrite(image,cmap,strcat(folder_name,filesep,'movie_',tag,'_slice_',slice,'frame',dyn,'.gif'),'DelayTime',delayTime,'LoopCount',inf);
                 else
-                    imwrite(image,cmap,[folder_name,filesep,'movie_',tag,'_slice_',slice,'frame',dyn,'.gif'],'WriteMode','append','DelayTime',delayTime);
+                    imwrite(image,cmap,strcat(folder_name,filesep,'movie_',tag,'_slice_',slice,'frame',dyn,'.gif'),'WriteMode','append','DelayTime',delayTime);
                 end
 
             end
@@ -133,9 +137,9 @@ else
                     imagegif = squeeze(image(i,:,:,idx,j));
 
                     if idx == 1
-                        imwrite(imagegif,cmap,[folder_name,filesep,'movie_',tag,'_slice_',slice,dynamiclabel,dyn,'.gif'],'DelayTime',delayTime,'LoopCount',inf);
+                        imwrite(imagegif,cmap,strcat(folder_name,filesep,'movie_',tag,'_slice_',slice,dynamiclabel,dyn,'.gif'),'DelayTime',delayTime,'LoopCount',inf);
                     else
-                        imwrite(imagegif,cmap,[folder_name,filesep,'movie_',tag,'_slice_',slice,dynamiclabel,dyn,'.gif'],'WriteMode','append','DelayTime',delayTime);
+                        imwrite(imagegif,cmap,strcat(folder_name,filesep,'movie_',tag,'_slice_',slice,dynamiclabel,dyn,'.gif'),'WriteMode','append','DelayTime',delayTime);
                     end
 
                 end
@@ -165,9 +169,9 @@ else
                     imagegif = squeeze(image(i,:,:,idx,j));
 
                     if j == 1
-                        imwrite(imagegif,cmap,[folder_name,filesep,'movie_',tag,'_slice_',slice,'_frame_',frm,'.gif'],'DelayTime',delayTime,'LoopCount',inf);
+                        imwrite(imagegif,cmap,strcat(folder_name,filesep,'movie_',tag,'_slice_',slice,'_frame_',frm,'.gif'),'DelayTime',delayTime,'LoopCount',inf);
                     else
-                        imwrite(imagegif,cmap,[folder_name,filesep,'movie_',tag,'_slice_',slice,'_frame_',frm,'.gif'],'WriteMode','append','DelayTime',delayTime);
+                        imwrite(imagegif,cmap,strcat(folder_name,filesep,'movie_',tag,'_slice_',slice,'_frame_',frm,'.gif'),'WriteMode','append','DelayTime',delayTime);
                     end
 
                 end
@@ -204,9 +208,9 @@ else
                 imagegif = squeeze(imageCollection(:,:,idx,j));
 
                 if idx == 1
-                    imwrite(imagegif,cmap,[folder_name,filesep,'collage_',tag,dynamiclabel,dyn,'.gif'],'DelayTime',delayTime,'LoopCount',inf);
+                    imwrite(imagegif,cmap,strcat(folder_name,filesep,'collage_',tag,dynamiclabel,dyn,'.gif'),'DelayTime',delayTime,'LoopCount',inf);
                 else
-                    imwrite(imagegif,cmap,[folder_name,filesep,'collage_',tag,dynamiclabel,dyn,'.gif'],'WriteMode','append','DelayTime',delayTime);
+                    imwrite(imagegif,cmap,strcat(folder_name,filesep,'collage_',tag,dynamiclabel,dyn,'.gif'),'WriteMode','append','DelayTime',delayTime);
                 end
 
             end
