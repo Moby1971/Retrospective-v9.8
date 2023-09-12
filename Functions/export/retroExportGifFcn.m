@@ -43,7 +43,6 @@ folder_name = strcat(gifExportPath,'RETRO_GIFS_',num2str(nrFrames),'_',num2str(n
 if ~exist(folder_name, 'dir')
     mkdir(folder_name); 
 end
-delete(strcat(folder_name,filesep,'*'));
 
 
 % Scale from 0 to 255

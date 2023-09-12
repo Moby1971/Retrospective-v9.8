@@ -28,12 +28,13 @@ dcmHead = dicominfo(dcmFilename);
 TextMessage(app,strcat('Reading DICOM info from',{' '},dcmFilename));
 
 % Create folder if not exist, and delete folder content
-dir1 = dcmHead.PatientID;
-dir2 = 'DICOM';
-dir3 = strcat(num2str(dcmHead.SeriesNumber),'R');
-dir4 = '1';
-folderName = strcat(dcmExportDir,filesep,dir1,filesep,dir2,filesep,dir3,filesep,dir4);
-if (~exist(folderName, 'dir')); mkdir(fullfile(dcmExportDir, dir1,dir2,dir3,dir4)); end
+dir1 = 'DICOM';
+dir2 = strcat(num2str(dcmHead.SeriesNumber),'R');
+dir3 = '1';
+folderName = strcat(dcmExportDir,dir1,filesep,dir2,filesep,dir3,filesep);
+if (~exist(folderName, 'dir')) 
+    mkdir(folderName); 
+end
 delete([folderName,filesep,'*']);
 
 % Variable flip-angle
@@ -60,7 +61,7 @@ for frame=1:nrFrames
             % Filename
             fn = ['0000',num2str(cnt)];
             fn = fn(size(fn,2)-4:size(fn,2));
-            fname = [folderName,filesep,fn,'_frame_',num2str(frame),'_slice_',num2str(slice),dynamicLabel,num2str(dyn),'.dcm'];
+            fname = strcat(folderName,filesep,fn,'_frame_',num2str(frame),'_slice_',num2str(slice),dynamicLabel,num2str(dyn),'.dcm');
 
             % Generate a dicom header
             dcmHeader = generate_dicomheader_dcm;
