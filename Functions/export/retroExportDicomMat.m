@@ -54,7 +54,7 @@ for frame = 1:nrFrames
 
             im = squeeze(cast(round(movie(frame,:,:,slice,dyn)),'uint16'));
       
-            dicomwrite(im, fname, dcmHeader, "CreateMode","copy");
+            dicomwrite(im, fname, dcmHeader); %, "CreateMode","copy");
 
             cnt = cnt + 1;
 
