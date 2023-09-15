@@ -23,17 +23,17 @@ static emlrtRSInfo
         {
             38,        /* lineNo */
             "squeeze", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/elmat/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/elmat/"
             "squeeze.m" /* pathName */
 };
 
 static emlrtRTEInfo
-    jb_emlrtRTEI =
+    lb_emlrtRTEI =
         {
             38,        /* lineNo */
             1,         /* colNo */
             "squeeze", /* fName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/elmat/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/elmat/"
             "squeeze.m" /* pName */
 };
 
@@ -96,7 +96,7 @@ void squeeze(const emlrtStack *sp, const emxArray_creal_T *a,
   nx = b->size[0] * b->size[1];
   b->size[0] = szb[0];
   b->size[1] = szb[1];
-  emxEnsureCapacity_creal_T(sp, b, nx, &jb_emlrtRTEI);
+  emxEnsureCapacity_creal_T(sp, b, nx, &lb_emlrtRTEI);
   b_data = b->data;
   for (nx = 0; nx < j; nx++) {
     b_data[nx] = a_data[nx];

@@ -27,30 +27,30 @@
 
 /* Variable Definitions */
 static emlrtRSInfo emlrtRSI = {
-    6,             /* lineNo */
+    8,             /* lineNo */
     "coilCombine", /* fcnName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pathName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pathName */
 };
 
 static emlrtRSInfo b_emlrtRSI = {
-    12,            /* lineNo */
+    16,            /* lineNo */
     "coilCombine", /* fcnName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pathName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pathName */
 };
 
 static emlrtRSInfo c_emlrtRSI = {
-    15,            /* lineNo */
+    20,            /* lineNo */
     "coilCombine", /* fcnName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pathName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pathName */
 };
 
 static emlrtRSInfo
@@ -58,99 +58,99 @@ static emlrtRSInfo
         {
             7,         /* lineNo */
             "ref/ref", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/eml/+coder/+internal/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/eml/+coder/+internal/"
             "ref.m" /* pathName */
 };
 
 static emlrtRSInfo m_emlrtRSI = {
-    20,                        /* lineNo */
+    26,                        /* lineNo */
     "coilCombine/coilCombine", /* fcnName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pathName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pathName */
 };
 
 static emlrtRSInfo n_emlrtRSI = {
-    34,                        /* lineNo */
+    40,                        /* lineNo */
     "coilCombine/coilCombine", /* fcnName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pathName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pathName */
 };
 
 static emlrtRSInfo o_emlrtRSI = {
-    42,                        /* lineNo */
+    49,                        /* lineNo */
     "coilCombine/coilCombine", /* fcnName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pathName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pathName */
 };
 
 static emlrtRSInfo p_emlrtRSI = {
-    44,                        /* lineNo */
+    53,                        /* lineNo */
     "coilCombine/coilCombine", /* fcnName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pathName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pathName */
 };
 
 static emlrtRSInfo rb_emlrtRSI = {
     14,    /* lineNo */
     "svd", /* fcnName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/matfun/svd.m" /* pathName
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/matfun/svd.m" /* pathName
                                                                            */
 };
 
 static emlrtRSInfo sb_emlrtRSI = {
     36,    /* lineNo */
     "svd", /* fcnName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/matfun/svd.m" /* pathName
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/matfun/svd.m" /* pathName
                                                                            */
 };
 
 static emlrtRSInfo tb_emlrtRSI = {
     42,    /* lineNo */
     "svd", /* fcnName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/matfun/svd.m" /* pathName
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/matfun/svd.m" /* pathName
                                                                            */
 };
 
 static emlrtRSInfo hc_emlrtRSI = {
     40,                  /* lineNo */
     "reshapeSizeChecks", /* fcnName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/eml/+coder/+internal/"
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/eml/+coder/+internal/"
     "reshapeSizeChecks.m" /* pathName */
 };
 
 static emlrtRSInfo ic_emlrtRSI = {
     94,                  /* lineNo */
     "eml_mtimes_helper", /* fcnName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/ops/"
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/ops/"
     "eml_mtimes_helper.m" /* pathName */
 };
 
 static emlrtRSInfo jc_emlrtRSI = {
     69,                  /* lineNo */
     "eml_mtimes_helper", /* fcnName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/ops/"
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/ops/"
     "eml_mtimes_helper.m" /* pathName */
 };
 
 static emlrtRSInfo kc_emlrtRSI = {
     142,      /* lineNo */
     "mtimes", /* fcnName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/eml/+coder/+internal/+blas/"
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/eml/+coder/+internal/+blas/"
     "mtimes.m" /* pathName */
 };
 
 static emlrtRSInfo lc_emlrtRSI = {
     178,           /* lineNo */
     "mtimes_blas", /* fcnName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/eml/+coder/+internal/+blas/"
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/eml/+coder/+internal/+blas/"
     "mtimes.m" /* pathName */
 };
 
@@ -158,7 +158,7 @@ static emlrtRTEInfo emlrtRTEI = {
     133,                   /* lineNo */
     23,                    /* colNo */
     "dynamic_size_checks", /* fName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/ops/"
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/ops/"
     "eml_mtimes_helper.m" /* pName */
 };
 
@@ -166,7 +166,7 @@ static emlrtRTEInfo b_emlrtRTEI = {
     138,                   /* lineNo */
     23,                    /* colNo */
     "dynamic_size_checks", /* fName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/ops/"
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/ops/"
     "eml_mtimes_helper.m" /* pName */
 };
 
@@ -174,516 +174,536 @@ static emlrtRTEInfo c_emlrtRTEI = {
     64,                   /* lineNo */
     15,                   /* colNo */
     "assertValidSizeArg", /* fName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/eml/+coder/+internal/"
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/eml/+coder/+internal/"
     "assertValidSizeArg.m" /* pName */
 };
 
 static emlrtECInfo emlrtECI = {
     -1,                        /* nDims */
-    44,                        /* lineNo */
+    53,                        /* lineNo */
     17,                        /* colNo */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtBCInfo emlrtBCI = {
     -1,                        /* iFirst */
     -1,                        /* iLast */
-    44,                        /* lineNo */
+    53,                        /* lineNo */
     24,                        /* colNo */
     "im2",                     /* aName */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtBCInfo b_emlrtBCI = {
     -1,                        /* iFirst */
     -1,                        /* iLast */
-    44,                        /* lineNo */
+    53,                        /* lineNo */
     21,                        /* colNo */
     "im2",                     /* aName */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtBCInfo c_emlrtBCI = {
     -1,                        /* iFirst */
     -1,                        /* iLast */
-    44,                        /* lineNo */
+    53,                        /* lineNo */
     67,                        /* colNo */
     "im1",                     /* aName */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtBCInfo d_emlrtBCI = {
     -1,                        /* iFirst */
     -1,                        /* iLast */
-    44,                        /* lineNo */
+    53,                        /* lineNo */
     64,                        /* colNo */
     "im1",                     /* aName */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtBCInfo e_emlrtBCI = {
     -1,                        /* iFirst */
     -1,                        /* iLast */
-    43,                        /* lineNo */
+    50,                        /* lineNo */
     30,                        /* colNo */
     "U",                       /* aName */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtBCInfo f_emlrtBCI = {
     -1,                        /* iFirst */
     -1,                        /* iLast */
-    42,                        /* lineNo */
+    49,                        /* lineNo */
     43,                        /* colNo */
     "Rs",                      /* aName */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtBCInfo g_emlrtBCI = {
     -1,                        /* iFirst */
     -1,                        /* iLast */
-    42,                        /* lineNo */
+    49,                        /* lineNo */
     40,                        /* colNo */
     "Rs",                      /* aName */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtECInfo b_emlrtECI = {
     -1,                        /* nDims */
-    34,                        /* lineNo */
+    40,                        /* lineNo */
     21,                        /* colNo */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtBCInfo h_emlrtBCI = {
     -1,                        /* iFirst */
     -1,                        /* iLast */
-    34,                        /* lineNo */
+    40,                        /* lineNo */
     32,                        /* colNo */
     "Rs",                      /* aName */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtBCInfo i_emlrtBCI = {
     -1,                        /* iFirst */
     -1,                        /* iLast */
-    34,                        /* lineNo */
+    40,                        /* lineNo */
     28,                        /* colNo */
     "Rs",                      /* aName */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtECInfo c_emlrtECI = {
     2,                         /* nDims */
-    34,                        /* lineNo */
+    40,                        /* lineNo */
     39,                        /* colNo */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtECInfo d_emlrtECI = {
     1,                         /* nDims */
-    34,                        /* lineNo */
+    40,                        /* lineNo */
     39,                        /* colNo */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtECInfo e_emlrtECI = {
     2,                         /* nDims */
-    34,                        /* lineNo */
+    40,                        /* lineNo */
     80,                        /* colNo */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtBCInfo j_emlrtBCI = {
     -1,                        /* iFirst */
     -1,                        /* iLast */
-    34,                        /* lineNo */
+    40,                        /* lineNo */
     113,                       /* colNo */
     "im1",                     /* aName */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtBCInfo k_emlrtBCI = {
     -1,                        /* iFirst */
     -1,                        /* iLast */
-    34,                        /* lineNo */
+    40,                        /* lineNo */
     110,                       /* colNo */
     "im1",                     /* aName */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtBCInfo l_emlrtBCI = {
     -1,                        /* iFirst */
     -1,                        /* iLast */
-    34,                        /* lineNo */
+    40,                        /* lineNo */
     91,                        /* colNo */
     "im1",                     /* aName */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtBCInfo m_emlrtBCI = {
     -1,                        /* iFirst */
     -1,                        /* iLast */
-    34,                        /* lineNo */
+    40,                        /* lineNo */
     88,                        /* colNo */
     "im1",                     /* aName */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtBCInfo n_emlrtBCI = {
     -1,                        /* iFirst */
     -1,                        /* iLast */
-    34,                        /* lineNo */
+    40,                        /* lineNo */
     50,                        /* colNo */
     "Rs",                      /* aName */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtBCInfo o_emlrtBCI = {
     -1,                        /* iFirst */
     -1,                        /* iLast */
-    34,                        /* lineNo */
+    40,                        /* lineNo */
     46,                        /* colNo */
     "Rs",                      /* aName */
     "coilCombine/coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtECInfo f_emlrtECI = {
     -1,            /* nDims */
-    12,            /* lineNo */
+    16,            /* lineNo */
     5,             /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtBCInfo p_emlrtBCI = {
     -1,            /* iFirst */
     -1,            /* iLast */
-    12,            /* lineNo */
+    16,            /* lineNo */
     13,            /* colNo */
     "im2",         /* aName */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtBCInfo q_emlrtBCI = {
     -1,            /* iFirst */
     -1,            /* iLast */
-    12,            /* lineNo */
+    16,            /* lineNo */
     43,            /* colNo */
     "im1",         /* aName */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m", /* pName */
-    0          /* checkKind */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m", /* pName */
+    0                  /* checkKind */
 };
 
 static emlrtRTEInfo j_emlrtRTEI = {
-    6,             /* lineNo */
+    8,             /* lineNo */
     15,            /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo k_emlrtRTEI = {
-    10,            /* lineNo */
+    14,            /* lineNo */
     1,             /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo l_emlrtRTEI = {
-    12,            /* lineNo */
+    16,            /* lineNo */
     35,            /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo m_emlrtRTEI = {
-    12,            /* lineNo */
+    16,            /* lineNo */
     23,            /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo n_emlrtRTEI = {
-    28,            /* lineNo */
+    34,            /* lineNo */
     9,             /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo o_emlrtRTEI = {
-    34,            /* lineNo */
-    97,            /* colNo */
-    "coilCombine", /* fName */
-    "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
-};
-
-static emlrtRTEInfo p_emlrtRTEI = {
-    42,            /* lineNo */
+    49,            /* lineNo */
     37,            /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
+};
+
+static emlrtRTEInfo p_emlrtRTEI = {
+    40,            /* lineNo */
+    97,            /* colNo */
+    "coilCombine", /* fName */
+    "/Users/gustav/Library/CloudStorage/Dropbox/"
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo q_emlrtRTEI = {
     41,    /* lineNo */
     14,    /* colNo */
     "svd", /* fName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/matfun/svd.m" /* pName
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/matfun/svd.m" /* pName
                                                                            */
 };
 
 static emlrtRTEInfo r_emlrtRTEI = {
-    43,            /* lineNo */
+    50,            /* lineNo */
     17,            /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo s_emlrtRTEI = {
-    34,            /* lineNo */
+    40,            /* lineNo */
     80,            /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo t_emlrtRTEI = {
     43,    /* lineNo */
     9,     /* colNo */
     "svd", /* fName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/matfun/svd.m" /* pName
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/matfun/svd.m" /* pName
                                                                            */
 };
 
 static emlrtRTEInfo u_emlrtRTEI = {
-    44,            /* lineNo */
+    53,            /* lineNo */
     60,            /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo v_emlrtRTEI = {
-    34,            /* lineNo */
+    40,            /* lineNo */
     39,            /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo w_emlrtRTEI = {
-    44,            /* lineNo */
+    53,            /* lineNo */
     52,            /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo x_emlrtRTEI = {
-    44,            /* lineNo */
+    53,            /* lineNo */
     44,            /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo y_emlrtRTEI = {
-    44,            /* lineNo */
+    53,            /* lineNo */
     36,            /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo ab_emlrtRTEI = {
     218,      /* lineNo */
     20,       /* colNo */
     "mtimes", /* fName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/eml/+coder/+internal/+blas/"
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/eml/+coder/+internal/+blas/"
     "mtimes.m" /* pName */
 };
 
 static emlrtRTEInfo bb_emlrtRTEI = {
-    4,             /* lineNo */
+    5,             /* lineNo */
     10,            /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo cb_emlrtRTEI = {
-    4,             /* lineNo */
-    16,            /* colNo */
+    16,            /* lineNo */
+    5,             /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo db_emlrtRTEI = {
-    18,            /* lineNo */
+    23,            /* lineNo */
     32,            /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 static emlrtRTEInfo eb_emlrtRTEI = {
-    42,            /* lineNo */
+    53,            /* lineNo */
+    17,            /* colNo */
+    "coilCombine", /* fName */
+    "/Users/gustav/Library/CloudStorage/Dropbox/"
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
+};
+
+static emlrtRTEInfo fb_emlrtRTEI = {
+    49,            /* lineNo */
     29,            /* colNo */
     "coilCombine", /* fName */
     "/Users/gustav/Library/CloudStorage/Dropbox/"
-    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/AI4MRI/Functions/"
-    "coilCombine/coilCo"
-    "mbine.m" /* pName */
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
+};
+
+static emlrtRTEInfo gb_emlrtRTEI = {
+    5,             /* lineNo */
+    16,            /* colNo */
+    "coilCombine", /* fName */
+    "/Users/gustav/Library/CloudStorage/Dropbox/"
+    "Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/"
+    "Functions/coilCombin"
+    "e/coilCombine.m" /* pName */
 };
 
 /* Function Declarations */
@@ -714,17 +734,19 @@ static void binary_expand_op(const emlrtStack *sp, emxArray_creal_T *in1,
   in1_data = in1->data;
   emlrtHeapReferenceStackEnterFcnR2012b((emlrtConstCTX)sp);
   emxInit_creal_T(sp, &b_in2, 2, &v_emlrtRTEI);
-  i = b_in2->size[0] * b_in2->size[1];
   if (in1->size[0] == 1) {
-    b_in2->size[0] = in2->size[0];
+    loop_ub = in2->size[0];
   } else {
-    b_in2->size[0] = in1->size[0];
+    loop_ub = in1->size[0];
   }
+  i = b_in2->size[0] * b_in2->size[1];
+  b_in2->size[0] = loop_ub;
   if (in1->size[1] == 1) {
-    b_in2->size[1] = in2->size[1];
+    b_loop_ub = in2->size[1];
   } else {
-    b_in2->size[1] = in1->size[1];
+    b_loop_ub = in1->size[1];
   }
+  b_in2->size[1] = b_loop_ub;
   emxEnsureCapacity_creal_T(sp, b_in2, i, &v_emlrtRTEI);
   b_in2_data = b_in2->data;
   stride_0_0 = (in2->size[0] != 1);
@@ -733,33 +755,24 @@ static void binary_expand_op(const emlrtStack *sp, emxArray_creal_T *in1,
   stride_1_1 = (in1->size[1] != 1);
   aux_0_1 = 0;
   aux_1_1 = 0;
-  if (in1->size[1] == 1) {
-    loop_ub = in2->size[1];
-  } else {
-    loop_ub = in1->size[1];
-  }
-  for (i = 0; i < loop_ub; i++) {
-    i1 = in1->size[0];
-    if (i1 == 1) {
-      b_loop_ub = in2->size[0];
-    } else {
-      b_loop_ub = i1;
-    }
-    for (i1 = 0; i1 < b_loop_ub; i1++) {
+  for (i = 0; i < b_loop_ub; i++) {
+    for (i1 = 0; i1 < loop_ub; i1++) {
       int32_T i2;
-      i2 = i1 * stride_1_0;
+      int32_T i3;
+      i2 = i1 * stride_0_0;
+      i3 = i1 * stride_1_0;
       b_in2_data[i1 + b_in2->size[0] * i].re =
-          in2_data[((i1 * stride_0_0 + in2->size[0] * aux_0_1) +
+          in2_data[((i2 + in2->size[0] * aux_0_1) +
                     in2->size[0] * in2->size[1] * in3) +
                    in2->size[0] * in2->size[1] * in2->size[2] * in4]
               .re +
-          in1_data[i2 + in1->size[0] * aux_1_1].re;
+          in1_data[i3 + in1->size[0] * aux_1_1].re;
       b_in2_data[i1 + b_in2->size[0] * i].im =
-          in2_data[((i1 * stride_0_0 + in2->size[0] * aux_0_1) +
+          in2_data[((i2 + in2->size[0] * aux_0_1) +
                     in2->size[0] * in2->size[1] * in3) +
                    in2->size[0] * in2->size[1] * in2->size[2] * in4]
               .im +
-          in1_data[i2 + in1->size[0] * aux_1_1].im;
+          in1_data[i3 + in1->size[0] * aux_1_1].im;
     }
     aux_1_1 += stride_1_1;
     aux_0_1 += stride_0_1;
@@ -861,6 +874,7 @@ void coilCombine(const emlrtStack *sp, emxArray_creal_T *im1,
   /*  Combine images from different coils */
   /*  ---------------------------------------------------------------------------------
    */
+  /*  Permute the dimensions of the input image */
   emxInit_creal_T(sp, &b_im1, 5, &j_emlrtRTEI);
   i = b_im1->size[0] * b_im1->size[1] * b_im1->size[2] * b_im1->size[3] *
       b_im1->size[4];
@@ -881,6 +895,7 @@ void coilCombine(const emlrtStack *sp, emxArray_creal_T *im1,
   permute(&st, b_im1, im1);
   im1_data = im1->data;
   emxFree_creal_T(sp, &b_im1);
+  /*  Get the dimensions of the input image */
   /*  Loop over slices */
   emxInit_creal_T(sp, &b_im2, 5, &bb_emlrtRTEI);
   i = b_im2->size[0] * b_im2->size[1] * b_im2->size[2] * b_im2->size[3] *
@@ -902,12 +917,12 @@ void coilCombine(const emlrtStack *sp, emxArray_creal_T *im1,
   emxInit_creal_T(sp, &Rs, 4, &n_emlrtRTEI);
   emxInit_creal_T(sp, &myfilt, 1, &r_emlrtRTEI);
   emxInit_creal_T(sp, &c_im1, 4, &db_emlrtRTEI);
-  emxInit_creal_T(sp, &r1, 2, &cb_emlrtRTEI);
-  emxInit_creal_T(sp, &A, 2, &eb_emlrtRTEI);
-  emxInit_real_T(sp, &s1, &cb_emlrtRTEI);
+  emxInit_creal_T(sp, &r1, 2, &eb_emlrtRTEI);
+  emxInit_creal_T(sp, &A, 2, &fb_emlrtRTEI);
+  emxInit_real_T(sp, &s1, &gb_emlrtRTEI);
   emxInit_creal_T(sp, &V1, 2, &x_emlrtRTEI);
   emxInit_creal_T(sp, &d_im1, 5, &l_emlrtRTEI);
-  emxInit_creal_T(sp, &b_Rs, 4, &p_emlrtRTEI);
+  emxInit_creal_T(sp, &b_Rs, 4, &o_emlrtRTEI);
   emxInit_creal_T(sp, &e_im1, 2, &s_emlrtRTEI);
   for (kz = 0; kz < i; kz++) {
     real_T d;
@@ -922,6 +937,7 @@ void coilCombine(const emlrtStack *sp, emxArray_creal_T *im1,
       emlrtDynamicBoundsCheckR2012b(kz + 1, 1, im1->size[2], &q_emlrtBCI, &st);
     }
     /*  Single slice coil combine */
+    /*  Permute the dimensions of the input image */
     i1 = d_im1->size[0] * d_im1->size[1] * d_im1->size[2] * d_im1->size[3] *
          d_im1->size[4];
     d_im1->size[0] = im1->size[0];
@@ -954,7 +970,7 @@ void coilCombine(const emlrtStack *sp, emxArray_creal_T *im1,
     b_st.site = &m_emlrtRSI;
     b_permute(&b_st, d_im1, c_im1);
     b_im1_data = c_im1->data;
-    /*  Get image dimensions and set filter size */
+    /*  Get the dimensions of the input image and set filter size */
     C = c_im1->size[3];
     N_contents = c_im1->size[2];
     /*  Initialize */
@@ -966,7 +982,8 @@ void coilCombine(const emlrtStack *sp, emxArray_creal_T *im1,
     r->size[4] = c_im1->size[2];
     emxEnsureCapacity_creal_T(&st, r, i1, &m_emlrtRTEI);
     r2 = r->data;
-    loop_ub = c_im1->size[0] * c_im1->size[1] * c_im1->size[2];
+    maxdimlen = c_im1->size[0] * c_im1->size[1];
+    loop_ub = maxdimlen * c_im1->size[2];
     for (i1 = 0; i1 < loop_ub; i1++) {
       r2[i1].re = 0.0;
       r2[i1].im = 0.0;
@@ -978,7 +995,7 @@ void coilCombine(const emlrtStack *sp, emxArray_creal_T *im1,
     Rs->size[3] = c_im1->size[3];
     emxEnsureCapacity_creal_T(&st, Rs, i1, &n_emlrtRTEI);
     Rs_data = Rs->data;
-    loop_ub = c_im1->size[0] * c_im1->size[1] * c_im1->size[3] * c_im1->size[3];
+    loop_ub = maxdimlen * c_im1->size[3] * c_im1->size[3];
     for (i1 = 0; i1 < loop_ub; i1++) {
       Rs_data[i1].re = 0.0;
       Rs_data[i1].im = 0.0;
@@ -986,8 +1003,11 @@ void coilCombine(const emlrtStack *sp, emxArray_creal_T *im1,
     /*  Get correlation matrices */
     i1 = c_im1->size[3];
     for (maxdimlen = 0; maxdimlen < i1; maxdimlen++) {
+      /*  loop over coils */
       for (nx = 0; nx < C; nx++) {
+        /*  loop over coils */
         for (kn = 0; kn < N_contents; kn++) {
+          /*  loop over frames */
           if (kn + 1 > c_im1->size[2]) {
             emlrtDynamicBoundsCheckR2012b(kn + 1, 1, c_im1->size[2],
                                           &m_emlrtBCI, &st);
@@ -1008,7 +1028,7 @@ void coilCombine(const emlrtStack *sp, emxArray_creal_T *im1,
           A->size[0] = c_im1->size[0];
           loop_ub = c_im1->size[1];
           A->size[1] = c_im1->size[1];
-          emxEnsureCapacity_creal_T(&st, A, i2, &o_emlrtRTEI);
+          emxEnsureCapacity_creal_T(&st, A, i2, &p_emlrtRTEI);
           A_data = A->data;
           for (i2 = 0; i2 < loop_ub; i2++) {
             b_loop_ub = c_im1->size[0];
@@ -1155,6 +1175,7 @@ void coilCombine(const emlrtStack *sp, emxArray_creal_T *im1,
     for (kn = 0; kn < i1; kn++) {
       for (ky = 0; ky <= i4; ky++) {
         boolean_T allFiniteA;
+        /*  Get the first principal component of the data */
         b_st.site = &o_emlrtRSI;
         if (kn + 1 > Rs->size[0]) {
           emlrtDynamicBoundsCheckR2012b(kn + 1, 1, Rs->size[0], &g_emlrtBCI,
@@ -1169,7 +1190,7 @@ void coilCombine(const emlrtStack *sp, emxArray_creal_T *im1,
         b_Rs->size[1] = 1;
         b_Rs->size[2] = Rs->size[2];
         b_Rs->size[3] = Rs->size[3];
-        emxEnsureCapacity_creal_T(&b_st, b_Rs, i2, &p_emlrtRTEI);
+        emxEnsureCapacity_creal_T(&b_st, b_Rs, i2, &o_emlrtRTEI);
         c_im1_data = b_Rs->data;
         for (i2 = 0; i2 < c_loop_ub; i2++) {
           loop_ub = Rs->size[2];
@@ -1222,6 +1243,7 @@ void coilCombine(const emlrtStack *sp, emxArray_creal_T *im1,
         for (i2 = 0; i2 < loop_ub; i2++) {
           myfilt_data[i2] = c_im1_data[i2];
         }
+        /*  Apply the filter */
         if (kn + 1 > c_im1->size[0]) {
           emlrtDynamicBoundsCheckR2012b(kn + 1, 1, c_im1->size[0], &d_emlrtBCI,
                                         &st);
@@ -1410,6 +1432,7 @@ void coilCombine(const emlrtStack *sp, emxArray_creal_T *im1,
   emxFree_creal_T(sp, &myfilt);
   emxFree_creal_T(sp, &Rs);
   emxFree_creal_T(sp, &r);
+  /*  Permute the dimensions of the output image */
   st.site = &c_emlrtRSI;
   c_permute(&st, b_im2, im2);
   emxFree_creal_T(sp, &b_im2);

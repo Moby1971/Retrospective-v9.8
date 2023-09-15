@@ -23,119 +23,119 @@
 #include <stddef.h>
 
 /* Variable Definitions */
-static emlrtRSInfo t_emlrtRSI =
+static emlrtRSInfo q_emlrtRSI =
     {
         55,        /* lineNo */
         "filter2", /* fcnName */
-        "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/datafun/"
+        "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/datafun/"
         "filter2.m" /* pathName */
 };
 
-static emlrtRSInfo u_emlrtRSI =
+static emlrtRSInfo r_emlrtRSI =
     {
         61,        /* lineNo */
         "filter2", /* fcnName */
-        "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/datafun/"
+        "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/datafun/"
         "filter2.m" /* pathName */
 };
 
-static emlrtRSInfo v_emlrtRSI =
+static emlrtRSInfo s_emlrtRSI =
     {
         62,        /* lineNo */
         "filter2", /* fcnName */
-        "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/datafun/"
+        "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/datafun/"
         "filter2.m" /* pathName */
 };
 
-static emlrtRSInfo w_emlrtRSI =
+static emlrtRSInfo t_emlrtRSI =
     {
         69,        /* lineNo */
         "filter2", /* fcnName */
-        "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/datafun/"
+        "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/datafun/"
         "filter2.m" /* pathName */
+};
+
+static emlrtRSInfo
+    u_emlrtRSI =
+        {
+            42,      /* lineNo */
+            "conv2", /* fcnName */
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/datafun/"
+            "conv2.m" /* pathName */
+};
+
+static emlrtRSInfo
+    v_emlrtRSI =
+        {
+            265,              /* lineNo */
+            "conv2Separable", /* fcnName */
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/datafun/"
+            "conv2.m" /* pathName */
+};
+
+static emlrtRSInfo
+    w_emlrtRSI =
+        {
+            234,              /* lineNo */
+            "conv2Separable", /* fcnName */
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/datafun/"
+            "conv2.m" /* pathName */
 };
 
 static emlrtRSInfo
     x_emlrtRSI =
         {
-            42,      /* lineNo */
-            "conv2", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/datafun/"
+            229,              /* lineNo */
+            "conv2Separable", /* fcnName */
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/datafun/"
             "conv2.m" /* pathName */
 };
 
 static emlrtRSInfo
     y_emlrtRSI =
         {
-            265,              /* lineNo */
+            228,              /* lineNo */
             "conv2Separable", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/datafun/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/datafun/"
             "conv2.m" /* pathName */
 };
 
 static emlrtRSInfo
     ab_emlrtRSI =
         {
-            234,              /* lineNo */
+            199,              /* lineNo */
             "conv2Separable", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/datafun/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/datafun/"
             "conv2.m" /* pathName */
 };
 
 static emlrtRSInfo
     bb_emlrtRSI =
         {
-            229,              /* lineNo */
-            "conv2Separable", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/datafun/"
-            "conv2.m" /* pathName */
-};
-
-static emlrtRSInfo
-    cb_emlrtRSI =
-        {
-            228,              /* lineNo */
-            "conv2Separable", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/datafun/"
-            "conv2.m" /* pathName */
-};
-
-static emlrtRSInfo
-    db_emlrtRSI =
-        {
-            199,              /* lineNo */
-            "conv2Separable", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/datafun/"
-            "conv2.m" /* pathName */
-};
-
-static emlrtRSInfo
-    eb_emlrtRSI =
-        {
             119,              /* lineNo */
             "conv2Separable", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/datafun/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/datafun/"
             "conv2.m" /* pathName */
 };
 
 static emlrtRSInfo fb_emlrtRSI = {
     53,      /* lineNo */
     "xaxpy", /* fcnName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/eml/+coder/+internal/+blas/"
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/eml/+coder/+internal/+blas/"
     "xaxpy.m" /* pathName */
 };
 
 static emlrtRSInfo hb_emlrtRSI = {
-    10,      /* lineNo */
+    16,      /* lineNo */
     "round", /* fcnName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/elfun/round.m" /* pathName
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/elfun/round.m" /* pathName
                                                                             */
 };
 
 static emlrtRSInfo ib_emlrtRSI = {
     33,                           /* lineNo */
     "applyScalarFunctionInPlace", /* fcnName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/eml/+coder/+internal/"
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/eml/+coder/+internal/"
     "applyScalarFunctionInPlace.m" /* pathName */
 };
 
@@ -144,7 +144,7 @@ static emlrtRSInfo
         {
             58,      /* lineNo */
             "conv2", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/datafun/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/datafun/"
             "conv2.m" /* pathName */
 };
 
@@ -153,7 +153,7 @@ static emlrtRSInfo
         {
             75,                  /* lineNo */
             "conv2NonSeparable", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/datafun/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/datafun/"
             "conv2.m" /* pathName */
 };
 
@@ -161,33 +161,33 @@ static emlrtRSInfo lb_emlrtRSI =
     {
         105,     /* lineNo */
         "conv2", /* fcnName */
-        "/Applications/MATLAB_R2022b.app/toolbox/eml/eml/+coder/+internal/"
+        "/Applications/MATLAB_R2023b.app/toolbox/eml/eml/+coder/+internal/"
         "conv2.m" /* pathName */
 };
 
 static emlrtRSInfo mb_emlrtRSI = {
     32,          /* lineNo */
     "conv2AXPY", /* fcnName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/eml/+coder/+internal/private/"
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/eml/+coder/+internal/private/"
     "conv2AXPY.m" /* pathName */
 };
 
-static emlrtRTEInfo hb_emlrtRTEI =
+static emlrtRTEInfo jb_emlrtRTEI =
     {
         55,        /* lineNo */
         9,         /* colNo */
         "filter2", /* fName */
-        "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/datafun/"
+        "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/datafun/"
         "filter2.m" /* pName */
 };
 
 static emlrtRTEInfo
-    ib_emlrtRTEI =
+    kb_emlrtRTEI =
         {
             188,     /* lineNo */
             1,       /* colNo */
             "conv2", /* fName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/datafun/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/datafun/"
             "conv2.m" /* pName */
 };
 
@@ -219,6 +219,7 @@ void filter2(const emlrtStack *sp, const emxArray_creal_T *x,
   int32_T i;
   int32_T j;
   int32_T k;
+  int32_T loop_ub;
   st.prev = sp;
   st.tls = sp->tls;
   b_st.prev = &st;
@@ -231,48 +232,49 @@ void filter2(const emlrtStack *sp, const emxArray_creal_T *x,
   e_st.tls = d_st.tls;
   x_data = x->data;
   emlrtHeapReferenceStackEnterFcnR2012b((emlrtConstCTX)sp);
-  if (x->size[0] * x->size[1] >= 49) {
+  loop_ub = x->size[0] * x->size[1];
+  if (loop_ub >= 49) {
+    real_T re_tmp;
     int32_T ihi;
     int32_T mb;
     int32_T nb;
     boolean_T p;
-    st.site = &t_emlrtRSI;
-    b_st.site = &x_emlrtRSI;
+    st.site = &q_emlrtRSI;
+    b_st.site = &u_emlrtRSI;
     mb = x->size[0];
     nb = x->size[1];
-    c_st.site = &eb_emlrtRSI;
+    c_st.site = &bb_emlrtRSI;
     anyNonFinite(&c_st, x);
     i = y->size[0] * y->size[1];
     y->size[0] = x->size[0];
     y->size[1] = x->size[1];
-    emxEnsureCapacity_creal_T(&b_st, y, i, &hb_emlrtRTEI);
+    emxEnsureCapacity_creal_T(&b_st, y, i, &jb_emlrtRTEI);
     y_data = y->data;
-    ihi = x->size[0] * x->size[1];
-    for (i = 0; i < ihi; i++) {
+    for (i = 0; i < loop_ub; i++) {
       y_data[i].re = 0.0;
       y_data[i].im = 0.0;
     }
-    emxInit_creal_T(&b_st, &work, 2, &ib_emlrtRTEI);
+    emxInit_creal_T(&b_st, &work, 2, &kb_emlrtRTEI);
     i = work->size[0] * work->size[1];
     work->size[0] = x->size[0];
     work->size[1] = x->size[1];
-    emxEnsureCapacity_creal_T(&b_st, work, i, &ib_emlrtRTEI);
+    emxEnsureCapacity_creal_T(&b_st, work, i, &kb_emlrtRTEI);
     work_data = work->data;
-    ihi = x->size[0] * x->size[1];
-    for (i = 0; i < ihi; i++) {
+    for (i = 0; i < loop_ub; i++) {
       work_data[i].re = 0.0;
       work_data[i].im = 0.0;
     }
     if ((x->size[0] != 0) && (x->size[1] != 0)) {
       creal_T a;
       int32_T i1;
-      int32_T ilo;
+      int32_T jlo;
       i = 5 - x->size[0];
       i = muIntScalarMax_sint32(1, i);
       i1 = x->size[0] + 3;
       i1 = muIntScalarMin_sint32(7, i1);
-      c_st.site = &db_emlrtRSI;
+      c_st.site = &ab_emlrtRSI;
       for (k = i; k <= i1; k++) {
+        int32_T ilo;
         if (k - 3 > 0) {
           ilo = k;
         } else {
@@ -283,13 +285,13 @@ void filter2(const emlrtStack *sp, const emxArray_creal_T *x,
           ihi = mb;
         }
         ihi = (ihi - ilo) + 4;
-        c_st.site = &cb_emlrtRSI;
+        c_st.site = &y_emlrtRSI;
         if (nb > 2147483646) {
           d_st.site = &l_emlrtRSI;
           check_forloop_overflow_error(&d_st);
         }
         for (j = 0; j < nb; j++) {
-          c_st.site = &bb_emlrtRSI;
+          c_st.site = &x_emlrtRSI;
           if (ihi >= 1) {
             d_st.site = &fb_emlrtRSI;
             a.re = hcol[k - 1];
@@ -297,8 +299,9 @@ void filter2(const emlrtStack *sp, const emxArray_creal_T *x,
             n_t = (ptrdiff_t)ihi;
             incx_t = (ptrdiff_t)1;
             incy_t = (ptrdiff_t)1;
-            zaxpy(&n_t, (real_T *)&a, (real_T *)&x_data[(j * mb + ilo) - k],
-                  &incx_t, (real_T *)&work_data[(j * mb + ilo) - 4], &incy_t);
+            jlo = j * mb + ilo;
+            zaxpy(&n_t, (real_T *)&a, (real_T *)&x_data[jlo - k], &incx_t,
+                  (real_T *)&work_data[jlo - 4], &incy_t);
           }
         }
       }
@@ -306,19 +309,19 @@ void filter2(const emlrtStack *sp, const emxArray_creal_T *x,
       i = muIntScalarMax_sint32(1, i);
       i1 = x->size[1] + 3;
       i1 = muIntScalarMin_sint32(7, i1);
-      c_st.site = &ab_emlrtRSI;
+      c_st.site = &w_emlrtRSI;
       for (k = i; k <= i1; k++) {
         if (k - 3 > 0) {
-          ilo = k;
+          jlo = k;
         } else {
-          ilo = 4;
+          jlo = 4;
         }
         ihi = (nb + k) - 4;
         if (ihi > nb) {
           ihi = nb;
         }
-        ihi = mb * ((ihi - ilo) + 4);
-        c_st.site = &y_emlrtRSI;
+        ihi = mb * ((ihi - jlo) + 4);
+        c_st.site = &v_emlrtRSI;
         if (ihi >= 1) {
           d_st.site = &fb_emlrtRSI;
           a.re = hrow[k - 1];
@@ -326,29 +329,31 @@ void filter2(const emlrtStack *sp, const emxArray_creal_T *x,
           n_t = (ptrdiff_t)ihi;
           incx_t = (ptrdiff_t)1;
           incy_t = (ptrdiff_t)1;
-          zaxpy(&n_t, (real_T *)&a, (real_T *)&work_data[(ilo - k) * mb],
-                &incx_t, (real_T *)&y_data[(ilo - 4) * mb], &incy_t);
+          zaxpy(&n_t, (real_T *)&a, (real_T *)&work_data[(jlo - k) * mb],
+                &incx_t, (real_T *)&y_data[(jlo - 4) * mb], &incy_t);
         }
       }
     }
     emxFree_creal_T(&b_st, &work);
-    st.site = &u_emlrtRSI;
-    b_st.site = &r_emlrtRSI;
-    ihi = x->size[0] * x->size[1];
+    st.site = &r_emlrtRSI;
+    b_st.site = &db_emlrtRSI;
     p = true;
-    c_st.site = &s_emlrtRSI;
-    if (ihi > 2147483646) {
+    c_st.site = &eb_emlrtRSI;
+    if (loop_ub > 2147483646) {
       d_st.site = &l_emlrtRSI;
       check_forloop_overflow_error(&d_st);
     }
     k = 0;
-    while ((k <= ihi - 1) && p) {
-      p = ((muDoubleScalarFloor(x_data[k].re) == x_data[k].re) &&
-           (muDoubleScalarFloor(x_data[k].im) == x_data[k].im));
+    while ((k <= loop_ub - 1) && p) {
+      real_T im_tmp;
+      re_tmp = x_data[k].re;
+      im_tmp = x_data[k].im;
+      p = ((muDoubleScalarFloor(re_tmp) == re_tmp) &&
+           (muDoubleScalarFloor(im_tmp) == im_tmp));
       k++;
     }
     if (p) {
-      st.site = &v_emlrtRSI;
+      st.site = &s_emlrtRSI;
       b_st.site = &hb_emlrtRSI;
       ihi = y->size[0] * y->size[1];
       c_st.site = &ib_emlrtRSI;
@@ -357,14 +362,13 @@ void filter2(const emlrtStack *sp, const emxArray_creal_T *x,
         check_forloop_overflow_error(&d_st);
       }
       for (k = 0; k < ihi; k++) {
-        real_T d;
-        d = y_data[k].im;
+        re_tmp = y_data[k].im;
         y_data[k].re = muDoubleScalarRound(y_data[k].re);
-        y_data[k].im = muDoubleScalarRound(d);
+        y_data[k].im = muDoubleScalarRound(re_tmp);
       }
     }
   } else {
-    st.site = &w_emlrtRSI;
+    st.site = &t_emlrtRSI;
     b_st.site = &jb_emlrtRSI;
     c_st.site = &kb_emlrtRSI;
     d_st.site = &lb_emlrtRSI;

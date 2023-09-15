@@ -23,79 +23,79 @@
 static emlrtRSInfo
     e_emlrtRSI =
         {
-            44,        /* lineNo */
+            60,        /* lineNo */
             "permute", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/elmat/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/elmat/"
             "permute.m" /* pathName */
 };
 
 static emlrtRSInfo
     f_emlrtRSI =
         {
-            47,        /* lineNo */
+            64,        /* lineNo */
             "permute", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/elmat/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/elmat/"
             "permute.m" /* pathName */
 };
 
 static emlrtRSInfo
     g_emlrtRSI =
         {
-            53,        /* lineNo */
+            70,        /* lineNo */
             "permute", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/elmat/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/elmat/"
             "permute.m" /* pathName */
 };
 
 static emlrtRSInfo h_emlrtRSI = {
     51,                  /* lineNo */
     "reshapeSizeChecks", /* fcnName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/eml/+coder/+internal/"
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/eml/+coder/+internal/"
     "reshapeSizeChecks.m" /* pathName */
 };
 
 static emlrtRSInfo i_emlrtRSI = {
     119,               /* lineNo */
     "computeDimsData", /* fcnName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/eml/+coder/+internal/"
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/eml/+coder/+internal/"
     "reshapeSizeChecks.m" /* pathName */
 };
 
 static emlrtRSInfo
     j_emlrtRSI =
         {
-            71,       /* lineNo */
+            88,       /* lineNo */
             "looper", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/elmat/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/elmat/"
             "permute.m" /* pathName */
 };
 
 static emlrtRSInfo
     k_emlrtRSI =
         {
-            72,       /* lineNo */
+            89,       /* lineNo */
             "looper", /* fcnName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/elmat/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/elmat/"
             "permute.m" /* pathName */
 };
 
 static emlrtRTEInfo
-    fb_emlrtRTEI =
+    hb_emlrtRTEI =
         {
-            47,        /* lineNo */
+            64,        /* lineNo */
             20,        /* colNo */
             "permute", /* fName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/elmat/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/elmat/"
             "permute.m" /* pName */
 };
 
 static emlrtRTEInfo
-    gb_emlrtRTEI =
+    ib_emlrtRTEI =
         {
-            44,        /* lineNo */
+            60,        /* lineNo */
             5,         /* colNo */
             "permute", /* fName */
-            "/Applications/MATLAB_R2022b.app/toolbox/eml/lib/matlab/elmat/"
+            "/Applications/MATLAB_R2023b.app/toolbox/eml/lib/matlab/elmat/"
             "permute.m" /* pName */
 };
 
@@ -117,7 +117,7 @@ void b_permute(const emlrtStack *sp, const emxArray_creal_T *a,
   int32_T c_k;
   int32_T d_k;
   int32_T k;
-  int32_T nx;
+  int32_T nx_tmp;
   int32_T plast;
   int32_T subsa_idx_1;
   int32_T subsa_idx_3;
@@ -160,8 +160,10 @@ void b_permute(const emlrtStack *sp, const emxArray_creal_T *a,
     }
   }
   if (b_b) {
+    int32_T nx;
     st.site = &e_emlrtRSI;
-    nx = a->size[0] * a->size[1] * a->size[3] * a->size[4];
+    nx_tmp = a->size[0] * a->size[1];
+    nx = nx_tmp * a->size[3] * a->size[4];
     b_st.site = &h_emlrtRSI;
     c_st.site = &i_emlrtRSI;
     c_st.site = &i_emlrtRSI;
@@ -201,25 +203,27 @@ void b_permute(const emlrtStack *sp, const emxArray_creal_T *a,
           &st, &e_emlrtRTEI, "Coder:toolbox:reshape_emptyReshapeLimit",
           "Coder:toolbox:reshape_emptyReshapeLimit", 0);
     }
-    if (a->size[0] * a->size[1] * a->size[4] * a->size[3] != nx) {
+    plast = nx_tmp * a->size[4] * a->size[3];
+    if (plast != nx) {
       emlrtErrorWithMessageIdR2018a(
           &st, &d_emlrtRTEI, "Coder:MATLAB:getReshapeDims_notSameNumel",
           "Coder:MATLAB:getReshapeDims_notSameNumel", 0);
     }
-    nx = b->size[0] * b->size[1] * b->size[2] * b->size[3];
+    nx_tmp = b->size[0] * b->size[1] * b->size[2] * b->size[3];
     b->size[0] = a->size[0];
     b->size[1] = a->size[1];
     b->size[2] = a->size[4];
     b->size[3] = a->size[3];
-    emxEnsureCapacity_creal_T(sp, b, nx, &gb_emlrtRTEI);
+    emxEnsureCapacity_creal_T(sp, b, nx_tmp, &ib_emlrtRTEI);
     b_data = b->data;
-    plast = a->size[0] * a->size[1] * a->size[4] * a->size[3];
-    for (nx = 0; nx < plast; nx++) {
-      b_data[nx] = a_data[nx];
+    for (nx_tmp = 0; nx_tmp < plast; nx_tmp++) {
+      b_data[nx_tmp] = a_data[nx_tmp];
     }
   } else {
+    int32_T nx;
     st.site = &f_emlrtRSI;
-    nx = a->size[0] * a->size[1] * a->size[3] * a->size[4];
+    nx_tmp = a->size[0] * a->size[1];
+    nx = nx_tmp * a->size[3] * a->size[4];
     b_st.site = &h_emlrtRSI;
     c_st.site = &i_emlrtRSI;
     c_st.site = &i_emlrtRSI;
@@ -259,17 +263,17 @@ void b_permute(const emlrtStack *sp, const emxArray_creal_T *a,
           &st, &e_emlrtRTEI, "Coder:toolbox:reshape_emptyReshapeLimit",
           "Coder:toolbox:reshape_emptyReshapeLimit", 0);
     }
-    if (a->size[0] * a->size[1] * a->size[4] * a->size[3] != nx) {
+    if (nx_tmp * a->size[4] * a->size[3] != nx) {
       emlrtErrorWithMessageIdR2018a(
           &st, &d_emlrtRTEI, "Coder:MATLAB:getReshapeDims_notSameNumel",
           "Coder:MATLAB:getReshapeDims_notSameNumel", 0);
     }
-    nx = b->size[0] * b->size[1] * b->size[2] * b->size[3];
+    nx_tmp = b->size[0] * b->size[1] * b->size[2] * b->size[3];
     b->size[0] = a->size[0];
     b->size[1] = a->size[1];
     b->size[2] = a->size[4];
     b->size[3] = a->size[3];
-    emxEnsureCapacity_creal_T(sp, b, nx, &fb_emlrtRTEI);
+    emxEnsureCapacity_creal_T(sp, b, nx_tmp, &hb_emlrtRTEI);
     b_data = b->data;
     st.site = &g_emlrtRSI;
     plast = a->size[4];
@@ -280,26 +284,25 @@ void b_permute(const emlrtStack *sp, const emxArray_creal_T *a,
     }
     for (k = 0; k < plast; k++) {
       b_st.site = &k_emlrtRSI;
-      nx = a->size[3];
+      nx_tmp = a->size[3];
       c_st.site = &j_emlrtRSI;
       if (a->size[3] > 2147483646) {
         d_st.site = &l_emlrtRSI;
         check_forloop_overflow_error(&d_st);
       }
-      for (b_k = 0; b_k < nx; b_k++) {
-        int32_T c_b;
+      for (b_k = 0; b_k < nx_tmp; b_k++) {
         c_st.site = &k_emlrtRSI;
         d_st.site = &k_emlrtRSI;
-        c_b = a->size[1];
+        nx = a->size[1];
         e_st.site = &j_emlrtRSI;
         if (a->size[1] > 2147483646) {
           f_st.site = &l_emlrtRSI;
           check_forloop_overflow_error(&f_st);
         }
-        for (c_k = 0; c_k < c_b; c_k++) {
-          int32_T d_b;
+        for (c_k = 0; c_k < nx; c_k++) {
+          int32_T c_b;
           e_st.site = &k_emlrtRSI;
-          d_b = a->size[0];
+          c_b = a->size[0];
           f_st.site = &j_emlrtRSI;
           if (a->size[0] > 2147483646) {
             g_st.site = &l_emlrtRSI;
@@ -310,7 +313,7 @@ void b_permute(const emlrtStack *sp, const emxArray_creal_T *a,
             subsa_idx_3 = b_k + 1;
             subsa_idx_4 = k + 1;
           }
-          for (d_k = 0; d_k < d_b; d_k++) {
+          for (d_k = 0; d_k < c_b; d_k++) {
             b_data[((d_k + b->size[0] * (subsa_idx_1 - 1)) +
                     b->size[0] * b->size[1] * (subsa_idx_4 - 1)) +
                    b->size[0] * b->size[1] * b->size[2] * (subsa_idx_3 - 1)] =
@@ -342,7 +345,6 @@ void c_permute(const emlrtStack *sp, const emxArray_creal_T *a,
   int32_T c_k;
   int32_T d_k;
   int32_T k;
-  int32_T nx;
   int32_T plast;
   int32_T subsa_idx_1;
   int32_T subsa_idx_2;
@@ -385,8 +387,9 @@ void c_permute(const emlrtStack *sp, const emxArray_creal_T *a,
     }
   }
   if (b_b) {
+    int32_T nx_tmp;
     st.site = &e_emlrtRSI;
-    nx = a->size[0] * a->size[1] * a->size[2] * a->size[4];
+    nx_tmp = a->size[0] * a->size[1] * a->size[2] * a->size[4];
     b_st.site = &h_emlrtRSI;
     c_st.site = &i_emlrtRSI;
     c_st.site = &i_emlrtRSI;
@@ -405,7 +408,7 @@ void c_permute(const emlrtStack *sp, const emxArray_creal_T *a,
     if (a->size[4] > plast) {
       plast = a->size[4];
     }
-    plast = muIntScalarMax_sint32(nx, plast);
+    plast = muIntScalarMax_sint32(nx_tmp, plast);
     if (a->size[0] > plast) {
       emlrtErrorWithMessageIdR2018a(
           &st, &e_emlrtRTEI, "Coder:toolbox:reshape_emptyReshapeLimit",
@@ -426,25 +429,20 @@ void c_permute(const emlrtStack *sp, const emxArray_creal_T *a,
           &st, &e_emlrtRTEI, "Coder:toolbox:reshape_emptyReshapeLimit",
           "Coder:toolbox:reshape_emptyReshapeLimit", 0);
     }
-    if (a->size[0] * a->size[1] * a->size[2] * a->size[4] != nx) {
-      emlrtErrorWithMessageIdR2018a(
-          &st, &d_emlrtRTEI, "Coder:MATLAB:getReshapeDims_notSameNumel",
-          "Coder:MATLAB:getReshapeDims_notSameNumel", 0);
-    }
-    nx = b->size[0] * b->size[1] * b->size[2] * b->size[3];
+    plast = b->size[0] * b->size[1] * b->size[2] * b->size[3];
     b->size[0] = a->size[0];
     b->size[1] = a->size[1];
     b->size[2] = a->size[2];
     b->size[3] = a->size[4];
-    emxEnsureCapacity_creal_T(sp, b, nx, &gb_emlrtRTEI);
+    emxEnsureCapacity_creal_T(sp, b, plast, &ib_emlrtRTEI);
     b_data = b->data;
-    plast = a->size[0] * a->size[1] * a->size[2] * a->size[4];
-    for (nx = 0; nx < plast; nx++) {
-      b_data[nx] = a_data[nx];
+    for (plast = 0; plast < nx_tmp; plast++) {
+      b_data[plast] = a_data[plast];
     }
   } else {
+    int32_T nx_tmp;
     st.site = &f_emlrtRSI;
-    nx = a->size[0] * a->size[1] * a->size[2] * a->size[4];
+    nx_tmp = a->size[0] * a->size[1] * a->size[2] * a->size[4];
     b_st.site = &h_emlrtRSI;
     c_st.site = &i_emlrtRSI;
     c_st.site = &i_emlrtRSI;
@@ -463,7 +461,7 @@ void c_permute(const emlrtStack *sp, const emxArray_creal_T *a,
     if (a->size[4] > plast) {
       plast = a->size[4];
     }
-    plast = muIntScalarMax_sint32(nx, plast);
+    plast = muIntScalarMax_sint32(nx_tmp, plast);
     if (a->size[0] > plast) {
       emlrtErrorWithMessageIdR2018a(
           &st, &e_emlrtRTEI, "Coder:toolbox:reshape_emptyReshapeLimit",
@@ -484,17 +482,12 @@ void c_permute(const emlrtStack *sp, const emxArray_creal_T *a,
           &st, &e_emlrtRTEI, "Coder:toolbox:reshape_emptyReshapeLimit",
           "Coder:toolbox:reshape_emptyReshapeLimit", 0);
     }
-    if (a->size[0] * a->size[1] * a->size[2] * a->size[4] != nx) {
-      emlrtErrorWithMessageIdR2018a(
-          &st, &d_emlrtRTEI, "Coder:MATLAB:getReshapeDims_notSameNumel",
-          "Coder:MATLAB:getReshapeDims_notSameNumel", 0);
-    }
-    nx = b->size[0] * b->size[1] * b->size[2] * b->size[3];
+    plast = b->size[0] * b->size[1] * b->size[2] * b->size[3];
     b->size[0] = a->size[0];
     b->size[1] = a->size[1];
     b->size[2] = a->size[2];
     b->size[3] = a->size[4];
-    emxEnsureCapacity_creal_T(sp, b, nx, &fb_emlrtRTEI);
+    emxEnsureCapacity_creal_T(sp, b, plast, &hb_emlrtRTEI);
     b_data = b->data;
     st.site = &g_emlrtRSI;
     plast = a->size[4];
@@ -506,13 +499,13 @@ void c_permute(const emlrtStack *sp, const emxArray_creal_T *a,
     for (k = 0; k < plast; k++) {
       b_st.site = &k_emlrtRSI;
       c_st.site = &k_emlrtRSI;
-      nx = a->size[2];
+      nx_tmp = a->size[2];
       d_st.site = &j_emlrtRSI;
       if (a->size[2] > 2147483646) {
         e_st.site = &l_emlrtRSI;
         check_forloop_overflow_error(&e_st);
       }
-      for (b_k = 0; b_k < nx; b_k++) {
+      for (b_k = 0; b_k < nx_tmp; b_k++) {
         int32_T c_b;
         d_st.site = &k_emlrtRSI;
         c_b = a->size[1];
@@ -568,7 +561,7 @@ void permute(const emlrtStack *sp, const emxArray_creal_T *a,
   int32_T d_k;
   int32_T e_k;
   int32_T k;
-  int32_T nx;
+  int32_T nx_tmp;
   int32_T plast;
   int32_T subsa_idx_1;
   int32_T subsa_idx_2;
@@ -612,8 +605,10 @@ void permute(const emlrtStack *sp, const emxArray_creal_T *a,
     }
   }
   if (b_b) {
+    int32_T nx;
     st.site = &e_emlrtRSI;
-    nx = a->size[0] * a->size[1] * a->size[2] * a->size[3] * a->size[4];
+    nx_tmp = a->size[0] * a->size[1] * a->size[2];
+    nx = nx_tmp * a->size[3] * a->size[4];
     b_st.site = &h_emlrtRSI;
     computeDimsData();
     plast = a->size[0];
@@ -655,26 +650,28 @@ void permute(const emlrtStack *sp, const emxArray_creal_T *a,
           &st, &e_emlrtRTEI, "Coder:toolbox:reshape_emptyReshapeLimit",
           "Coder:toolbox:reshape_emptyReshapeLimit", 0);
     }
-    if (a->size[0] * a->size[1] * a->size[2] * a->size[4] * a->size[3] != nx) {
+    plast = nx_tmp * a->size[4] * a->size[3];
+    if (plast != nx) {
       emlrtErrorWithMessageIdR2018a(
           &st, &d_emlrtRTEI, "Coder:MATLAB:getReshapeDims_notSameNumel",
           "Coder:MATLAB:getReshapeDims_notSameNumel", 0);
     }
-    nx = b->size[0] * b->size[1] * b->size[2] * b->size[3] * b->size[4];
+    nx_tmp = b->size[0] * b->size[1] * b->size[2] * b->size[3] * b->size[4];
     b->size[0] = a->size[0];
     b->size[1] = a->size[1];
     b->size[2] = a->size[2];
     b->size[3] = a->size[4];
     b->size[4] = a->size[3];
-    emxEnsureCapacity_creal_T(sp, b, nx, &gb_emlrtRTEI);
+    emxEnsureCapacity_creal_T(sp, b, nx_tmp, &ib_emlrtRTEI);
     b_data = b->data;
-    plast = a->size[0] * a->size[1] * a->size[2] * a->size[4] * a->size[3];
-    for (nx = 0; nx < plast; nx++) {
-      b_data[nx] = a_data[nx];
+    for (nx_tmp = 0; nx_tmp < plast; nx_tmp++) {
+      b_data[nx_tmp] = a_data[nx_tmp];
     }
   } else {
+    int32_T nx;
     st.site = &f_emlrtRSI;
-    nx = a->size[0] * a->size[1] * a->size[2] * a->size[3] * a->size[4];
+    nx_tmp = a->size[0] * a->size[1] * a->size[2];
+    nx = nx_tmp * a->size[3] * a->size[4];
     b_st.site = &h_emlrtRSI;
     computeDimsData();
     plast = a->size[0];
@@ -716,18 +713,18 @@ void permute(const emlrtStack *sp, const emxArray_creal_T *a,
           &st, &e_emlrtRTEI, "Coder:toolbox:reshape_emptyReshapeLimit",
           "Coder:toolbox:reshape_emptyReshapeLimit", 0);
     }
-    if (a->size[0] * a->size[1] * a->size[2] * a->size[4] * a->size[3] != nx) {
+    if (nx_tmp * a->size[4] * a->size[3] != nx) {
       emlrtErrorWithMessageIdR2018a(
           &st, &d_emlrtRTEI, "Coder:MATLAB:getReshapeDims_notSameNumel",
           "Coder:MATLAB:getReshapeDims_notSameNumel", 0);
     }
-    nx = b->size[0] * b->size[1] * b->size[2] * b->size[3] * b->size[4];
+    nx_tmp = b->size[0] * b->size[1] * b->size[2] * b->size[3] * b->size[4];
     b->size[0] = a->size[0];
     b->size[1] = a->size[1];
     b->size[2] = a->size[2];
     b->size[3] = a->size[4];
     b->size[4] = a->size[3];
-    emxEnsureCapacity_creal_T(sp, b, nx, &fb_emlrtRTEI);
+    emxEnsureCapacity_creal_T(sp, b, nx_tmp, &hb_emlrtRTEI);
     b_data = b->data;
     st.site = &g_emlrtRSI;
     plast = a->size[4];
@@ -738,34 +735,33 @@ void permute(const emlrtStack *sp, const emxArray_creal_T *a,
     }
     for (k = 0; k < plast; k++) {
       b_st.site = &k_emlrtRSI;
-      nx = a->size[3];
+      nx_tmp = a->size[3];
       c_st.site = &j_emlrtRSI;
       if (a->size[3] > 2147483646) {
         d_st.site = &l_emlrtRSI;
         check_forloop_overflow_error(&d_st);
       }
-      for (b_k = 0; b_k < nx; b_k++) {
-        int32_T c_b;
+      for (b_k = 0; b_k < nx_tmp; b_k++) {
         c_st.site = &k_emlrtRSI;
-        c_b = a->size[2];
+        nx = a->size[2];
         d_st.site = &j_emlrtRSI;
         if (a->size[2] > 2147483646) {
           e_st.site = &l_emlrtRSI;
           check_forloop_overflow_error(&e_st);
         }
-        for (c_k = 0; c_k < c_b; c_k++) {
-          int32_T d_b;
+        for (c_k = 0; c_k < nx; c_k++) {
+          int32_T c_b;
           d_st.site = &k_emlrtRSI;
-          d_b = a->size[1];
+          c_b = a->size[1];
           e_st.site = &j_emlrtRSI;
           if (a->size[1] > 2147483646) {
             f_st.site = &l_emlrtRSI;
             check_forloop_overflow_error(&f_st);
           }
-          for (d_k = 0; d_k < d_b; d_k++) {
-            int32_T e_b;
+          for (d_k = 0; d_k < c_b; d_k++) {
+            int32_T d_b;
             e_st.site = &k_emlrtRSI;
-            e_b = a->size[0];
+            d_b = a->size[0];
             f_st.site = &j_emlrtRSI;
             if (a->size[0] > 2147483646) {
               g_st.site = &l_emlrtRSI;
@@ -777,7 +773,7 @@ void permute(const emlrtStack *sp, const emxArray_creal_T *a,
               subsa_idx_3 = b_k + 1;
               subsa_idx_4 = k + 1;
             }
-            for (e_k = 0; e_k < e_b; e_k++) {
+            for (e_k = 0; e_k < d_b; e_k++) {
               b_data[(((e_k + b->size[0] * (subsa_idx_1 - 1)) +
                        b->size[0] * b->size[1] * (subsa_idx_2 - 1)) +
                       b->size[0] * b->size[1] * b->size[2] *

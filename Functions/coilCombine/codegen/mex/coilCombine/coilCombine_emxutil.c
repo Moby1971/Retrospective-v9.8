@@ -44,7 +44,7 @@ void emxEnsureCapacity_creal_T(const emlrtStack *sp, emxArray_creal_T *emxArray,
         i *= 2;
       }
     }
-    newData = emlrtCallocMex((uint32_T)i, sizeof(creal_T));
+    newData = emlrtMallocMex((uint32_T)i * sizeof(creal_T));
     if (newData == NULL) {
       emlrtHeapAllocationErrorR2012b(srcLocation, (emlrtCTX)sp);
     }
@@ -87,7 +87,7 @@ void emxEnsureCapacity_real_T(const emlrtStack *sp, emxArray_real_T *emxArray,
         i *= 2;
       }
     }
-    newData = emlrtCallocMex((uint32_T)i, sizeof(real_T));
+    newData = emlrtMallocMex((uint32_T)i * sizeof(real_T));
     if (newData == NULL) {
       emlrtHeapAllocationErrorR2012b(srcLocation, (emlrtCTX)sp);
     }

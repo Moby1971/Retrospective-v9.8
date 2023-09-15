@@ -18,10 +18,10 @@
 #include "mwmathutil.h"
 
 /* Variable Definitions */
-static emlrtRSInfo q_emlrtRSI = {
+static emlrtRSInfo cb_emlrtRSI = {
     29,             /* lineNo */
     "anyNonFinite", /* fcnName */
-    "/Applications/MATLAB_R2022b.app/toolbox/eml/eml/+coder/+internal/"
+    "/Applications/MATLAB_R2023b.app/toolbox/eml/eml/+coder/+internal/"
     "anyNonFinite.m" /* pathName */
 };
 
@@ -45,11 +45,11 @@ boolean_T anyNonFinite(const emlrtStack *sp, const emxArray_creal_T *x)
   d_st.prev = &c_st;
   d_st.tls = c_st.tls;
   x_data = x->data;
-  st.site = &q_emlrtRSI;
-  b_st.site = &r_emlrtRSI;
+  st.site = &cb_emlrtRSI;
+  b_st.site = &db_emlrtRSI;
   nx = x->size[0] * x->size[1];
   p = true;
-  c_st.site = &s_emlrtRSI;
+  c_st.site = &eb_emlrtRSI;
   if (nx > 2147483646) {
     d_st.site = &l_emlrtRSI;
     check_forloop_overflow_error(&d_st);

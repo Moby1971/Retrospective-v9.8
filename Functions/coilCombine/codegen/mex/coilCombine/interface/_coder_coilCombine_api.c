@@ -18,7 +18,7 @@
 #include "rt_nonfinite.h"
 
 /* Variable Definitions */
-static emlrtRTEInfo bc_emlrtRTEI = {
+static emlrtRTEInfo dc_emlrtRTEI = {
     1,                        /* lineNo */
     1,                        /* colNo */
     "_coder_coilCombine_api", /* fName */
@@ -34,7 +34,7 @@ static void c_emlrt_marshallIn(const emlrtStack *sp, const mxArray *src,
                                const emlrtMsgIdentifier *msgId,
                                emxArray_creal_T *ret);
 
-static void emlrt_marshallIn(const emlrtStack *sp, const mxArray *im1,
+static void emlrt_marshallIn(const emlrtStack *sp, const mxArray *nullptr,
                              const char_T *identifier, emxArray_creal_T *y);
 
 static const mxArray *emlrt_marshallOut(const emlrtStack *sp,
@@ -57,7 +57,7 @@ static void c_emlrt_marshallIn(const emlrtStack *sp, const mxArray *src,
   creal_T *ret_data;
   int32_T iv[5];
   int32_T i;
-  const boolean_T bv[5] = {true, true, true, true, true};
+  boolean_T bv[5] = {true, true, true, true, true};
   emlrtCheckVsBuiltInR2012b((emlrtConstCTX)sp, msgId, src, "double", true, 5U,
                             (const void *)&dims[0], &bv[0], &iv[0]);
   i = ret->size[0] * ret->size[1] * ret->size[2] * ret->size[3] * ret->size[4];
@@ -72,15 +72,15 @@ static void c_emlrt_marshallIn(const emlrtStack *sp, const mxArray *src,
   emlrtDestroyArray(&src);
 }
 
-static void emlrt_marshallIn(const emlrtStack *sp, const mxArray *im1,
+static void emlrt_marshallIn(const emlrtStack *sp, const mxArray *nullptr,
                              const char_T *identifier, emxArray_creal_T *y)
 {
   emlrtMsgIdentifier thisId;
   thisId.fIdentifier = (const char_T *)identifier;
   thisId.fParent = NULL;
   thisId.bParentIsCell = false;
-  b_emlrt_marshallIn(sp, emlrtAlias(im1), &thisId, y);
-  emlrtDestroyArray(&im1);
+  b_emlrt_marshallIn(sp, emlrtAlias(nullptr), &thisId, y);
+  emlrtDestroyArray(&nullptr);
 }
 
 static const mxArray *emlrt_marshallOut(const emlrtStack *sp,
@@ -115,10 +115,10 @@ void coilCombine_api(const mxArray *prhs, const mxArray **plhs)
   st.tls = emlrtRootTLSGlobal;
   emlrtHeapReferenceStackEnterFcnR2012b(&st);
   /* Marshall function inputs */
-  emxInit_creal_T(&st, &im1, 5, &bc_emlrtRTEI);
+  emxInit_creal_T(&st, &im1, 5, &dc_emlrtRTEI);
   emlrt_marshallIn(&st, emlrtAliasP(prhs), "im1", im1);
   /* Invoke the target function */
-  emxInit_creal_T(&st, &im2, 4, &bc_emlrtRTEI);
+  emxInit_creal_T(&st, &im2, 4, &dc_emlrtRTEI);
   coilCombine(&st, im1, im2);
   emxFree_creal_T(&st, &im1);
   /* Marshall function outputs */

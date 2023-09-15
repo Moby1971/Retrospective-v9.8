@@ -66,7 +66,10 @@ using namespace std;
 
 #define PI  3.1416
 
+// FOR MAC:
 // mex -v -compatibleArrayDims -L/usr/local/lib -lfftw3 -I/usr/local/include/ ringRm.cpp
+
+// FOR PC:
 // mex -compatibleArrayDims -lfftw2-2 ringRm.cpp
 
 void unring_1D(fftw_complex *data,int n, int numlines,int nsh,int minW, int maxW)
