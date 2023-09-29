@@ -5,11 +5,12 @@ function folder_name = retroExportGifFcn(app)
 
 % Get parameters from the app
 parameters = app.retroDataPars;
-gifExportPath = app.gifExportPath;
+gifExportPath = strcat(app.gifExportPath,filesep,"GIF",filesep);
 tag = app.tag;
 recoType = app.RecoTypeDropDown.Value;
 acqDur = app.acqDur;
 
+app.TextMessage(strcat("GIF export path = ",gifExportPath));
 
 % Which type of movie
 if app.AveragesButton.Value == 1

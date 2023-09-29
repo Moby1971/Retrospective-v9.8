@@ -1641,7 +1641,7 @@ classdef retroReco
             objReco.rescaleIntercept = 0;                           % Dicom rescale intercept
             objReco.rescaleSlope = max(objReco.movieExp(:));        % Dicom rescale slope
 
-            objReco.movieExp = round(32765*objReco.movieExp/objReco.rescaleSlope);
+            objReco.movieExp = round(32767*objReco.movieExp/objReco.rescaleSlope);
             objReco.movieApp = objReco.movieExp;
 
             if objData.PHASE_ORIENTATION == 0
