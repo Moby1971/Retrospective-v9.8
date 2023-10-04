@@ -1,30 +1,37 @@
 function folder_name = retroExportGifFcn(app)
 
-% Exports movie to animated gif
+%
+% Exports retrospective movie to animated gif
+% Gustav Strijkers
+% October 2023
+%
 
 
 % Get parameters from the app
-parameters = app.retroDataPars;
+parameters = app.r;
 gifExportPath = strcat(app.gifExportPath,filesep,"GIF",filesep);
 tag = app.tag;
 recoType = app.RecoTypeDropDown.Value;
 acqDur = app.acqDur;
 
-app.TextMessage(strcat("GIF export path = ",gifExportPath));
+
+% Message export folder
+app.TextMessage(strcat("GIF export folder = ",gifExportPath));
+
 
 % Which type of movie
 if app.AveragesButton.Value == 1
-    movie = app.retroKspacePars.kSpaceAvg;
+    movie = app.r.kSpaceAvg;
     window = round(max(movie(:)));
     level = round(window/2);
     cmap = [0 0 0 ; summer(255)];
 elseif app.kSpaceButton.Value == 1
-    movie = abs(app.retroKspacePars.kSpace{app.MovieCoilSpinner.Value});
+    movie = abs(app.r.kSpace{app.MovieCoilSpinner.Value});
     window = app.window;
     level = app.level;
     cmap = gray(255);
 else
-    movie = app.retroRecoPars.movieApp;
+    movie = app.r.movieApp;
     window = app.window;
     level = app.level;
     cmap = gray(255);

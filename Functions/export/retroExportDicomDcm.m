@@ -1,11 +1,15 @@
 % ---------------------------------------------------------------
 %           DICOM Export for Retrospective app
 % ---------------------------------------------------------------
-function folderName = retroExportDicomDcm(app,dcmdir,dcmExportDir,acqDur,recoType)
+function folderName = retroExportDicomDcm(app, dcmdir)
 
-movie = app.retroRecoPars.movieExp;
-      
-if ~app.retroDataPars.PHASE_ORIENTATION
+
+% Movie
+movie = app.r.movieExp;
+
+
+% Phase orientation
+if ~app.r.PHASE_ORIENTATION
     movie = permute(rot90(permute(movie,[2,3,4,1,5]),1),[4,1,2,3,5]);
     movie = flip(movie,3);
 end
@@ -17,33 +21,41 @@ dimx = size(movie,2);
 dimy = size(movie,3);
 dimz = size(movie,4);
 nrDynamics = size(movie,5);
-heartRate = app.retroNavPars.meanHeartRate;
-respRate = app.retroNavPars.meanRespRate;
-slope = double(app.retroRecoPars.rescaleSlope);
-intercept = double(app.retroRecoPars.rescaleIntercept);
+heartRate = app.r.meanHeartRate;
+respRate = app.r.meanRespRate;
+slope = double(app.r.rescaleSlope);
+intercept = double(app.r.rescaleIntercept);
+
 
 % Reading in the DICOM header information
 listing = dir(fullfile(dcmdir, '*.dcm'));
-dcmFilename = [listing(1).folder,filesep,listing(1).name];
+dcmFilename = strcat(listing(1).folder,filesep,listing(1).name);
 dcmHead = dicominfo(dcmFilename);
-TextMessage(app,strcat('Reading DICOM info from',{' '},dcmFilename));
+TextMessage(app,strcat("Reading DICOM info from ",dcmFilename));
+
 
 % Create folder if not exist, and delete folder content
 dir1 = 'DICOM';
 dir2 = strcat(num2str(dcmHead.SeriesNumber),'R');
 dir3 = '1';
-folderName = strcat(dcmExportDir,dir1,filesep,dir2,filesep,dir3,filesep);
-if (~exist(folderName, 'dir')) 
+folderName = strcat(app.dicomExportPath,dir1,filesep,dir2,filesep,dir3,filesep);
+if ~exist(folderName, 'dir') 
     mkdir(folderName); 
 end
-delete([folderName,filesep,'*']);
+delete(strcat(folderName,filesep,'*'));
+
+
+% Message export folder
+app.TextMessage(strcat("DICOM export folder = ",folderName));
+
 
 % Variable flip-angle
-if app.retroDataPars.VFA_size > 1
+if app.r.VFA_size > 1
     dynamicLabel = '_flipangle_';
 else
     dynamicLabel = '_dynamic_';
 end
+
 
 % Export the dicom images
 cnt = 1;
@@ -56,11 +68,11 @@ for frame=1:nrFrames
 
             % Read header for specific slice location
             loc = dimz+1-slice;
-            dcmFilename = [listing(loc).folder,filesep,listing(loc).name];
+            dcmFilename = strcat(listing(loc).folder,filesep,listing(loc).name);
             dcmHead = dicominfo(dcmFilename);
 
             % Filename
-            fn = ['0000',num2str(cnt)];
+            fn = strcat('0000',num2str(cnt));
             fn = fn(size(fn,2)-4:size(fn,2));
             fname = strcat(folderName,filesep,fn,'_frame_',num2str(frame),'_slice_',num2str(slice),dynamicLabel,num2str(dyn),'.dcm');
 
@@ -88,31 +100,31 @@ end
     % ---------------------------------------------------------------
 
         % flip angle
-        if app.retroDataPars.VFA_size>1
-            dcmHead.FlipAngle = app.retroDataPars.VFA_angles(dyn);
+        if app.r.VFA_size>1
+            dcmHead.FlipAngle = app.r.VFA_angles(dyn);
         end
 
         % Aspectratio and pixel x and y dimensions
-        aspectRatio = app.retroDataPars.FOVf/8;
-        if app.retroDataPars.PHASE_ORIENTATION
-            pixely = app.retroDataPars.FOV/dimy;
-            pixelx = aspectRatio*app.retroDataPars.FOV/dimx;
+        aspectRatio = app.r.FOVf/8;
+        if app.r.PHASE_ORIENTATION
+            pixely = app.r.FOV/dimy;
+            pixelx = aspectRatio*app.r.FOV/dimx;
         else
-            pixely = aspectRatio*app.retroDataPars.FOV/dimy;
-            pixelx = app.retroDataPars.FOV/dimx;
+            pixely = aspectRatio*app.r.FOV/dimy;
+            pixelx = app.r.FOV/dimx;
         end
 
-        if strcmp(recoType,'realtime')
+        if strcmp(app.RecoTypeDropDown.Value,'realtime')
 
             % ---------------------------------------------------------------
             %          realtime dataset
             % ---------------------------------------------------------------
 
             TR = 1000*(60/heartRate)/nrFrames;            % time between cardiac frames in ms
-            TD = 1000*acqDur/nrDynamics;                  % time between dynamics
+            TD = 1000*app.acqDur/nrDynamics;                  % time between dynamics
 
             dcmHead.Filename = fname;
-            dcmHead.FileModDate = app.retroDataPars.date;
+            dcmHead.FileModDate = app.r.date;
             dcmHead.FileSize = dimy*dimx*2;
             dcmHead.Width = dimx;
             dcmHead.Height = dimy;
@@ -129,14 +141,14 @@ end
             dcmHead.ReferencedFrameNumber = [];
             dcmHead.RepetitionTime = TR;     % time between frames
             dcmHead.EchoTime = 2;         % approximately correct, unknown because of shortest TE option
-            dcmHead.NumberOfAverages = app.retroDataPars.NO_AVERAGES;
+            dcmHead.NumberOfAverages = app.r.NO_AVERAGES;
             dcmHead.InversionTime = 0;
             dcmHead.ImagedNucleus = '1H';
             dcmHead.MagneticFieldStrength = 7;
             dcmHead.TriggerTime = (dyn-1)*TD + (frame-1)*TR;
             dcmHead.AcquisitionMatrix = uint16([dimy 0 0 dimx])';
             dcmHead.AcquisitionDeviceProcessingDescription = '';
-            dcmHead.AcquisitionDuration = acqDur;
+            dcmHead.AcquisitionDuration = app.acqDur;
             dcmHead.InstanceNumber = (slice-1)*nrDynamics*nrFrames + (frame-1)*nrDynamics + dyn;          % instance number
             dcmHead.TemporalPositionIdentifier = (dyn-1)*nrFrames + frame;
             dcmHead.NumberOfTemporalPositions = nrDynamics * nrFrames;
@@ -164,14 +176,14 @@ end
             %          CINE dataset
             % ---------------------------------------------------------------
 
-            if strcmp(recoType,'respiratory')
+            if strcmp(app.RecoTypeDropDown.Value,'respiratory')
                 TR = 1000*(60/respRate)/nrFrames;       % time between frames in ms
             else
                 TR = 1000*(60/heartRate)/nrFrames;      % time between frames in ms
             end
 
             dcmHead.Filename = fname;
-            dcmHead.FileModDate = app.retroDataPars.date;
+            dcmHead.FileModDate = app.r.date;
             dcmHead.FileSize = dimy*dimx*2;
             dcmHead.Width = dimx;
             dcmHead.Height = dimy;
@@ -188,14 +200,14 @@ end
             dcmHead.ReferencedFrameNumber = [];
             dcmHead.RepetitionTime = TR;     % time between frames
             dcmHead.EchoTime = 2;         % approximately correct, unknown because of shortest TE option
-            dcmHead.NumberOfAverages = app.retroDataPars.NO_AVERAGES;
+            dcmHead.NumberOfAverages = app.r.NO_AVERAGES;
             dcmHead.InversionTime = 0;
             dcmHead.ImagedNucleus = '1H';
             dcmHead.MagneticFieldStrength = 7;
             dcmHead.TriggerTime = (frame-1)*TR;    % frame time = frame number times calculated TR
             dcmHead.AcquisitionMatrix = uint16([dimy 0 0 dimx])';
             dcmHead.AcquisitionDeviceProcessingDescription = '';
-            dcmHead.AcquisitionDuration = acqDur/nrDynamics;
+            dcmHead.AcquisitionDuration = app.acqDur/nrDynamics;
             dcmHead.InstanceNumber = (slice-1)*nrFrames + frame;          % instance number
             dcmHead.TemporalPositionIdentifier = frame;     % frame number
             dcmHead.NumberOfTemporalPositions = nrFrames;
