@@ -16,7 +16,14 @@ if ispc
     % a bug in Matlab).
 
     setenv('LD_LIBRARY_PATH', '');
-    name = strrep(tempname,' ','_');   % Windows user names with spaces give problems, replace with underscore
+     
+    % Decided to use c:\temp as temp directory. Hopefully this prevents issues
+    name = 'C:\tmp\';
+    if ~exist(name, 'dir')
+        mkdir(name);
+    end
+
+    % name = strrep(tempname,' ','_');   % Windows user names with spaces give problems, replace with underscore
 
     in = cell(1, nargin-2);
 
