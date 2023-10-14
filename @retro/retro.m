@@ -5196,8 +5196,12 @@ classdef retro
                 % BART reconstruction
                 imageReco = bart(app, picsCommand, kSpacePics, sensitivities);
 
-                % Sum of squares in the coil dimension
-                imageReco = bart(app,'rss 16', imageReco);
+                % Combination of the two ESPIRiT images using root of sum of squares
+                if ESPIRiT && nrCoils>1
+                    imageReco = bart(app,'rss 16', imageReco);
+                end
+          
+                % Absolute value image
                 imageReco = abs(imageReco);
 
                 % Reshape the image :           y    x  frames dynamic slices
@@ -5496,22 +5500,24 @@ classdef retro
                 if TVd>0
                     picsCommand = [picsCommand,' -R',obj.totalVariation,':2048:0:',num2str(TVd)];
                 end
-                imageReg = bart(app,picsCommand,kSpacePics,sensitivities);
+                imageReco = bart(app,picsCommand,kSpacePics,sensitivities);
 
                 app.ProgressGauge.Value = 95;
                 drawnow;
 
-                % Sum of squares over the coil dimension
-                imageReg = bart(app,'rss 16', imageReg);
+                % Combination of the two ESPIRiT images using root of sum of squares
+                if ESPIRiT && nrCoils>1
+                    imageReco = bart(app,'rss 16', imageReco);
+                end
 
                 % Absolute value
-                imageReg = abs(imageReg);
+                imageReco = abs(imageReco);
 
                 % Reshape to proper dimensions
-                imageReg = reshape(imageReg,[dimZ,dimY,dimX,dimF,dimD]);
+                imageReco = reshape(imageReco,[dimZ,dimY,dimX,dimF,dimD]);
 
                 % Rearrange to correct orientation: frames, x, y, z, dynamics
-                imageOut = flip(flip(permute(imageReg,[4,3,2,1,5]),3),4);
+                imageOut = flip(flip(permute(imageReco,[4,3,2,1,5]),3),4);
                 imageOut = circshift(imageOut,1,4);
 
                 % Sense map orientations: x, y, z, map1, map2
