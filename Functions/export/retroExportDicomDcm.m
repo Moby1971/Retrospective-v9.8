@@ -34,15 +34,17 @@ dcmHead = dicominfo(dcmFilename);
 TextMessage(app,strcat("Reading DICOM info from ",dcmFilename));
 
 
-% Create folder if not exist, and delete folder content
-dir1 = 'DICOM';
-dir2 = strcat(num2str(dcmHead.SeriesNumber),'R');
-dir3 = '1';
-folderName = strcat(app.dicomExportPath,dir1,filesep,dir2,filesep,dir3,filesep);
-if ~exist(folderName, 'dir') 
-    mkdir(folderName); 
+% Create new directory
+ready = false;
+cnt = 1;
+while ~ready
+    folderName = strcat(app.dicomExportPath,'DICOM',filesep,num2str(dcmHead.SeriesNumber),'R',filesep,num2str(cnt),filesep);
+    if ~exist(folderName, 'dir')
+        mkdir(folderName);
+        ready = true;
+    end
+    cnt = cnt + 1;
 end
-delete(strcat(folderName,filesep,'*'));
 
 
 % Message export folder

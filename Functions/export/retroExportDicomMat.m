@@ -30,12 +30,18 @@ dcmid = dicomuid;   % unique identifier
 dcmid = dcmid(1:50);
 
 
-% Create folder if not exist, and clear
-folderName = strcat(app.dicomExportPath,[filesep,'DICOM',filesep,'RETRO_DICOM_',num2str(nrFrames),'_',num2str(dimz),'_',num2str(nrDynamics),'_',app.tag]);
-if ~exist(folderName, 'dir')
-    mkdir(folderName);
+% Create new directory
+ready = false;
+cnt = 1;
+while ~ready
+    folderName = strcat(app.dicomExportPath,filesep,'DICOM',filesep,'RETRO_DICOM_',num2str(nrFrames),'_',num2str(dimz),'_',num2str(nrDynamics),'_',app.tag,filesep,num2str(cnt));
+    if ~exist(folderName, 'dir')
+        mkdir(folderName);
+        ready = true;
+    end
+    cnt = cnt + 1;
 end
-delete(strcat(folderName,filesep,'*'));
+
 
 
 % Message export folder

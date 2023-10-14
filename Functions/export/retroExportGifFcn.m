@@ -1,4 +1,4 @@
-function folder_name = retroExportGifFcn(app)
+function gifExportPath = retroExportGifFcn(app)
 
 %
 % Exports retrospective movie to animated gif
@@ -9,10 +9,22 @@ function folder_name = retroExportGifFcn(app)
 
 % Get parameters from the app
 parameters = app.r;
-gifExportPath = strcat(app.gifExportPath,filesep,"GIF",filesep);
 tag = app.tag;
 recoType = app.RecoTypeDropDown.Value;
 acqDur = app.acqDur;
+
+
+% Create new directory
+ready = false;
+cnt = 1;
+while ~ready
+    gifExportPath = strcat(app.gifExportPath,filesep,"GIF",filesep,tag,"R",filesep,num2str(cnt),filesep);
+    if ~exist(gifExportPath, 'dir')
+        mkdir(gifExportPath);
+        ready = true;
+    end
+    cnt = cnt + 1;
+end
 
 
 % Message export folder
@@ -46,11 +58,11 @@ end
 [nrFrames,~,~,nrSlices,nrDynamics] = size(movie);
 
 
-% Create folder if not exist, and clear
-folder_name = strcat(gifExportPath,'RETRO_GIFS_',num2str(nrFrames),'_',num2str(nrSlices),'_',num2str(nrDynamics),'_',tag,filesep);
-if ~exist(folder_name, 'dir')
-    mkdir(folder_name); 
-end
+% % Create folder if not exist, and clear
+% gifExportPath = strcat(gifExportPath,'RETRO_GIFS_',num2str(nrFrames),'_',num2str(nrSlices),'_',num2str(nrDynamics),'_',tag,filesep);
+% if ~exist(gifExportPath, 'dir')
+%     mkdir(gifExportPath); 
+% end
 
 
 % Scale from 0 to 255
@@ -108,9 +120,9 @@ if strcmp(recoType,'realtime')
                 image = imresize(image,[dimx,dimy]);
 
                 if idx == 1
-                    imwrite(image,cmap,strcat(folder_name,filesep,'movie_',tag,'_slice_',slice,'frame',dyn,'.gif'),'DelayTime',delayTime,'LoopCount',inf);
+                    imwrite(image,cmap,strcat(gifExportPath,filesep,'movie_',tag,'_slice_',slice,'frame',dyn,'.gif'),'DelayTime',delayTime,'LoopCount',inf);
                 else
-                    imwrite(image,cmap,strcat(folder_name,filesep,'movie_',tag,'_slice_',slice,'frame',dyn,'.gif'),'WriteMode','append','DelayTime',delayTime);
+                    imwrite(image,cmap,strcat(gifExportPath,filesep,'movie_',tag,'_slice_',slice,'frame',dyn,'.gif'),'WriteMode','append','DelayTime',delayTime);
                 end
 
             end
@@ -144,9 +156,9 @@ else
                     imagegif = squeeze(image(i,:,:,idx,j));
 
                     if idx == 1
-                        imwrite(imagegif,cmap,strcat(folder_name,filesep,'movie_',tag,'_slice_',slice,dynamiclabel,dyn,'.gif'),'DelayTime',delayTime,'LoopCount',inf);
+                        imwrite(imagegif,cmap,strcat(gifExportPath,filesep,'movie_',tag,'_slice_',slice,dynamiclabel,dyn,'.gif'),'DelayTime',delayTime,'LoopCount',inf);
                     else
-                        imwrite(imagegif,cmap,strcat(folder_name,filesep,'movie_',tag,'_slice_',slice,dynamiclabel,dyn,'.gif'),'WriteMode','append','DelayTime',delayTime);
+                        imwrite(imagegif,cmap,strcat(gifExportPath,filesep,'movie_',tag,'_slice_',slice,dynamiclabel,dyn,'.gif'),'WriteMode','append','DelayTime',delayTime);
                     end
 
                 end
@@ -176,9 +188,9 @@ else
                     imagegif = squeeze(image(i,:,:,idx,j));
 
                     if j == 1
-                        imwrite(imagegif,cmap,strcat(folder_name,filesep,'movie_',tag,'_slice_',slice,'_frame_',frm,'.gif'),'DelayTime',delayTime,'LoopCount',inf);
+                        imwrite(imagegif,cmap,strcat(gifExportPath,filesep,'movie_',tag,'_slice_',slice,'_frame_',frm,'.gif'),'DelayTime',delayTime,'LoopCount',inf);
                     else
-                        imwrite(imagegif,cmap,strcat(folder_name,filesep,'movie_',tag,'_slice_',slice,'_frame_',frm,'.gif'),'WriteMode','append','DelayTime',delayTime);
+                        imwrite(imagegif,cmap,strcat(gifExportPath,filesep,'movie_',tag,'_slice_',slice,'_frame_',frm,'.gif'),'WriteMode','append','DelayTime',delayTime);
                     end
 
                 end
@@ -215,9 +227,9 @@ else
                 imagegif = squeeze(imageCollection(:,:,idx,j));
 
                 if idx == 1
-                    imwrite(imagegif,cmap,strcat(folder_name,filesep,'collage_',tag,dynamiclabel,dyn,'.gif'),'DelayTime',delayTime,'LoopCount',inf);
+                    imwrite(imagegif,cmap,strcat(gifExportPath,filesep,'collage_',tag,dynamiclabel,dyn,'.gif'),'DelayTime',delayTime,'LoopCount',inf);
                 else
-                    imwrite(imagegif,cmap,strcat(folder_name,filesep,'collage_',tag,dynamiclabel,dyn,'.gif'),'WriteMode','append','DelayTime',delayTime);
+                    imwrite(imagegif,cmap,strcat(gifExportPath,filesep,'collage_',tag,dynamiclabel,dyn,'.gif'),'WriteMode','append','DelayTime',delayTime);
                 end
 
             end

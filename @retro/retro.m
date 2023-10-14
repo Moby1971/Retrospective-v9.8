@@ -279,15 +279,15 @@ classdef retro
         respBinNrs                                              % array with bin assignments of data to respiratory frames
 
         % Reconstruction
-        movieExp                                            % Movie for movie export
-        movieApp                                            % Movie for viewing in the app
-        senseMap                                            % Sense map
-        rescaleSlope                                        % Dicom info RescaleSlope for image scaling
-        rescaleIntercept                                    % Dicom info RescaleIntercept for image scaling
-        multiSliceFlag = false                              % Multi-slice true or false
-        multiDynamicFlag = false                            % Mutli-dynamic true or false
-        totalVariation = 'T'                                % Total variation (T) or total generalized variation (G)
-        maxImageValue = 32767                               % Maximum image value
+        movieExp                                                % Movie for movie export
+        movieApp                                                % Movie for viewing in the app
+        senseMap                                                % Sense map
+        rescaleSlope                                            % Dicom info RescaleSlope for image scaling
+        rescaleIntercept                                        % Dicom info RescaleIntercept for image scaling
+        multiSliceFlag = false                                  % Multi-slice true or false
+        multiDynamicFlag = false                                % Mutli-dynamic true or false
+        totalVariation = 'T'                                    % Total variation (T) or total generalized variation (G)
+        maxImageValue = 32767                                   % Maximum image value
 
 
     end % properties
