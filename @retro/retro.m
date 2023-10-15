@@ -1857,7 +1857,11 @@ classdef retro
                 ':EDITTEXT SAMPLES_DIM3 ',':EDITTEXT DATA_LENGTH3 ', ':EDITTEXT OUTPUT_SIZE3 ', ...
                 ':EDITTEXT LAST_SLICE ',':EDITTEXT MAX_SLICE ', ...
                 ':COMBOBOX FFT_DIM1 ',':COMBOBOX FFT_DIM2 ',':COMBOBOX FFT_DIM3 ', ...
-                ':RADIOBUTTON VIEW_ORDER_1',':RADIOBUTTON VIEW_ORDER_2'
+                ':RADIOBUTTON VIEW_ORDER_1',':RADIOBUTTON VIEW_ORDER_2', ...
+                ':EDITTEXT VIEWS_PER_SEGMENT ', ...
+                ':COMBOBOX RECON_METHOD ', ...
+                ':EDITTEXT CHANNEL_COUNT ', ...
+                ':EDITTEXT CHANNEL_WEIGHTS ' ...
                 };
 
             % Parameter replacement values
@@ -1868,7 +1872,11 @@ classdef retro
                 par.NoViews2, par.NoViews2, par.NoViews2, ...
                 par.NoSlices, par.NoSlices, ...
                 par.NoSamples, par.NoViews, par.NoViews2, ...
-                par.View1order, par.View2order
+                par.View1order, par.View2order, ...
+                par.viewsPerSegment, ...
+                par.reconMethod, ...
+                par.channelCount, ...
+                par.channelWeights ...
                 };
 
             % Search for all parameters and replace values
@@ -1884,9 +1892,9 @@ classdef retro
                     if ~isstring(var)
 
                         try
-                            oldTxtLength = strfind(inputRpr(pos+length(txt):pos+length(txt)+15),char(13))-1;
+                            oldTxtLength = strfind(inputRpr(pos+length(txt):pos+length(txt)+20),char(13))-1;
                             if isempty(oldTxtLength)
-                                oldTxtLength = strfind(inputRpr(pos+length(txt):pos+length(txt)+15),newline)-1;
+                                oldTxtLength = strfind(inputRpr(pos+length(txt):pos+length(txt)+20),newline)-1;
                             end
                             newText = [num2str(var),'     '];
                             newText = newText(1:6);
@@ -1897,9 +1905,9 @@ classdef retro
                     else
 
                         try
-                            oldTxtLength = strfind(inputRpr(pos+length(txt):pos+length(txt)+15),char(13))-1;
+                            oldTxtLength = strfind(inputRpr(pos+length(txt):pos+length(txt)+20),char(13))-1;
                             if isempty(oldTxtLength)
-                                oldTxtLength = strfind(inputRpr(pos+length(txt):pos+length(txt)+15),newline)-1;
+                                oldTxtLength = strfind(inputRpr(pos+length(txt):pos+length(txt)+20),newline)-1;
                             end
                             newText = strcat(" ",var,"           ");
                             newText = extractBefore(newText,12);
@@ -5163,7 +5171,7 @@ classdef retro
 
                     % Calculate coil sensitivity maps with ecalib bart function
                     kSpacePicsSum = sum(kSpacePics,[11,12]);
-                    sensitivities = bart(app,'ecalib -S -I -a', kSpacePicsSum);      % Ecalib with softsense
+                    sensitivities = bart(app,'ecalib -S -I -a -m2', kSpacePicsSum);      % Ecalib with softsense
 
                 else
 
@@ -5469,7 +5477,7 @@ classdef retro
 
                     app.TextMessage('ESPIRiT reconstruction ...');
                     kspace_pics_sum = sum(kSpacePics,[11,12]);
-                    sensitivities = bart(app,'ecalib -I -S -a', kspace_pics_sum);
+                    sensitivities = bart(app,'ecalib -S -I -a -m2', kspace_pics_sum);
 
                     app.ProgressGauge.Value = 25;
                     drawnow;
