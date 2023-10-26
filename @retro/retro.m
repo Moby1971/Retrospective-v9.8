@@ -4268,12 +4268,12 @@ classdef retro
                     if obj.nrNavPointsUsed > 1
 
                         % Take the principal component of the data
-                        dataNav = navDataAmplitude(:,obj.primaryNavigatorPoint-obj.nrNavPointsUsed+1:obj.primaryNavigatorPoint);
+                        dataNav = abs(navDataAmplitude(:,obj.primaryNavigatorPoint-obj.nrNavPointsUsed+1:obj.primaryNavigatorPoint));
                         [coeff,~,~] = pca(dataNav);
                         dataPCA = dataNav*coeff;
 
                         % Take the principal component of the data
-                        amplitude = abs(dataPCA(:,1))';
+                        amplitude = dataPCA(:,1)';
 
                     else
 
