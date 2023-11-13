@@ -1,12 +1,15 @@
-% ---------------------------------------------------------------
-%  DICOM Export for Retrospective app, DICOM info not available
-% ---------------------------------------------------------------
 function folderName = retroExportDicomMat(app)
+
+% ---------------------------------------------------------------
+% DICOM Export for Retrospective app, DICOM info not available
+% Gustav Strijkers
+% November 2023
+%
+% ---------------------------------------------------------------
 
 
 % Movie
 movie = app.r.movieExp;
-
 
 % Phase orientation
 if ~app.r.PHASE_ORIENTATION
@@ -14,11 +17,10 @@ if ~app.r.PHASE_ORIENTATION
     movie = flip(movie,3);
 end
 
-
 % Data info
 nrFrames = size(movie,1);
-dimx = size(movie,2);
-dimy = size(movie,3);
+dimy = size(movie,2);
+dimx = size(movie,3);
 dimz = size(movie,4);
 nrDynamics = size(movie,5);
 heartRate = app.r.meanHeartRate;
@@ -29,6 +31,25 @@ intercept = double(app.r.rescaleIntercept);
 dcmid = dicomuid;   % unique identifier
 dcmid = dcmid(1:50);
 
+% Square pixel correction
+aspectRatio = app.r.FOVf/8;
+if app.r.PHASE_ORIENTATION
+    pixely = app.r.FOV/dimy;
+    pixelx = aspectRatio*app.r.FOV/dimx;
+else
+    pixely = aspectRatio*app.r.FOV/dimy;
+    pixelx = app.r.FOV/dimx;
+end
+if pixely > pixelx
+    ratio = pixely/pixelx;
+    movie = matrixInterpolate(movie,[1 ratio 1 1 1],'cubic');
+end
+if pixelx > pixely
+    ratio = pixelx/pixely;
+    movie = matrixInterpolate(movie,[1 1 ratio 1 1],'cubic');
+end
+dimy = size(movie,2);
+dimx = size(movie,3);
 
 % Create new directory
 ready = false;
@@ -42,11 +63,8 @@ while ~ready
     cnt = cnt + 1;
 end
 
-
-
 % Message export folder
 app.TextMessage(strcat("DICOM export folder = ",folderName));
-
 
 % Variable flip-angle
 if app.r.VFA_size > 1
@@ -54,7 +72,6 @@ if app.r.VFA_size > 1
 else
     dynamicLabel = '_dynamic_';
 end
-
 
 % export to Dicom images
 cnt = 1;
@@ -112,7 +129,7 @@ end
             pixely = aspectRatio*app.r.FOV/dimy;
             pixelx = app.r.FOV/dimx;
         end
-
+   
         % Date and time
         dt = datetime(app.r.date,'InputFormat','dd-MMM-yyyy HH:mm:ss');
         year = num2str(dt.Year);
@@ -469,8 +486,54 @@ end
 
         dicomHeader = dcmHead;
 
-    end
+    end % generate dicom header
 
+
+    function outputMatrix = matrixInterpolate(inputMatrix, scaling, varargin)
+
+        % inputMatrx = n-dimensional matrix
+        % scaling = scaling factor
+        % varargin = 'linear', 'cubic' interpolation method
+
+        N = ndims(inputMatrix);
+        scaling = scaling(1:N);
+        scaling(1,1:N) = scaling(:).';
+        sz = size(inputMatrix);
+        xvec = cell(1,N);
+        yvec = cell(1,N);
+        szy = nan(1,N);
+        nonsing = true(1,N);
+
+        for i = 1:N
+
+            n = sz(i);
+
+            if n==1 %for vector input
+                nonsing(i) = 0;
+                szy(i) = 1;
+                continue
+            end
+
+            szy(i) = round(sz(i)*scaling(i));
+            m = szy(i);
+
+            xax = linspace(1/n/2, 1-1/n/2 ,n);
+            xax = xax-.5;
+
+            yax = linspace(1/m/2, 1-1/m/2 ,m);
+            yax = yax-.5;
+
+            xvec{i} = xax;
+            yvec{i} = yax;
+
+        end
+
+        xvec = xvec(nonsing);
+        yvec = yvec(nonsing);
+        F = griddedInterpolant(xvec,squeeze(inputMatrix),varargin{:});
+        outputMatrix = reshape(F(yvec),szy);
+
+    end % matrixInterpolate
 
 
 end

@@ -1,10 +1,11 @@
 function gifExportPath = retroExportGifFcn(app)
 
-%
+% ---------------------------------------------------------------
 % Exports retrospective movie to animated gif
 % Gustav Strijkers
-% October 2023
+% November 2023
 %
+% ---------------------------------------------------------------
 
 
 % Get parameters from the app
@@ -12,7 +13,6 @@ parameters = app.r;
 tag = app.tag;
 recoType = app.RecoTypeDropDown.Value;
 acqDur = app.acqDur;
-
 
 % Create new directory
 ready = false;
@@ -26,10 +26,8 @@ while ~ready
     cnt = cnt + 1;
 end
 
-
 % Message export folder
 app.TextMessage(strcat("GIF export folder = ",gifExportPath));
-
 
 % Which type of movie
 if app.AveragesButton.Value == 1
@@ -37,16 +35,19 @@ if app.AveragesButton.Value == 1
     window = round(max(movie(:)));
     level = round(window/2);
     cmap = [0 0 0 ; summer(255)];
+
 elseif app.kSpaceButton.Value == 1
     movie = abs(app.r.kSpace{app.MovieCoilSpinner.Value});
     window = app.window;
     level = app.level;
     cmap = gray(255);
+
 else
     movie = app.r.movieApp;
     window = app.window;
     level = app.level;
     cmap = gray(255);
+
 end
 
 % Phase orientation
@@ -54,28 +55,18 @@ if ~parameters.PHASE_ORIENTATION
     movie = permute(rot90(permute(movie,[2,3,4,1,5]),1),[4,1,2,3,5]);
 end
 
+% Rotate the image (cc and ccw rotation button)
+for i=1:app.imageRot
+    movie = permute(rot90(permute(movie,[2,3,4,1,5]),1),[4,1,2,3,5]);
+end
+
 % Dimensions
 [nrFrames,~,~,nrSlices,nrDynamics] = size(movie);
-
-
-% % Create folder if not exist, and clear
-% gifExportPath = strcat(gifExportPath,'RETRO_GIFS_',num2str(nrFrames),'_',num2str(nrSlices),'_',num2str(nrDynamics),'_',tag,filesep);
-% if ~exist(gifExportPath, 'dir')
-%     mkdir(gifExportPath); 
-% end
-
-
-% Scale from 0 to 255
-window = window*255/max(movie(:));
-level = level*255/max(movie(:));
-movie = movie*255/max(movie(:));
-
 
 % Window and level
 movie = (255/window)*(movie - level + window/2);
 movie(movie < 0) = 0;
 movie(movie > 255) = 255;
-
 
 % Correct for non-square aspect ratio
 gifImageSize = 512; % size of longest axis
@@ -88,7 +79,6 @@ end
 fct = max([dimx dimy]);
 dimx = round(gifImageSize * dimx / fct);
 dimy = round(gifImageSize * dimy / fct);
-
 
 % Variable flip-angle
 if parameters.VFA_size > 1
