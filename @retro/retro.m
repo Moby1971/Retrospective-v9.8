@@ -639,6 +639,8 @@ classdef retro
 
             % Determine acquisition type and put the data in the right order
 
+            dimC = obj.nr_coils;
+
             if obj.NO_VIEWS == 1 && obj.NO_VIEWS_2 == 1 && obj.EXPERIMENT_ARRAY > 1000
 
                 % 3D UTE data
@@ -647,9 +649,9 @@ classdef retro
 
                 obj.dataType = '3Dute';
 
-                for i=1:obj.nr_coils
+                for coil = 1:dimC
                     %                             spokes,1,1,X
-                    obj.data{i} = permute(obj.data{i},[1,4,3,2]);
+                    obj.data{coil} = permute(obj.data{coil},[1,4,3,2]);
                 end
 
                 obj.primaryNavigatorPoint = 1;
@@ -663,23 +665,23 @@ classdef retro
 
                 obj.dataType = '2Dradial';
 
-                for i=1:obj.nr_coils
-                    if ismatrix(obj.data{i})
+                for coil = 1:dimC
+                    if ismatrix(obj.data{coil})
                         %                                  1 1 Y X
-                        obj.data{i} = permute(obj.data{i},[3,4,1,2]);
+                        obj.data{coil} = permute(obj.data{coil},[3,4,1,2]);
                     end
-                    if ndims(obj.data{i}) == 3 && obj.NO_SLICES == 1
+                    if ndims(obj.data{coil}) == 3 && obj.NO_SLICES == 1
                         %                                 NR 1 Y X
-                        obj.data{i} = permute(obj.data{i},[1,4,2,3]);
+                        obj.data{coil} = permute(obj.data{coil},[1,4,2,3]);
                     end
-                    if ndims(obj.data{i}) == 3 && obj.NO_SLICES > 1
+                    if ndims(obj.data{coil}) == 3 && obj.NO_SLICES > 1
                         %                                  1 Z Y X
-                        obj.data{i} = permute(obj.data{i},[4,1,2,3]);
+                        obj.data{coil} = permute(obj.data{coil},[4,1,2,3]);
                         obj.dataType = '2Dradialms';
                     end
-                    if ndims(obj.data{i}) == 4 && obj.NO_SLICES > 1
+                    if ndims(obj.data{coil}) == 4 && obj.NO_SLICES > 1
                         %                                 NR Z Y X
-                        obj.data{i} = permute(obj.data{i},[1,2,3,4]);
+                        obj.data{coil} = permute(obj.data{coil},[1,2,3,4]);
                         obj.dataType = '2Dradialms';
                     end
 
@@ -690,22 +692,25 @@ classdef retro
                 % For out-of-center points the navigator is disturbed by the radial frequency
                 % Loop through each dynamic (time point) in the data
 
-                pcorr = true;
+                pCorr = true;
 
-                if pcorr
+                if pCorr
 
-                    dims = size(obj.data{1},4);
+                    dimD = size(obj.data{1},1);
+                    dimZ = size(obj.data{1},2);
+                    dimS = size(obj.data{1},3);
+                    dimR = size(obj.data{1},4);
 
-                    for dynamic = 1:size(obj.data{1},1)
+                    for dynamic = 1:dimD
 
                         % Loop through each slice in the data
-                        for slice = 1:size(obj.data{1},2)
+                        for slice = 1:dimZ
 
                             % Loop through each spoke (k-space line) in the data
-                            for spoke = 1:size(obj.data{1},3)
+                            for spoke = 1:dimS
 
                                 % Extract the current k-line (spoke) from the data for the current coil, dynamic, slice
-                                tmpKline1 = squeeze(obj.data{i}(dynamic,slice,spoke,:));
+                                tmpKline1 = squeeze(obj.data{coil}(dynamic,slice,spoke,:));
 
                                 % Interpolate the k-line to increase the resolution
                                 tmpKline2 = interp(tmpKline1,obj.interpFactor);
@@ -714,13 +719,13 @@ classdef retro
                                 [~,kCenter] = max(abs(tmpKline2));
 
                                 % Calculate the amount of shift needed to center the k-line by subtracting the k-center from the midpoint of k-space
-                                kShift = floor(dims/2)-kCenter/obj.interpFactor;
+                                kShift = floor(dimR/2)-kCenter/obj.interpFactor;
 
                                 % Shift the k-line by the calculated amount, using a circular shift to avoid edge effects
                                 tmpKline1 = retro.fracCircShift(tmpKline1,kShift);
 
                                 % Replace the original k-line with the shifted one in the data for the current coil, dynamic, slice, spoke
-                                obj.data{i}(dynamic,slice,spoke,:) = tmpKline1;
+                                obj.data{coil}(dynamic,slice,spoke,:) = tmpKline1;
 
                             end
 
@@ -746,13 +751,13 @@ classdef retro
 
                     obj.dataType = '3D';
 
-                    for i=1:obj.nr_coils
+                    for coil=1:dimC
                         if obj.EXPERIMENT_ARRAY > 1
                             %                                 NR Z Y X
-                            obj.data{i} = permute(obj.data{i},[1,3,2,4]);
+                            obj.data{coil} = permute(obj.data{coil},[1,3,2,4]);
                         else
                             %                                  1 Z Y X
-                            obj.data{i} = permute(obj.data{i},[4,2,1,3]);
+                            obj.data{coil} = permute(obj.data{coil},[4,2,1,3]);
                         end
                     end
 
@@ -767,18 +772,18 @@ classdef retro
 
                     obj.dataType = '2D';
 
-                    for i=1:obj.nr_coils
-                        if ismatrix(obj.data{i})
+                    for coil = 1:dimC
+                        if ismatrix(obj.data{coil})
                             %                                  1 1 Y X
-                            obj.data{i} = permute(obj.data{i},[3,4,1,2]);
+                            obj.data{coil} = permute(obj.data{coil},[3,4,1,2]);
                         end
-                        if ndims(obj.data{i}) == 3 && obj.NO_SLICES == 1
+                        if ndims(obj.data{coil}) == 3 && obj.NO_SLICES == 1
                             %                                 NR 1 Y X
-                            obj.data{i} = permute(obj.data{i},[1,4,2,3]);
+                            obj.data{coil} = permute(obj.data{coil},[1,4,2,3]);
                         end
-                        if ndims(obj.data{i}) == 3 && obj.NO_SLICES > 1
+                        if ndims(obj.data{coil}) == 3 && obj.NO_SLICES > 1
                             %                                  1 Z Y X
-                            obj.data{i} = permute(obj.data{i},[4,1,2,3]);
+                            obj.data{coil} = permute(obj.data{coil},[4,1,2,3]);
                         end
 
                     end
@@ -2234,19 +2239,21 @@ classdef retro
         % ---------------------------------------------------------------------------------
         function obj = extractData(obj)
 
-            obj.raw = cell(obj.nr_coils); % Initialize cell array with raw k-space data
+            dimC = obj.nr_coils;
+
+            obj.raw = cell(dimC); % Initialize cell array with raw k-space data
 
             switch obj.dataType
 
                 case {'2D','2Dms','3D','3Dp2roud'} % 2D and 3D data
-                    for i = 1:obj.nr_coils
+                    for coil = 1:dimC
                         % Cut off the navigator and spacer
-                        obj.raw{i} = obj.data{i}(:,:,:,obj.primaryNavigatorPoint+obj.nrNavPointsDiscarded+1:end);
+                        obj.raw{coil} = obj.data{coil}(:,:,:,obj.primaryNavigatorPoint+obj.nrNavPointsDiscarded+1:end);
                     end
 
                 case {'2Dradial','2Dradialms','3Dute'} % 2D radial and 3D UTE data
-                    for i = 1:obj.nr_coils
-                        obj.raw{i} = obj.data{i};
+                    for coil = 1:dimC
+                        obj.raw{coil} = obj.data{coil};
                     end
 
             end
@@ -2568,7 +2575,7 @@ classdef retro
             dimY = obj.dimy;
             dimZ = obj.dimz;
             dimC = obj.nr_coils;
-            nrOfKsteps = obj.nrKsteps;
+            dimK = obj.nrKsteps;
             traj = obj.trajectory;
             nrCardFrames = app.nrCardFrames;
             nrRespFrames = app.nrRespFrames;
@@ -2577,15 +2584,15 @@ classdef retro
             % size k-space in y direction
             dimYmax = max(abs(traj(:)));
 
-            for coilnr = 1:dimC
+            for coil = 1:dimC
 
-                rawdata = obj.raw{coilnr};
+                rawdata = obj.raw{coil};
 
-                nrReps = size(rawdata,1);                                       % Number of k-space repetitions
+                dimNR = size(rawdata,1);                                       % Number of k-space repetitions
                 unsortedKspace = reshape(rawdata,[1,size(rawdata),1]);
 
                 % Dynamics assignment
-                totalk = nrReps * nrOfKsteps * dimZ;
+                totalk = dimNR * dimK * dimZ;
                 dynBinAss = round(linspace(0.5, nrDynamics+0.49, totalk));      % List of increasing integer number 1 .. nr_dynamics evenly spaced over the entire acquistion time
 
                 % Sorting
@@ -2593,12 +2600,12 @@ classdef retro
                 sortedAverages = zeros(nrRespFrames,nrCardFrames,dimZ,dimYmax,dimX,nrDynamics);          % Fill temp nr averages array with zeros
                 cnt = 0;
                 for slice = 1:dimZ                    % Loop over slices
-                    for i = 1:nrReps                  % Loop through all repetitions
-                        for j = 1:nrOfKsteps          % Loop through all the phase-encoding steps
+                    for repetition = 1:dimNR          % Loop through all repetitions
+                        for kstep = 1:dimK            % Loop through all the phase-encoding steps
                             cnt = cnt + 1;
                             if (cardBinAss(cnt) > 0) && (includeAcqWindow(cnt) == 1)       % If assigment = 0, this acquisition is discarded
-                                kline = traj(mod(cnt - 1,nrOfKsteps) + 1);                % The phase-encoding step using the trajectory info
-                                sortedKspace(respBinAss(cnt),cardBinAss(cnt),slice,kline,:,dynBinAss(cnt)) = sortedKspace(respBinAss(cnt),cardBinAss(cnt),slice,kline,:,dynBinAss(cnt)) + unsortedKspace(1,i,slice,j,:,1);   % add the data to the correct k-position
+                                kline = traj(mod(cnt - 1,dimK) + 1);                % The phase-encoding step using the trajectory info
+                                sortedKspace(respBinAss(cnt),cardBinAss(cnt),slice,kline,:,dynBinAss(cnt)) = sortedKspace(respBinAss(cnt),cardBinAss(cnt),slice,kline,:,dynBinAss(cnt)) + unsortedKspace(1,repetition,slice,kstep,:,1);   % add the data to the correct k-position
                                 sortedAverages(respBinAss(cnt),cardBinAss(cnt),slice,kline,:,dynBinAss(cnt)) = sortedAverages(respBinAss(cnt),cardBinAss(cnt),slice,kline,:,dynBinAss(cnt)) + 1;        % increase the number of averages with 1
                             end
                         end
@@ -2635,21 +2642,21 @@ classdef retro
                     Rx = round(dimX/share/2);
                     [Y,X] = ndgrid(1:dimY,1:dimX);
                     L = zeros(share,dimY,dimX);
-                    for i = 1:share
-                        L(i,:,:) = sqrt( ((row-Y)/(Ry*i)).^2 + ((col-X)/(Rx*i)).^2 ) <= 1;
+                    for sh = 1:share
+                        L(sh,:,:) = sqrt( ((row-Y)/(Ry*sh)).^2 + ((col-X)/(Rx*sh)).^2 ) <= 1;
                     end
                     C(1,:,:) = L(1,:,:);
                     if share > 1
-                        for i = 2:share
-                            C(i,:,:) = L(i,:,:) - L(i-1,:,:);
+                        for sh = 2:share
+                            C(sh,:,:) = L(sh,:,:) - L(sh-1,:,:);
                         end
                     end
 
                     % Weights
                     weights = zeros(share);
-                    for i = 1:share
-                        for j = 1:share
-                            weights(i,j) = retro.gauss(i+j-1,share,0);
+                    for sh = 1:share
+                        for kstep = 1:share
+                            weights(sh,kstep) = retro.gauss(sh+kstep-1,share,0);
                         end
                     end
                     weights = 0.5*weights/max(weights(:));
@@ -2657,17 +2664,17 @@ classdef retro
                     % Apply sharing to k-space
                     for frame = 1:nrFrames
 
-                        for i = -share:share
+                        for sh = -share:share
 
-                            sharedFrame = frame + i;
+                            sharedFrame = frame + sh;
                             sharedFrame(sharedFrame < 1) = nrFrames - sharedFrame - 1;
                             sharedFrame(sharedFrame > nrFrames) = sharedFrame - nrFrames;
 
-                            if i~=0
+                            if sh~=0
 
-                                for j = 1:share
+                                for kstep = 1:share
 
-                                    ROI = reshape(squeeze(C(j,:,:)),[1 1 1 dimY dimX 1])*weights(j,abs(i));
+                                    ROI = reshape(squeeze(C(kstep,:,:)),[1 1 1 dimY dimX 1])*weights(kstep,abs(sh));
                                     tmpKspace(:,frame,:,:,:,:)   = tmpKspace(:,frame,:,:,:,:)   + sortedKspace(:,sharedFrame,:,:,:,:)   .* ROI;
                                     tmpAverages(:,frame,:,:,:,:) = tmpAverages(:,frame,:,:,:,:) + sortedAverages(:,sharedFrame,:,:,:,:) .* ROI;
 
@@ -2698,7 +2705,7 @@ classdef retro
                 tmpKspace = tmpKspace.*tukeyFilter;
 
                 % Report back k-space per coil
-                obj.kSpace{coilnr} = tmpKspace;
+                obj.kSpace{coil} = tmpKspace;
 
             end
 
@@ -2747,7 +2754,7 @@ classdef retro
             dimX = obj.dimx;
             dimY = obj.dimy;
             dimZ = obj.dimz;
-            nrOfKsteps = obj.nrKsteps;
+            dimK = obj.nrKsteps;
             traj = obj.trajectory;
             nrCardFrames = app.nrCardFrames;
             nrRespFrames = app.nrRespFrames;
@@ -2759,29 +2766,29 @@ classdef retro
 
                 sortedKspace = complex(zeros(nrRespFrames,nrCardFrames,dimZ,dimY,dimX,nrDynamics));     % Fill temp k-space with zeros
                 sortedAverages = zeros(nrRespFrames,nrCardFrames,dimZ,dimY,dimX,nrDynamics);            % Fill temp nr averages array with zeros
-                nrReps = size(rawdata,1);                                                               % Number of k-space repetitions
+                dimNR = size(rawdata,1);                                                                % Number of k-space repetitions
                 unsortedKspace = reshape(rawdata,[1,size(rawdata),1]);
 
                 % Dynamics assignment
-                totalk = nrReps * nrOfKsteps * dimZ;
+                totalk = dimNR * dimK * dimZ;
                 dynBinAss = round(linspace(0.5, nrDynamics+0.49, totalk));       % List of increasing integer number 1 .. nr_dynamics evenly spaced over the entire acquistion time
 
                 % Adapt trajectory for 3D acqusition
 
                 % The y-dimension
-                traj3Dy = zeros(nrReps * nrOfKsteps * dimZ,1);
+                traj3Dy = zeros(dimNR * dimK * dimZ, 1);
                 cnt = 1;
-                for i = 1:nrReps
-                    for j = 1:nrOfKsteps
-                        for k = 1:dimZ
-                            traj3Dy(cnt) = traj(j);
+                for repetition = 1:dimNR
+                    for kstep = 1:dimK
+                        for slice = 1:dimZ
+                            traj3Dy(cnt) = traj(kstep);
                             cnt = cnt + 1;
                         end
                     end
                 end
 
                 % The z-dimension
-                traj3Dz = zeros(nrReps * nrOfKsteps * dimZ,1);
+                traj3Dz = zeros(dimNR * dimK * dimZ, 1);
 
                 switch obj.pe2_centric_on
 
@@ -2789,10 +2796,10 @@ classdef retro
 
                         % Linear in the 3rd dimension
                         cnt = 1;
-                        for i = 1:nrReps
-                            for j = 1:nrOfKsteps
-                                for k = 1:dimZ
-                                    traj3Dz(cnt) = k;  % Linear
+                        for repetition = 1:dimNR
+                            for kstep = 1:dimK
+                                for slice = 1:dimZ
+                                    traj3Dz(cnt) = slice;  % Linear
                                     cnt = cnt + 1;
                                 end
                             end
@@ -2803,10 +2810,10 @@ classdef retro
                         % Centric in the 3rd dimension
                         cnt = 1;
                         cf = retro.centricFilling(dimZ);
-                        for i = 1:nrReps
-                            for j = 1:nrOfKsteps
-                                for k = 1:dimZ
-                                    traj3Dz(cnt) = cf(k);  % Centric
+                        for repetition = 1:dimNR
+                            for kstep = 1:dimK
+                                for slice = 1:dimZ
+                                    traj3Dz(cnt) = cf(slice);  % Centric
                                     cnt = cnt + 1;
                                 end
                             end
@@ -2816,10 +2823,10 @@ classdef retro
 
                         % Special case, trajectory
                         cnt = 1;
-                        for i = 1:nrReps
-                            for j = 1:nrOfKsteps
-                                for k = 1:dimZ
-                                    traj3Dz(cnt) = obj.pe2_traj(k) + round(dimZ/2) + 1;
+                        for repetition = 1:dimNR
+                            for kstep = 1:dimK
+                                for slice = 1:dimZ
+                                    traj3Dz(cnt) = obj.pe2_traj(slice) + round(dimZ/2) + 1;
                                     cnt = cnt + 1;
                                 end
                             end
@@ -2830,21 +2837,21 @@ classdef retro
                 % Do the filling of k-space
                 cnt = 0;
 
-                for i = 1:nrReps                    % Loop through all repetitions
+                for repetition = 1:dimNR                    % Loop through all repetitions
 
-                    for j = 1:nrOfKsteps            % Loop through all the phase-encoding steps
+                    for kstep = 1:dimK                      % Loop through all the phase-encoding steps
 
-                        for k = 1:dimZ              % Loop through phase-encoding 3rd dimension
+                        for slice = 1:dimZ                  % Loop through phase-encoding 3rd dimension
 
                             cnt = cnt + 1;
 
                             if (cardBinAss(cnt) > 0) && (includeAcqWindow(cnt) == 1)     % If assigment == 0, this acquisition is discarded
 
-                                kline_y = traj3Dy(cnt);            % The phase-encoding step using the 3D trajectory info
-                                kline_z = traj3Dz(cnt);            % The 2nd phase-encoding
+                                kLineY = traj3Dy(cnt);            % The phase-encoding step using the 3D trajectory info
+                                kLineZ = traj3Dz(cnt);            % The 2nd phase-encoding
 
-                                sortedKspace(respBinAss(cnt),cardBinAss(cnt),kline_z,kline_y,:,dynBinAss(cnt))   = sortedKspace(respBinAss(cnt),cardBinAss(cnt),kline_z,kline_y,:,dynBinAss(cnt))   + unsortedKspace(1,i,k,j,:,1);       % add the data to the correct k-position
-                                sortedAverages(respBinAss(cnt),cardBinAss(cnt),kline_z,kline_y,:,dynBinAss(cnt)) = sortedAverages(respBinAss(cnt),cardBinAss(cnt),kline_z,kline_y,:,dynBinAss(cnt)) + 1;                                  % increase the number of averages with 1
+                                sortedKspace(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt))   = sortedKspace(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt))   + unsortedKspace(1,repetition,slice,kstep,:,1);     % add the data to the correct k-position
+                                sortedAverages(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt)) = sortedAverages(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt)) + 1;                                                % increase the number of averages with 1
 
                             end
 
@@ -2900,8 +2907,8 @@ classdef retro
 
                     % Weights
                     for i = 1:share
-                        for j = 1:share
-                            weights(i,j) = retro.gauss(i+j-1,share,0);
+                        for kstep = 1:share
+                            weights(i,kstep) = retro.gauss(i+kstep-1,share,0);
                         end
                     end
                     weights = 0.5*weights/max(weights(:));
@@ -2917,9 +2924,9 @@ classdef retro
 
                             if i~=0
 
-                                for j = 1:share
+                                for kstep = 1:share
 
-                                    ROI = reshape(squeeze(C(j,:,:,:)),[1 1 dimZ dimY dimX 1])*weights(j,abs(i));
+                                    ROI = reshape(squeeze(C(kstep,:,:,:)),[1 1 dimZ dimY dimX 1])*weights(kstep,abs(i));
                                     tmpKspace(:,frame,:,:,:,:)   = tmpKspace(:,frame,:,:,:,:)   + sortedKspace(:,sharedframe,:,:,:,:)   .* ROI;
                                     tmpAverages(:,frame,:,:,:,:) = tmpAverages(:,frame,:,:,:,:) + sortedAverages(:,sharedframe,:,:,:,:) .* ROI;
 
