@@ -5052,8 +5052,10 @@ classdef retro
 
                     % Calculate coil sensitivity maps with ecalib bart function
                     kSpacePicsSum = sum(kSpacePics,[11,12]);
-                    sensitivities = bart(app,'ecalib -S -I -a -m2', kSpacePicsSum);      % Ecalib with softsense
-
+                    for slice = 1:dimZ
+                        sensitivities(1,:,:,:,:,:,:,:,:,:,:,:,:,slice) = bart(app,'ecalib -S -I -a -m2', kSpacePicsSum(:,:,:,:,:,:,:,:,:,:,:,:,:,slice));      % Ecalib with softsense
+                    end
+        
                 else
 
                     % Reconstruction without sensitivity correction
