@@ -4834,31 +4834,44 @@ classdef retro
         % Determine average heart rate
         % ---------------------------------------------------------------------------------
         function obj = calcHeartRate(obj)
+
             % This function calculates heart rate as a function of time in bpm
 
-            nrLocs = size(obj.heartTrigPoints,2); % Determine the number of trigger points
+            % Determine the number of trigger points
+            nrLocs = size(obj.heartTrigPoints,2); 
 
-            rate = zeros(nrLocs-1,1); % Initialize the heart rate array
+            % Initialize the heart rate array
+            rate = zeros(nrLocs-1,1); 
             for i=1:nrLocs-1
                 % Calculate heart rate using adjacent trigger points and TR (repetition time)
                 rate(i) = 60/((obj.heartTrigPoints(i+1)-obj.heartTrigPoints(i))*(obj.TR/1000));
             end
 
-            hr = rate'; % Transpose the heart rate array
-            hrf = movmedian(hr,32); % Smooth the trendline using a moving median filter
+            % Transpose the heart rate array
+            hr = rate'; 
 
-            % Determine the mean cardiac rate
-            includeData = obj.includeWindow.*obj.excludeWindow; % Determine the included data window
+            % Smooth the trendline using a moving median filter
+            hrf = movmedian(hr,32);
+
+            % Determine the included data window
+            includeData = obj.includeWindow.*obj.excludeWindow;
             try
                 includeData = round(resample(includeData,2*length(hr),length(includeData)));
             catch
-                includeData = round(resample(includeData,3*length(hr),length(includeData))); % Resample the data-window to match the number of samples in the heart rate
+                % Resample the data-window to match the number of samples in the heart rate
+                includeData = round(resample(includeData,3*length(hr),length(includeData)));
             end
-            includeData = round(resample(includeData,length(hr),length(includeData))); % Resample again to prevent overflow error
+            % Resample again to prevent overflow error
+            includeData = round(resample(includeData,length(hr),length(includeData)));
 
-            obj.meanHeartRate = round(median(nonzeros(includeData'.*hr))); % Calculate the median heart rate using the included data
-            obj.heartRateTime = hr; % Store the heart rate array
-            obj.heartRateTimeFiltered = hrf; % Store the filtered heart rate array
+            % Calculate the median heart rate using the included data
+            obj.meanHeartRate = round(median(nonzeros(includeData'.*hr)));
+
+            % Store the heart rate array
+            obj.heartRateTime = hr;
+
+            % Store the filtered heart rate array
+            obj.heartRateTimeFiltered = hrf; 
 
         end % calcHeartRate
 

@@ -3,9 +3,19 @@ function folderName = retroExportDicomMat(app)
 % ---------------------------------------------------------------
 % DICOM Export for Retrospective app, DICOM info not available
 % Gustav Strijkers
-% November 2023
+% Dec 2023
 %
 % ---------------------------------------------------------------
+
+
+% Find some values in RPR file
+
+StudyID = rprFind(app.r.rprFile,':IM_TEXT_DCM_StudyID');
+SeriesNumber = rprFind(app.r.rprFile,':IM_TEXT_DCM_SeriesNumber');
+StudyInstanceUID = rprFind(app.r.rprFile,':IM_TEXT_DCM_StudyInstanceUID');
+SeriesInstanceUID = rprFind(app.r.rprFile,':IM_TEXT_DCM_SeriesInstanceUID');
+PatientID = rprFind(app.r.rprFile,':IM_TEXT_DCM_PatientID');
+PatientsName = rprFind(app.r.rprFile,':IM_TEXT_DCM_PatientsName');
 
 
 % Movie
@@ -27,6 +37,9 @@ heartRate = app.r.meanHeartRate;
 respRate = app.r.meanRespRate;
 slope = double(app.r.rescaleSlope);
 intercept = double(app.r.rescaleIntercept);
+tag = app.tag;
+sliceThickness = app.r.SLICE_THICKNESS;
+fov = app.r.FOV;
 
 dcmid = dicomuid;   % unique identifier
 dcmid = dcmid(1:50);
@@ -34,11 +47,11 @@ dcmid = dcmid(1:50);
 % Square pixel correction
 aspectRatio = app.r.FOVf/8;
 if app.r.PHASE_ORIENTATION
-    pixely = app.r.FOV/dimy;
-    pixelx = aspectRatio*app.r.FOV/dimx;
+    pixely = fov/dimy;
+    pixelx = aspectRatio*fov/dimx;
 else
-    pixely = aspectRatio*app.r.FOV/dimy;
-    pixelx = app.r.FOV/dimx;
+    pixely = aspectRatio*fov/dimy;
+    pixelx = fov/dimx;
 end
 if pixely > pixelx
     ratio = pixely/pixelx;
@@ -55,7 +68,7 @@ dimx = size(movie,3);
 ready = false;
 cnt = 1;
 while ~ready
-    folderName = strcat(app.dicomExportPath,filesep,'DICOM',filesep,'RETRO_DICOM_',num2str(nrFrames),'_',num2str(dimz),'_',num2str(nrDynamics),'_',app.tag,filesep,num2str(cnt));
+    folderName = strcat(app.dicomExportPath,filesep,'DICOM',filesep,'RETRO_DICOM_',num2str(nrFrames),'_',num2str(dimz),'_',num2str(nrDynamics),'_',tag,filesep,num2str(cnt));
     if ~exist(folderName, 'dir')
         mkdir(folderName);
         ready = true;
@@ -120,16 +133,26 @@ end
             dcmHead.FlipAngle = app.r.alpha;
         end
 
-        % Aspect ratio and pixel x and y dimensions
+        % Square pixel correction
         aspectRatio = app.r.FOVf/8;
         if app.r.PHASE_ORIENTATION
-            pixely = app.r.FOV/dimy;
-            pixelx = aspectRatio*app.r.FOV/dimx;
+            pixely = fov/dimy;
+            pixelx = aspectRatio*fov/dimx;
         else
-            pixely = aspectRatio*app.r.FOV/dimy;
-            pixelx = app.r.FOV/dimx;
+            pixely = aspectRatio*fov/dimy;
+            pixelx = fov/dimx;
         end
-   
+        if pixely > pixelx
+            ratio = pixely/pixelx;
+            movie = matrixInterpolate(movie,[1 ratio 1 1 1],'cubic');
+        end
+        if pixelx > pixely
+            ratio = pixelx/pixely;
+            movie = matrixInterpolate(movie,[1 1 ratio 1 1],'cubic');
+        end
+        dimy = size(movie,2);
+        dimx = size(movie,3);
+
         % Date and time
         dt = datetime(app.r.date,'InputFormat','dd-MMM-yyyy HH:mm:ss');
         year = num2str(dt.Year);
@@ -167,7 +190,8 @@ end
             dcmHead.ImplementationClassUID = '1.2.826.0.9717382.3.0.3.6.0';
             dcmHead.ImplementationVersionName = 'OFFIS_DCMTK_360';
             dcmHead.SpecificCharacterSet = 'ISO_IR 100';
-            dcmHead.ImageType = 'ORIGINAL\PRIMARY\';
+            dcmHead.ImageType = 'ORIGINAL\PRIMARY\M_FFE\M\FFE';
+            dcmHead.ScanningSequence = 'GR';
             dcmHead.SOPClassUID = '1.2.840.10008.5.1.4.1.1.4';
             dcmHead.StudyDate = date;
             dcmHead.SeriesDate = date;
@@ -187,7 +211,7 @@ end
             dcmHead.ReferringPhysicianName.NameSuffix = '';
             dcmHead.StationName = 'MRI Scanner';
             dcmHead.StudyDescription = 'CINE';
-            dcmHead.SeriesDescription = '';
+            dcmHead.SeriesDescription = tag;
             dcmHead.InstitutionalDepartmentName = 'Amsterdam UMC preclinical MRI';
             dcmHead.PhysicianOfRecord.FamilyName = 'Amsterdam UMC preclinical MRI';
             dcmHead.PhysicianOfRecord.GivenName = '';
@@ -213,7 +237,16 @@ end
             dcmHead.DerivationDescription = '';
             dcmHead.FrameType = '';
             dcmHead.PatientName.FamilyName = 'Amsterdam UMC preclinical MRI';
-            dcmHead.PatientID = '01';
+            if ~isempty(PatientID)
+                dcmHead.PatientID = PatientID;
+            else
+                dcmHead.PatientID = '01';
+            end
+            if ~isempty(PatientsName)
+                dcmHead.PatientsName = PatientsName;
+            else
+                dcmHead.PatientsName = 'Mouse';
+            end
             dcmHead.PatientBirthDate = date;
             dcmHead.PatientBirthTime = '';
             dcmHead.PatientSex = 'F';
@@ -223,7 +256,6 @@ end
             dcmHead.OtherPatientName.MiddleName = '';
             dcmHead.OtherPatientName.NamePrefix = '';
             dcmHead.OtherPatientName.NameSuffix = '';
-            dcmHead.Patienapp.tage = '1';
             dcmHead.PatientSize = [];
             dcmHead.PatientWeight = 0.0300;
             dcmHead.Occupation = '';
@@ -231,7 +263,7 @@ end
             dcmHead.PatientComments = '';
             dcmHead.BodyPartExamined = '';
             dcmHead.SequenceName = 'CINE';
-            dcmHead.SliceThickness = app.r.SLICE_THICKNESS/dimz;
+            dcmHead.SliceThickness = sliceThickness/dimz;
             dcmHead.KVP = 0;
             dcmHead.RepetitionTime = TR;     % time between frames
             dcmHead.EchoTime = 2;         % approximately correct
@@ -249,7 +281,7 @@ end
             dcmHead.TriggerTime = (frame-1)*TR;    % frame time = frame number times calculated TR
             dcmHead.DistanceSourceToDetector = [];
             dcmHead.DistanceSourceToPatient = [];
-            dcmHead.FieldOfViewDimensions = [app.r.FOV app.r.FOV app.r.SLICE_THICKNESS/dimz];
+            dcmHead.FieldOfViewDimensions = [fov fov sliceThickness/dimz];
             dcmHead.ExposureTime = [];
             dcmHead.XrayTubeCurrent = [];
             dcmHead.Exposure = [];
@@ -263,7 +295,6 @@ end
             dcmHead.PlateType = '';
             dcmHead.PhosphorType = '';
             dcmHead.AcquisitionMatrix = uint16([dimy 0 0 dimx])';
-
             dcmHead.AcquisitionDeviceProcessingDescription = '';
             dcmHead.CassetteOrientation = 'PORTRAIT';
             dcmHead.CassetteSize = '25CMX25CM';
@@ -275,12 +306,27 @@ end
             dcmHead.FieldOfViewOrigin = [];
             dcmHead.FieldOfViewRotation = [];
             dcmHead.AcquisitionDuration = app.acqDur;
-            dcmHead.StudyInstanceUID = dcmid(1:18);
-            dcmHead.SeriesInstanceUID = [dcmid(1:18),'.',num2str(studyName)];
-            dcmHead.StudyID = '01';
-            dcmHead.SeriesNumber = studyName;
+            if ~isempty(StudyInstanceUID)
+                dcmHead.StudyInstanceUID = StudyInstanceUID;
+            else
+                dcmHead.StudyInstanceUID = dcmid(1:18);
+            end
+            if ~isempty(SeriesInstanceUID)
+                dcmHead.SeriesInstanceUID = SeriesInstanceUID;
+            else
+                dcmHead.SeriesInstanceUID = [dcmid(1:18),'.',num2str(studyName)];
+            end
+            if ~isempty(StudyID)
+                dcmHead.StudyID = StudyID;
+            else
+                dcmHead.StudyID = '01';
+            end
+            if ~isempty(SeriesNumber)
+                dcmHead.SeriesNumber = str2num(SeriesNumber); %#ok<*ST2NM>
+            else
+                dcmHead.SeriesNumber = studyName;
+            end
             dcmHead.AcquisitionNumber = 1;
-
             dcmHead.TriggerTime = (dyn-1)*TD + (frame-1)*TR;
             dcmHead.AcquisitionDuration = app.acqDur;
             dcmHead.InstanceNumber = (slice-1)*nrDynamics*nrFrames + (frame-1)*nrDynamics + dyn;          % instance number
@@ -288,11 +334,10 @@ end
             dcmHead.NumberOfTemporalPositions = nrDynamics * nrFrames;
             dcmHead.TemporalResolution = TR;
             dcmHead.ImagesInAcquisition = nrDynamics * nrFrames * dimz;
-
-            dcmHead.ImagePositionPatient = [(pixely/2)-app.r.FOV/2, (pixelx/2)-app.r.FOV/2, 0.0]';
+            dcmHead.ImagePositionPatient = [(pixely/2)-fov/2, (pixelx/2)-fov/2, 0.0]';
             dcmHead.ImageOrientationPatient = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]';
             dcmHead.FrameOfReferenceUID = '';
-            dcmHead.SliceLocation = (app.r.SLICE_THICKNESS/dimz)*((slice-1)-(round(dimz/2)));
+            dcmHead.SliceLocation = (sliceThickness/dimz)*((slice-1)-(round(dimz/2)));
             dcmHead.ImageComments = '';
             dcmHead.TemporalPositionIndex = uint32([]);
             dcmHead.SamplesPerPixel = 1;
@@ -341,7 +386,8 @@ end
             dcmHead.ImplementationClassUID = '1.2.826.0.9717382.3.0.3.6.0';
             dcmHead.ImplementationVersionName = 'OFFIS_DCMTK_360';
             dcmHead.SpecificCharacterSet = 'ISO_IR 100';
-            dcmHead.ImageType = 'ORIGINAL\PRIMARY\';
+            dcmHead.ImageType = 'ORIGINAL\PRIMARY\M_FFE\M\FFE';      
+            dcmHead.ScanningSequence = 'GR';
             dcmHead.SOPClassUID = '1.2.840.10008.5.1.4.1.1.4';
             dcmHead.StudyDate = date;
             dcmHead.SeriesDate = date;
@@ -361,7 +407,7 @@ end
             dcmHead.ReferringPhysicianName.NameSuffix = '';
             dcmHead.StationName = 'MRI Scanner';
             dcmHead.StudyDescription = 'CINE';
-            dcmHead.SeriesDescription = '';
+            dcmHead.SeriesDescription = tag;
             dcmHead.InstitutionalDepartmentName = 'Amsterdam UMC preclinical MRI';
             dcmHead.PhysicianOfRecord.FamilyName = 'Amsterdam UMC preclinical MRI';
             dcmHead.PhysicianOfRecord.GivenName = '';
@@ -387,7 +433,16 @@ end
             dcmHead.DerivationDescription = '';
             dcmHead.FrameType = '';
             dcmHead.PatientName.FamilyName = 'Amsterdam UMC preclinical MRI';
-            dcmHead.PatientID = '01';
+            if ~isempty(PatientID)
+                dcmHead.PatientID = PatientID;
+            else
+                dcmHead.PatientID = '01';
+            end
+            if ~isempty(PatientsName)
+                dcmHead.PatientsName = PatientsName;
+            else
+                dcmHead.PatientsName = 'Mouse';
+            end
             dcmHead.PatientBirthDate = date;
             dcmHead.PatientBirthTime = '';
             dcmHead.PatientSex = 'F';
@@ -397,7 +452,6 @@ end
             dcmHead.OtherPatientName.MiddleName = '';
             dcmHead.OtherPatientName.NamePrefix = '';
             dcmHead.OtherPatientName.NameSuffix = '';
-            dcmHead.Patienapp.tage = '1';
             dcmHead.PatientSize = [];
             dcmHead.PatientWeight = 0.0300;
             dcmHead.Occupation = '';
@@ -405,7 +459,7 @@ end
             dcmHead.PatientComments = '';
             dcmHead.BodyPartExamined = '';
             dcmHead.SequenceName = 'CINE';
-            dcmHead.SliceThickness = app.r.SLICE_THICKNESS/dimz;
+            dcmHead.SliceThickness = sliceThickness/dimz;
             dcmHead.KVP = 0;
             dcmHead.RepetitionTime = TR;     % time between frames
             dcmHead.EchoTime = 2;         % approximately correct
@@ -423,7 +477,7 @@ end
             dcmHead.TriggerTime = (frame-1)*TR;    % frame time = frame number times calculated TR
             dcmHead.DistanceSourceToDetector = [];
             dcmHead.DistanceSourceToPatient = [];
-            dcmHead.FieldOfViewDimensions = [app.r.FOV app.r.FOV app.r.SLICE_THICKNESS/dimz];
+            dcmHead.FieldOfViewDimensions = [fov fov sliceThickness/dimz];
             dcmHead.ExposureTime = [];
             dcmHead.XrayTubeCurrent = [];
             dcmHead.Exposure = [];
@@ -448,20 +502,36 @@ end
             dcmHead.FieldOfViewOrigin = [];
             dcmHead.FieldOfViewRotation = [];
             dcmHead.AcquisitionDuration = app.acqDur/nrDynamics;
-            dcmHead.StudyInstanceUID = dcmid(1:18);
-            dcmHead.SeriesInstanceUID = [dcmid(1:18),'.',num2str(studyName)];
-            dcmHead.StudyID = '01';
-            dcmHead.SeriesNumber = studyName;
+            if ~isempty(StudyInstanceUID)
+                dcmHead.StudyInstanceUID = StudyInstanceUID;
+            else
+                dcmHead.StudyInstanceUID = dcmid(1:18);
+            end
+            if ~isempty(SeriesInstanceUID)
+                dcmHead.SeriesInstanceUID = SeriesInstanceUID;
+            else
+                dcmHead.SeriesInstanceUID = [dcmid(1:18),'.',num2str(studyName)];
+            end
+            if ~isempty(StudyID)
+                dcmHead.StudyID = StudyID;
+            else
+                dcmHead.StudyID = '01';
+            end
+            if ~isempty(SeriesNumber)
+                dcmHead.SeriesNumber = str2num(SeriesNumber);
+            else
+                dcmHead.SeriesNumber = studyName;
+            end
             dcmHead.AcquisitionNumber = 1;
             dcmHead.InstanceNumber = (slice-1)*nrFrames + frame;          % instance number
-            dcmHead.ImagePositionPatient = [(pixely/2)-app.r.FOV/2, (pixelx/2)-app.r.FOV/2, 0.0]';
+            dcmHead.ImagePositionPatient = [(pixely/2)-fov/2, (pixelx/2)-fov/2, 0.0]';
             dcmHead.ImageOrientationPatient = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0]';
             dcmHead.FrameOfReferenceUID = '';
             dcmHead.TemporalPositionIdentifier = frame;
             dcmHead.NumberOfTemporalPositions = nrFrames;
             dcmHead.TemporalResolution = TR;
             dcmHead.ImagesInAcquisition = nrFrames*dimz;
-            dcmHead.SliceLocation = (app.r.SLICE_THICKNESS/dimz)*((slice-1)-(round(dimz/2)));
+            dcmHead.SliceLocation = (sliceThickness/dimz)*((slice-1)-(round(dimz/2)));
             dcmHead.ImageComments = '';
             dcmHead.TemporalPositionIndex = uint32([]);
             dcmHead.SamplesPerPixel = 1;
@@ -534,6 +604,22 @@ end
         outputMatrix = reshape(F(yvec),szy);
 
     end % matrixInterpolate
+
+
+
+    % Find parameter in RPR file
+    function outputString = rprFind(rprFileName,searchString)
+
+        try
+            loc1 = strfind(rprFileName, searchString);
+            loc2 = strfind(rprFileName(loc1:end),newline);
+            loc3 = strfind(rprFileName(loc1:loc1+loc2(1)),'"');
+            outputString = rprFileName(loc1+loc3(1):loc1+loc3(2)-2);
+        catch
+            outputString = '';
+        end
+
+    end
 
 
 end

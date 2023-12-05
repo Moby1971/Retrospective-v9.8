@@ -3,7 +3,7 @@ function folderName = retroExportDicomDcm(app, dcmdir)
 % ---------------------------------------------------------------
 % DICOM Export for Retrospective app
 % Gustav Strijkers
-% November 2023
+% December 2023
 %
 % ---------------------------------------------------------------
 
@@ -142,6 +142,8 @@ end
             TR = 1000*(60/heartRate)/nrFrames;            % time between cardiac frames in ms
             TD = 1000*app.acqDur/nrDynamics;                  % time between dynamics
 
+            dcmHead.ImageType = 'ORIGINAL\PRIMARY\M_FFE\M\FFE';
+            dcmHead.ScanningSequence = 'GR';
             dcmHead.Filename = fname;
             dcmHead.FileModDate = app.r.date;
             dcmHead.FileSize = dimy*dimx*2;
@@ -201,6 +203,8 @@ end
                 TR = 1000*(60/heartRate)/nrFrames;      % time between frames in ms
             end
 
+            dcmHead.ImageType = 'ORIGINAL\PRIMARY\M_FFE\M\FFE';
+            dcmHead.ScanningSequence = 'GR';
             dcmHead.Filename = fname;
             dcmHead.FileModDate = app.r.date;
             dcmHead.FileSize = dimy*dimx*2;
@@ -299,5 +303,22 @@ end
         outputMatrix = reshape(F(yvec),szy);
 
     end % matrixInterpolate
+
+
+
+    % Find parameter in RPR file
+    function outputString = rprFind(rprFileName,searchString) %#ok<DEFNU>
+
+        try
+            loc1 = strfind(rprFileName, searchString);
+            loc2 = strfind(rprFileName(loc1:end),newline);
+            loc3 = strfind(rprFileName(loc1:loc1+loc2(1)),'"');
+            outputString = rprFileName(loc1+loc3(1):loc1+loc3(2)-2);
+        catch
+            outputString = '';
+        end
+
+    end
+
 
 end
