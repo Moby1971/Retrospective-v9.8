@@ -160,7 +160,7 @@ if ismac
 
     % Execute the BART command
     [ERR,cmdout] = system([bart_path, '/bart ', cmd, ' ', in_str, ' ', out_str]);
-    
+
     % Return Version
     if contains(cmd,"version")
         app.TextMessage(cmdout);
