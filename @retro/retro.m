@@ -6775,7 +6775,7 @@ classdef retro
             par = [0 0 0 0 0];
             if app.LcurveWVxyzCheckBox.Value  == 1  par(1) = 1; end %#ok<*SEPEX>
             if app.LcurveTVxyzCheckBox.Value  == 1  par(2) = 1; end
-            if app.LcurveLRxyzCheckBox.Value  == 1  par(3) = 1; end
+            if app.LcurveLLRxyzCheckBox.Value  == 1  par(3) = 1; end
             if app.LcurveTVcineCheckBox.Value == 1  par(4) = 1; end
             if app.LcurveTVdynCheckBox.Value  == 1  par(5) = 1; end
 
@@ -6807,10 +6807,10 @@ classdef retro
 
                         % Wavelet
                         app.WVxyzEditField.Value = lambda(i);
-                        app.TextMessage(strcat('L-curve, WVxyz, iteration =',num2str(iter),', lambda =',num2str(lambda(i))));
+                        app.TextMessage(strcat("L-curve, WVxyz, iteration = ",num2str(iter),", lambda = ",num2str(lambda(i))));
 
                         % CS reco
-                        obj = obj.reco2D(obj, obj, app);
+                        obj = obj.reco2D(app);
                         Lmovie = obj.movieExp;
 
                         % L1 norm wavelet
@@ -6860,10 +6860,10 @@ classdef retro
 
                         % Total variation
                         app.TVxyzEditField.Value = lambda(i);
-                        app.TextMessage(strcat('L-curve, TVxyz, iteration=',num2str(iter),', lambda=',num2str(lambda(i))));
+                        app.TextMessage(strcat("L-curve, TVxyz, iteration = ",num2str(iter),", lambda = ",num2str(lambda(i))));
 
                         % CS reco
-                        obj = obj.reco2D(obj, obj, app);
+                        obj = obj.reco2D(app);
                         Lmovie = obj.movieExp;
 
                         % L1 norm TV in spatial dimension
@@ -6922,10 +6922,10 @@ classdef retro
 
                         % Total variation
                         app.LLRxyzEditField.Value = lambda(i);
-                        app.TextMessage(strcat('L-curve, LRxyz, iteration=',num2str(iter),', lambda=',num2str(lambda(i))));
+                        app.TextMessage(strcat("L-curve, LRxyz, iteration = ",num2str(iter),", lambda = ",num2str(lambda(i))));
 
                         % CS reco
-                        obj = obj.reco2D(obj, obj, app);
+                        obj = obj.reco2D(app);
                         Lmovie = obj.movieExp;
 
                         % L1 norm TV in spatial dimension
@@ -6975,6 +6975,8 @@ classdef retro
                     app.LcurveFig.YLabel.String = "|| TVcine x_{\lambda} ||_1";
                     drawnow;
 
+                    disp('*')
+
                     x = [];
                     y = [];
 
@@ -6984,10 +6986,10 @@ classdef retro
 
                         % Total variation
                         app.TVcineEditField.Value = lambda(i);
-                        app.TextMessage(strcat('L-curve, TVcine, iteration=',num2str(iter),', lambda=',num2str(lambda(i))));
+                        app.TextMessage(strcat("L-curve, TVcine, iteration = ",num2str(iter),", lambda = ",num2str(lambda(i))));
 
                         % CS reco
-                        obj = obj.reco2D(obj, obj, app);
+                        obj = obj.reco2D(app);
                         Lmovie = obj.movieExp;
 
                         % L1 norm TV
@@ -7037,10 +7039,10 @@ classdef retro
 
                         % Total variation
                         app.TVdynEditField.Value = lambda(i);
-                        app.TextMessage(strcat('L-curve, TVdyn, iteration=',num2str(iter),', lambda=',num2str(lambda(i))));
+                        app.TextMessage(strcat("L-curve, TVdyn, iteration = ",num2str(iter),", lambda = ",num2str(lambda(i))));
 
                         % CS reco
-                        obj = obj.reco2D(obj, obj, app);
+                        obj = obj.reco2D(app);
                         Lmovie = obj.movieExp;
 
                         % L1 norm TV in dynamic dimension
