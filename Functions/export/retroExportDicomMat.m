@@ -366,8 +366,10 @@ end
 
             if strcmp(app.RecoTypeDropDown.Value,'respiratory')
                 TR = 1000*(60/respRate)/nrFrames;       % time between frames in ms
+                heartRespRate = respRate;
             else
                 TR = 1000*(60/heartRate)/nrFrames;      % time between frames in ms
+                heartRespRate = heartRate;
             end
 
             dcmHead.Filename = fname;
@@ -548,7 +550,7 @@ end
             dcmHead.PixelPaddingValue = 0;
             dcmHead.RescaleIntercept = intercept;
             dcmHead.RescaleSlope = slope;
-            dcmHead.HeartRate = heartRate;
+            dcmHead.HeartRate = heartRespRate;
             dcmHead.NumberOfSlices = dimz;
             dcmHead.CardiacNumberOfImages = nrFrames;
 

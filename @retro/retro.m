@@ -5786,7 +5786,7 @@ classdef retro
                             kTraj = kTrajCalib;
 
                             % Initial image
-                            imCalib = bart(app,['bart nufft -i -l 0.01 ',cSize,' -t'],kTrajCalib,dataCalib);
+                            imCalib = bart(app,['nufft -i -l 0.01 ',cSize,' -t'],kTrajCalib,dataCalib);
 
                             % Initialization
                             iteration = 0;
@@ -5819,7 +5819,7 @@ classdef retro
 
                                 % NUFFT to get updated k-space data
                                 kNew = obj.ifft2Dmri(xNew);
-                                dataCalib = bart(app,'bart nufft',kTraj,kNew);
+                                dataCalib = bart(app,'nufft',kTraj,kNew);
                                 kNew  = reshape(dataCalib,[M2-M1+1 size(kTrajCalib,3) dimC]);
 
                                 % Partial derivatives
@@ -5851,7 +5851,7 @@ classdef retro
                                 kTraj = obj.trajInterpolation(kTrajCalib,dTotal);
 
                                 % The new image with k-space updated for gradient delays
-                                imCalib = bart(app,['bart nufft -i -l 0.01 ',cSize,' -t'],kTraj,reshape(y,[1 M2-M1+1 size(kTrajCalib,3) dimC]));
+                                imCalib = bart(app,['nufft -i -l 0.01 ',cSize,' -t'],kTraj,reshape(y,[1 M2-M1+1 size(kTrajCalib,3) dimC]));
 
                                 % Show image
                                 im = squeeze(abs(imCalib(:,:)));
@@ -6214,7 +6214,7 @@ classdef retro
 
                     % Initial image
                     dataCalib = dataCalib(:,:,ze);
-                    imCalib = bart(app,['bart nufft -i -l 0.01 ',cSize,' -t'],kTrajCalib,dataCalib);
+                    imCalib = bart(app,['nufft -i -l 0.01 ',cSize,' -t'],kTrajCalib,dataCalib);
 
                     % Initialization
                     iteration = 0;
@@ -6247,7 +6247,7 @@ classdef retro
 
                         % NUFFT to get updated k-space data
                         kNew = obj.ifft3Dmri(xNew);
-                        dataCalib = bart(app,'bart nufft',kTraj,kNew);
+                        dataCalib = bart(app,'nufft',kTraj,kNew);
                         kNew  = reshape(dataCalib,[M size(kTrajCalib,3) nrCoils]);
 
                         % Partial derivatives
@@ -6278,7 +6278,7 @@ classdef retro
                         kTraj = obj.trajInterpolation(kTrajCalib,dTotal);
 
                         % The new image with k-space updated for gradient delays
-                        imCalib = bart(app,['bart nufft -i -l 0.01 ',cSize,' -t'],kTraj,reshape(y,[1 M size(kTrajCalib,3) nrCoils]));
+                        imCalib = bart(app,['nufft -i -l 0.01 ',cSize,' -t'],kTraj,reshape(y,[1 M size(kTrajCalib,3) nrCoils]));
 
                         % Show image
                         im = squeeze(abs(imCalib(:,:,round(calibSize(3)/2),1)));
@@ -7644,17 +7644,17 @@ classdef retro
 
             % Apply NUFFT gridding in x-direction
             tmp = xNewFFT.*repX;
-            tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize nrCoils]));
+            tmpCalib = bart(app,'nufft',kTraj,reshape(tmp,[calibSize nrCoils]));
             dydkx = reshape(tmpCalib,[size(kx) nrCoils]);
 
             % Apply NUFFT gridding in y-direction
             tmp = xNewFFT.*repY;
-            tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize nrCoils]));
+            tmpCalib = bart(app,'nufft',kTraj,reshape(tmp,[calibSize nrCoils]));
             dydky = reshape(tmpCalib,[size(kx) nrCoils]);
 
             % Apply NUFFT gridding in z-direction
             tmp = xNewFFT.*repZ;
-            tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize nrCoils]));
+            tmpCalib = bart(app,'nufft',kTraj,reshape(tmp,[calibSize nrCoils]));
             dydkz = reshape(tmpCalib,[size(kx) nrCoils]);
 
             % Calculate partial derivatives with respect to kx, ky, and kz
@@ -7696,13 +7696,13 @@ classdef retro
             % and using the Bart toolbox to perform a non-uniform FFT (nufft)
             % on the resulting data, and reshaping the data to its original size
             tmp = (1j*retro.ifft2Dmri(Xnew).*repmat([0:(calibSize(1)/2-1), 0, -calibSize(1)/2+1:-1]'/calibSize(1),[1 calibSize(2) nrCoils]));
-            tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize 1 nrCoils]));
+            tmpCalib = bart(app,'nufft',kTraj,reshape(tmp,[calibSize 1 nrCoils]));
             dydkx = reshape(tmpCalib,[size(kx) nrCoils]);
 
             % Compute the derivative of the image along the y direction (dydky)
             % in a similar way to the computation of dydkx, but using a different frequency ramp filter
             tmp = (1j*retro.ifft2Dmri(Xnew).*repmat([0:(calibSize(1)/2-1), 0, -calibSize(1)/2+1:-1]/calibSize(1),[calibSize(1) 1 nrCoils]));
-            tmpCalib = bart(app,'bart nufft',kTraj,reshape(tmp,[calibSize 1 nrCoils]));
+            tmpCalib = bart(app,'nufft',kTraj,reshape(tmp,[calibSize 1 nrCoils]));
             dydky = reshape(tmpCalib,[size(kx) nrCoils]);
 
             % Compute the partial derivative of the image along the x direction (dydtx)
