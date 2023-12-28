@@ -78,7 +78,7 @@ for i = 1:imax
 
      for j = 1:nrpoints
  
-        r = [Xp(j),Yp(j),Zp(j)]*roty(phi1)*rotx(phi1);
+        r = [Xp(j),Yp(j),Zp(j)]*roty(phi1,'deg')*rotx(phi1,'deg');
       
         Xp(nrpoints*(i-1)+j) = r(1);
         Yp(nrpoints*(i-1)+j) = r(2);

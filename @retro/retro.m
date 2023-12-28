@@ -6,7 +6,7 @@ classdef retro
     %
     % Gustav Strijkers
     % g.j.strijkers@amsterdamumc.nl
-    % Nov 2023
+    % Dec 2023
     %
     % ---------------------------------------------------------
 
@@ -190,7 +190,7 @@ classdef retro
         pe2_centric_on = 1                                      % phase-encoding 2 centric order on (1) or off (0)
         pe2_traj = 0                                            % phase-encoding 2 trajectory type
         gp_var_mul = []                                         % trajectory array
-        interpFactor = 4                                        % k-space data interpolation factor
+        interpFactor = 2                                        % k-space data interpolation factor 2^2 interpolation
 
         % Navigator related
         primaryNavigatorPoint = 10                              % primary navigator point
@@ -713,7 +713,7 @@ classdef retro
                                 tmpKline1 = squeeze(obj.data{coil}(dynamic,slice,spoke,:));
 
                                 % Interpolate the k-line to increase the resolution
-                                tmpKline2 = interp(tmpKline1,obj.interpFactor);
+                                tmpKline2 = interpn(tmpKline1,obj.interpFactor);
 
                                 % Find the index of the maximum absolute value of the interpolated k-line, which represents the center of k-space
                                 [~,kCenter] = max(abs(tmpKline2));
@@ -2070,9 +2070,9 @@ classdef retro
                     % Rotate the vectors according to the angle values
                     % Add a tiny angle to make the chance of hitting 45 degree angles for which orientation is indetermined very unlikely
                     tinyAngle = 0.00001;
-                    obj.LRvec = rotz(obj.SQLangleZ+tinyAngle)*roty(-obj.SQLangleY+tinyAngle)*rotx(-obj.SQLangleX+tinyAngle)*obj.LRvec;
-                    obj.APvec = rotz(obj.SQLangleZ+tinyAngle)*roty(-obj.SQLangleY+tinyAngle)*rotx(-obj.SQLangleX+tinyAngle)*obj.APvec;
-                    obj.HFvec = rotz(obj.SQLangleZ+tinyAngle)*roty(-obj.SQLangleY+tinyAngle)*rotx(-obj.SQLangleX+tinyAngle)*obj.HFvec;
+                    obj.LRvec = rotz(obj.SQLangleZ+tinyAngle,'deg')*roty(-obj.SQLangleY+tinyAngle,'deg')*rotx(-obj.SQLangleX+tinyAngle,'deg')*obj.LRvec;
+                    obj.APvec = rotz(obj.SQLangleZ+tinyAngle,'deg')*roty(-obj.SQLangleY+tinyAngle,'deg')*rotx(-obj.SQLangleX+tinyAngle,'deg')*obj.APvec;
+                    obj.HFvec = rotz(obj.SQLangleZ+tinyAngle,'deg')*roty(-obj.SQLangleY+tinyAngle,'deg')*rotx(-obj.SQLangleX+tinyAngle,'deg')*obj.HFvec;
 
                     % Determine the orientation combination
                     % This is done by determining the main direction of the vectors
@@ -3405,7 +3405,7 @@ classdef retro
 
                         % Center echo
                         if app.CenterEchoCheckBox.Value
-                            tmpKline2 = interp(tmpKline1,interpolationFactor);
+                            tmpKline2 = interpn(tmpKline1,interpolationFactor);
                             [~,kCenter] = max(abs(tmpKline2));
                             kShift = floor(dimX/2)-kCenter/interpolationFactor;
                             tmpKline1 = retro.fracCircShift(tmpKline1,kShift);
@@ -3525,7 +3525,7 @@ classdef retro
 
                         % Center echo
                         if app.CenterEchoCheckBox.Value
-                            tmpKline2 = interp(tmpKline1,interpolationFactor);
+                            tmpKline2 = interpn(tmpKline1,interpolationFactor);
                             [~,kCenter] = max(abs(tmpKline2));
                             kShift = floor(dimX/2)-kCenter/interpolationFactor;
                             tmpKline1 = retro.fracCircShift(tmpKline1,kShift);
@@ -4074,7 +4074,7 @@ classdef retro
                     % Sum all the data into 1 echo
                     dataNav = squeeze(sum(dataNav,[1,2,3]));
                     dataNav = dataNav(obj.primaryNavigatorPoint:end);
-                    dataNav = smooth(dataNav,5);
+                    dataNav = smoothdata(dataNav,"movmean",5);
 
                     % Estimate the location of the echo
                     echoLocation = round(length(dataNav)/2);
@@ -4148,7 +4148,7 @@ classdef retro
 
                         % Take the principal component of the data
                         dataNav = navdataAmplitude(:,obj.primaryNavigatorPoint-obj.nrNavPointsUsed+1:obj.primaryNavigatorPoint);
-                        [coeff,~,~] = pca(dataNav);
+                        [coeff,~,~] = svdecon(dataNav);  % PCA
                         dataPCA = dataNav*coeff;
 
                         % Take the principal component of the data
@@ -4210,7 +4210,7 @@ classdef retro
 
                         % Take the principal component of the data
                         dataNav = navDataAmplitude(:,obj.primaryNavigatorPoint-obj.nrNavPointsUsed+1:obj.primaryNavigatorPoint);
-                        [coeff,~,~] = pca(dataNav);
+                        [coeff,~,~] = svdecon(dataNav);  % PCA
                         dataPCA = dataNav*coeff;
 
                         % Take the principal component of the data
@@ -4289,7 +4289,7 @@ classdef retro
 
                         % Take the principal component of the data
                         dataNav = abs(navDataAmplitude(:,obj.primaryNavigatorPoint-obj.nrNavPointsUsed+1:obj.primaryNavigatorPoint));
-                        [coeff,~,~] = pca(dataNav);
+                        [coeff,~,~] = svdecon(dataNav);  % PCA
                         dataPCA = dataNav*coeff;
 
                         % Take the principal component of the data
@@ -4351,7 +4351,7 @@ classdef retro
 
                         % Take the principal component of the data
                         dataNav = navDataAmplitude(:,obj.primaryNavigatorPoint-range:obj.primaryNavigatorPoint+range);
-                        [coeff,~,~] = pca(dataNav);
+                        [coeff,~,~] = svdecon(dataNav);   % PCA
                         dataPCA = dataNav*coeff;
 
                         % Take the principal component of the data
@@ -4415,7 +4415,7 @@ classdef retro
 
                         % Take the principal component of the data
                         dataNav = navDataAmplitude(:,obj.primaryNavigatorPoint-obj.nrNavPointsUsed+1:obj.primaryNavigatorPoint);
-                        [coeff,~,~] = pca(dataNav);
+                        [coeff,~,~] = svdecon(dataNav);  % PCA
                         dataPCA = dataNav*coeff;
 
                         % Take the principal component of the data
@@ -4495,7 +4495,7 @@ classdef retro
 
                         % Take the principal component of the data
                         dataNav = navDataAmplitude(:,obj.primaryNavigatorPoint:obj.primaryNavigatorPoint+range);
-                        [coeff,~,~] = pca(dataNav);
+                        [coeff,~,~] = svdecon(dataNav);  % PCA
                         dataPCA = dataNav*coeff;
 
                         % Take the principal component of the data
@@ -4553,7 +4553,8 @@ classdef retro
                 end
 
                 % Take the principal component of the data
-                [coeff,~,~] = pca(dataNav);
+                % [coeff,~,~] = pca(dataNav); Requires statistics and machine learning toolbox
+                [coeff,~,~] = svdecon(dataNav); % Alternative
                 dataPCA = dataNav*coeff;
                 amplitude = dataPCA(:,1);
 
@@ -4633,7 +4634,8 @@ classdef retro
                 end
 
                 % Take the principal component of the data
-                [coeff,~,~] = pca(dataNav);
+                %[coeff,~,~] = pca(dataNav);
+                [coeff,~,~] = svdecon(dataNav);
                 dataPCA = dataNav*coeff;
 
                 % Take the principal component of the data
@@ -5680,7 +5682,7 @@ classdef retro
                 kdim(kdim > dimX) = dimX;
                 calibSize = [kdim, kdim, 1];
                 cSize = ['-d',num2str(calibSize(1)),':',num2str(calibSize(2)),':1'];
-                app.TextMessage(strcat('Calibration size = ',{' '},num2str(kdim)));
+                app.TextMessage(strcat("Calibration size = ",num2str(kdim)," ..."));
 
                 % Gradient delay vector from app
                 dTotal(1) = app.GxDelayEditField.Value;
@@ -5726,6 +5728,11 @@ classdef retro
                             delaysBart = strrep(delaysBart,':',',');
                             dTotal = str2num(delaysBart);
                             dTotal(1) = -dTotal(1);
+
+                            if any(abs(dTotal) > 9) 
+                                ME = MException('Retrospective:valueOutOfRange','Values out of range ...');
+                                throw(ME);
+                            end
 
                         catch ME
 
@@ -5779,7 +5786,7 @@ classdef retro
                             % Reduce size for gradient calibration
                             kTrajCalib = trajPicsSum(:,M1:M2,1:kSkip:end);
                             dataCalib = kSpacePicsSum(1,M1:M2,1:kSkip:end);
-                            app.TextMessage(strcat('Calibration trajectory length = ',{' '},num2str(length(kTrajCalib))));
+                            app.TextMessage(strcat("Calibration trajectory length = ",num2str(length(kTrajCalib))," ..."));
 
                             % Set values to zero first
                             dTotal = zeros(3,1);
@@ -5794,7 +5801,7 @@ classdef retro
                             kCalib = obj.fft2Dmri(imCalib);
                             wnRank = 0.4;
                             rank = floor(wnRank*prod(kSize));
-                            app.TextMessage(strcat('Rank = ',{' '},num2str(rank)));
+                            app.TextMessage(strcat("Rank = ",num2str(rank)," ..."));
 
                             % Data consistency
                             y = squeeze(dataCalib);
@@ -5810,7 +5817,7 @@ classdef retro
 
                                 % Iteration number
                                 iteration = iteration + 1;
-                                app.TextMessage(strcat('Iteration:',{' '},num2str(iteration)));
+                                app.TextMessage(strcat("Iteration = ",num2str(iteration)," ..."));
 
                                 % Solve for X
                                 rank(rank>prod(kSize)) = prod(kSize);
@@ -5840,7 +5847,7 @@ classdef retro
                                 incre = norm(real(dStep));
 
                                 % Message
-                                app.TextMessage(strcat('Estimated delays:',{' '},num2str(dTotal(1)),':',num2str(dTotal(2))));
+                                app.TextMessage(strcat("Estimated delays: ",num2str(dTotal(1)),":",num2str(dTotal(2))," ..."));
 
                                 % Sent gradient delay vector back to app
                                 app.GxDelayEditField.Value = round(double(dTotal(1)),5);
@@ -6002,7 +6009,7 @@ classdef retro
                 app.TextMessage(strcat("Reconstruction matrix = ",num2str(dimX),"x",num2str(dimY),"x",num2str(dimZ)," ..."));
 
                 app.TextMessage('Slow reconstruction ...');
-                app.TextMessage(strcat('Estimated reconstruction time >',{' '},num2str(loops/2),{' '},'min ...'));
+                app.TextMessage(strcat("Estimated reconstruction time > ",num2str(loops/2),"min ..."));
 
                 traj = obj.kSpaceTraj;                                              % trajectory
                 image = zeros(dimF,dimZ,dimY,dimX,dimD,dimC);                       % image pre-allocation
@@ -6181,7 +6188,7 @@ classdef retro
                 kdim(kdim > dimX) = dimX;
                 calibSize = [kdim, kdim, kdim];
                 cSize = ['-d',num2str(calibSize(1)),':',num2str(calibSize(2)),':',num2str(calibSize(3))];
-                app.TextMessage(strcat('Calibration size = ',{' '},num2str(kdim)));
+                app.TextMessage(strcat("Calibration size = ",num2str(kdim)," ..."));
 
                 % Gradient delay calibration
                 if app.GradDelayCalibrationCheckBox.Value
@@ -6222,7 +6229,7 @@ classdef retro
                     kCalib = obj.fft3Dmri(imCalib);
                     wnRank = 0.8;
                     rank = floor(wnRank*prod(kSize));
-                    app.TextMessage(strcat('Rank = ',{' '},num2str(rank)));
+                    app.TextMessage(strcat("Rank = ",num2str(rank)," ..."));
 
                     % Data consistency
                     y = squeeze(dataCalib);
@@ -6974,8 +6981,6 @@ classdef retro
                     cla(app.LcurveModelErrorFig);
                     app.LcurveFig.YLabel.String = "|| TVcine x_{\lambda} ||_1";
                     drawnow;
-
-                    disp('*')
 
                     x = [];
                     y = [];
