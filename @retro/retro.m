@@ -6,7 +6,7 @@ classdef retro
     %
     % Gustav Strijkers
     % g.j.strijkers@amsterdamumc.nl
-    % Dec 2023
+    % Jan 2024
     %
     % ---------------------------------------------------------
 
@@ -2592,19 +2592,18 @@ classdef retro
                 unsortedKspace = reshape(rawdata,[1,size(rawdata),1]);          % Unsorted k-space
                 totalK = dimNR * dimK * dimZ;                                   % Total number of acquired k-lines
                 validKlines = (cardBinAss > 0) & (includeAcqWindow == 1);       % All the k-lines that should be included
-                dynBinAss = round(linspace(0.5, nrDynamics+0.49, totalK));      % List of increasing integer number 1 .. nr_dynamics evenly spaced over the entire acquistion time
+                dynBinAss = round(linspace(0.5, nrDynamics+0.49, totalK))';     % List of increasing integer number 1 .. nr_dynamics evenly spaced over the entire acquistion time
                 kLineAss = repmat(traj(1:dimK),[1 dimNR*dimZ])';                % K-line assignment from trajectory
-               
+
                 % Pre-allocate
                 sortedKspace = complex(zeros(nrRespFrames,nrCardFrames,dimZ,dimYmax,dimX,nrDynamics));   % Fill temp k-space with zeros
                 sortedAverages = zeros(nrRespFrames,nrCardFrames,dimZ,dimYmax,dimX,nrDynamics);          % Fill temp nr averages array with zeros
 
                 % Sorting
-                cnt = 0;
                 for slice = 1:dimZ                    % Loop over slices
                     for repetition = 1:dimNR          % Loop through all repetitions
                         for kstep = 1:dimK            % Loop through all the phase-encoding steps
-                            cnt = cnt + 1;
+                            cnt = (slice - 1) * dimNR * dimK + (repetition - 1) * dimK + kstep;
                             if validKlines(cnt)       % If assigment = 0, this acquisition is discarded
                                 sortedKspace(respBinAss(cnt),cardBinAss(cnt),slice,kLineAss(cnt),:,dynBinAss(cnt)) = sortedKspace(respBinAss(cnt),cardBinAss(cnt),slice,kLineAss(cnt),:,dynBinAss(cnt)) + unsortedKspace(1,repetition,slice,kstep,:,1);     % add the data to the correct k-position
                                 sortedAverages(respBinAss(cnt),cardBinAss(cnt),slice,kLineAss(cnt),:,dynBinAss(cnt)) = sortedAverages(respBinAss(cnt),cardBinAss(cnt),slice,kLineAss(cnt),:,dynBinAss(cnt)) + 1;                                            % increase the number of averages with 1
@@ -2702,7 +2701,7 @@ classdef retro
 
                 % Apply a circular Tukey filter
                 filterWidth = 0.1;
-                tukeyFilter(1,1,1,:,:,1) = retro.circtukey2D(dimYmax,dimX,row,col,filterWidth);
+                tukeyFilter(1,1,1,:,:,1) = obj.circtukey2D(dimYmax,dimX,row,col,filterWidth);
                 tmpKspace = tmpKspace.*tukeyFilter;
 
                 % Report back k-space per coil
@@ -2837,29 +2836,18 @@ classdef retro
 
                 % Do the filling of k-space
                 cnt = 0;
-
                 for repetition = 1:dimNR                    % Loop through all repetitions
-
                     for kstep = 1:dimK                      % Loop through all the phase-encoding steps
-
                         for slice = 1:dimZ                  % Loop through phase-encoding 3rd dimension
-
                             cnt = cnt + 1;
-
                             if (cardBinAss(cnt) > 0) && (includeAcqWindow(cnt) == 1)     % If assigment == 0, this acquisition is discarded
-
                                 kLineY = traj3Dy(cnt);            % The phase-encoding step using the 3D trajectory info
                                 kLineZ = traj3Dz(cnt);            % The 2nd phase-encoding
-
                                 sortedKspace(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt))   = sortedKspace(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt))   + unsortedKspace(1,repetition,slice,kstep,:,1);     % add the data to the correct k-position
                                 sortedAverages(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt)) = sortedAverages(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt)) + 1;                                                % increase the number of averages with 1
-
                             end
-
                         end
-
                     end
-
                 end
 
                 % Temp new k-space copy
@@ -2916,27 +2904,18 @@ classdef retro
 
                     % Apply sharing to k-space
                     for frame = 1:nrFrames
-
                         for i = -share:share
-
                             sharedframe = frame + i;
                             sharedframe(sharedframe < 1) = nrFrames - sharedframe - 1;
                             sharedframe(sharedframe > nrFrames) = sharedframe - nrFrames;
-
                             if i~=0
-
                                 for kstep = 1:share
-
                                     ROI = reshape(squeeze(C(kstep,:,:,:)),[1 1 dimZ dimY dimX 1])*weights(kstep,abs(i));
                                     tmpKspace(:,frame,:,:,:,:)   = tmpKspace(:,frame,:,:,:,:)   + sortedKspace(:,sharedframe,:,:,:,:)   .* ROI;
                                     tmpAverages(:,frame,:,:,:,:) = tmpAverages(:,frame,:,:,:,:) + sortedAverages(:,sharedframe,:,:,:,:) .* ROI;
-
                                 end
-
                             end
-
                         end
-
                     end
 
                     % Respiratory of cardiac frames
@@ -3020,34 +2999,21 @@ classdef retro
 
                 % Fill k-space
                 fcnt = 1;
-
                 for i = 1 : nrDynamics
-
                     for j = 1 : nrCardFrames
-
                         for k = 1:nrOfKlines
-
                             if fcnt < length(binTimesCard)
-
                                 if k > binTimesCard(1,fcnt) && k < binTimesCard(1,fcnt+1)
-
                                     % The phase-encoding step using the trajectory info
                                     kline = traj(mod(k - 1,nrOfKsteps) + 1);
-
                                     % Fill k-line
                                     sortedKspace(1,j,1,kline,:,i) = sortedKspace(1,j,1,kline,:,i) + unsortedKlines(1,1,1,k,:);   % add the data to the correct k-position
                                     sortedAverages(1,j,1,kline,:,i) = sortedAverages(1,j,1,kline,:,i) + 1;
-
                                 end
-
                             end
-
                         end
-
                         fcnt = fcnt + 1;
-
                     end
-
                 end
 
                 % Find center of k-space
@@ -3091,29 +3057,18 @@ classdef retro
 
                     % Apply sharing to k-space
                     for frame = 1:nrDynamics
-
                         for i = -share:share
-
                             sharedframe = frame + i;
-
                             if sharedframe > 0 && sharedframe < nrDynamics
-
                                 if i~=0
-
                                     for j = 1:share
-
                                         ROI = reshape(squeeze(C(j,:,:)),[1 1 1 dimY dimX 1])*weights(j,abs(i));
                                         tmpKspace(:,:,:,:,:,frame)   = tmpKspace(:,:,:,:,:,frame)   + sortedKspace(:,:,:,:,:,sharedframe)   .* ROI;
                                         tmpAverages(:,:,:,:,:,frame) = tmpAverages(:,:,:,:,:,frame) + sortedAverages(:,:,:,:,:,sharedframe) .* ROI;
-
                                     end
-
                                 end
-
                             end
-
                         end
-
                     end
 
                 end
@@ -3211,29 +3166,18 @@ classdef retro
 
                 % Do the filling of k-space
                 cnt = 0;
-
                 for i = 1:nrReps                  % Loop through all repetitions
-
                     for j = 1:nrOfKsteps            % Loop through all the phase-encoding steps
-
                         for k = 1:dimZ            % Loop through phase-encoding 3rd dimension
-
                             cnt = cnt + 1;
-
                             if (cardBinAss(cnt) > 0) && (includeAcqWindow(cnt) == 1)     % If assigment == 0, this acquisition is discarded
-
                                 kLineY = traj3Dy(cnt);            % The phase-encoding step using the 3D trajectory info
                                 kLineZ = traj3Dz(cnt);            % The 2nd phase-encoding
-
                                 sortedKspace(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt)) = sortedKspace(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt)) + unsortedKspace(1,i,k,j,:,1);     % add the data to the correct k-position
                                 sortedAverages(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt)) = sortedAverages(respBinAss(cnt),cardBinAss(cnt),kLineZ,kLineY,:,dynBinAss(cnt)) + 1;                           % increase the number of averages with 1
-
                             end
-
                         end
-
                     end
-
                 end
 
                 % Temp new k-space copy
@@ -3290,27 +3234,18 @@ classdef retro
 
                     % Apply sharing to k-space
                     for frame = 1:nrFrames
-
                         for i = -share:share
-
                             sharedframe = frame + i;
                             sharedframe(sharedframe < 1) = nrFrames - sharedframe - 1;
                             sharedframe(sharedframe > nrFrames) = sharedframe - nrFrames;
-
                             if i~=0
-
                                 for j = 1:share
-
                                     ROI = reshape(squeeze(C(j,:,:,:)),[1 1 dimZ dimY dimX 1])*weights(j,abs(i));
                                     tmpKspace(:,frame,:,:,:,:)   = tmpKspace(:,frame,:,:,:,:)   + sortedKspace(:,sharedframe,:,:,:,:)   .* ROI;
                                     tmpAverages(:,frame,:,:,:,:) = tmpAverages(:,frame,:,:,:,:) + sortedAverages(:,sharedframe,:,:,:,:) .* ROI;
-
                                 end
-
                             end
-
                         end
-
                     end
 
                     % Respiratory of cardiac frames
