@@ -159,6 +159,7 @@ classdef retro
         PHASE_ORIENTATION = 0                                   % phase orientation 1 = hor. 0 = vert.
         FOVf = 8                                                % field of view factor/8 = aspect ratio
         aspectratio = 1                                         % aspectratio
+        aspectratioOriginal = 1                                 % original aspectratio (not rotated)
         alpha = 20                                              % flip angle
         te = 2                                                  % echo time (ms)
         te_us = 0                                               % additional echo time (us)
@@ -385,6 +386,7 @@ classdef retro
                 end
 
                 obj.aspectratio = obj.FOVf/8;
+                obj.aspectratioOriginal = obj.aspectratio;
 
                 if isfield(parameter,'alpha')
                     obj.alpha = parameter.alpha;
