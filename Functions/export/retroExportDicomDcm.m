@@ -3,7 +3,7 @@ function folderName = retroExportDicomDcm(app, dcmdir)
 % ---------------------------------------------------------------
 % DICOM Export for Retrospective app
 % Gustav Strijkers
-% December 2023
+% Feb 2024
 %
 % ---------------------------------------------------------------
 
@@ -27,6 +27,7 @@ heartRate = app.r.meanHeartRate;
 respRate = app.r.meanRespRate;
 slope = double(app.r.rescaleSlope);
 intercept = double(app.r.rescaleIntercept);
+seriesInstanceID = dicomuid;
 
 % Square pixel correction
 aspectRatio = app.r.FOVf/8;
@@ -139,8 +140,9 @@ end
             %          realtime dataset
             % ---------------------------------------------------------------
 
-            TR = 1000*(60/heartRate)/nrFrames;            % time between cardiac frames in ms
-            TD = 1000*app.acqDur/nrDynamics;                  % time between dynamics
+            TR = 1000*(60/heartRate)/nrFrames;          % time between cardiac frames in ms
+            TD = 1000*app.acqDur/nrDynamics;            % time between dynamics
+            TE = app.r.TE;                              % echo time
 
             dcmHead.ImageType = 'ORIGINAL\PRIMARY\M_FFE\M\FFE';
             dcmHead.ScanningSequence = 'GR';
@@ -174,6 +176,7 @@ end
             dcmHead.TemporalPositionIdentifier = (dyn-1)*nrFrames + frame;
             dcmHead.NumberOfTemporalPositions = nrDynamics * nrFrames;
             dcmHead.TemporalResolution = TR;
+            dcmHead.EchoTime = TE; 
             dcmHead.ImagesInAcquisition = nrDynamics * nrFrames * dimz;
             dcmHead.TemporalPositionIndex = uint32([]);
             dcmHead.Rows = dimy;
@@ -190,6 +193,7 @@ end
             dcmHead.HeartRate = heartRate;
             dcmHead.NumberOfSlices = dimz;
             dcmHead.CardiacNumberOfImages = nrFrames;
+            dcmHead.SeriesInstanceUID = seriesInstanceID;
 
         else
 
@@ -204,6 +208,7 @@ end
                 TR = 1000*(60/heartRate)/nrFrames;      % time between frames in ms
                 heartRespRate = heartRate;
             end
+            TE = app.r.TE;                              % echo time
 
             dcmHead.ImageType = 'ORIGINAL\PRIMARY\M_FFE\M\FFE';
             dcmHead.ScanningSequence = 'GR';
@@ -224,7 +229,7 @@ end
             dcmHead.ManufacturerModelName = 'MRS7024';
             dcmHead.ReferencedFrameNumber = [];
             dcmHead.RepetitionTime = TR;     % time between frames
-            dcmHead.EchoTime = 2;         % approximately correct, unknown because of shortest TE option
+            dcmHead.EchoTime = TE; 
             dcmHead.NumberOfAverages = app.r.NO_AVERAGES;
             dcmHead.InversionTime = 0;
             dcmHead.ImagedNucleus = '1H';
@@ -253,6 +258,7 @@ end
             dcmHead.HeartRate = heartRespRate;
             dcmHead.NumberOfSlices = dimz;
             dcmHead.CardiacNumberOfImages = nrFrames;
+            dcmHead.SeriesInstanceUID = seriesInstanceID;
 
         end
 

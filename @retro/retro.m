@@ -300,72 +300,72 @@ classdef retro
         % ---------------------------------------------------------------------------------
         % Object constructor
         % ---------------------------------------------------------------------------------
-        function obj = retro(parameter, mridata)
+        function obj = retro(parameters, mridata)
 
             if nargin == 2
 
                 obj.data = mridata;
 
-                if isfield(parameter,'filename')
-                    obj.filename = parameter.filename;
+                if isfield(parameters,'filename')
+                    obj.filename = parameters.filename;
                 end
 
-                if isfield(parameter,'PPL')
-                    obj.PPL = parameter.PPL;
+                if isfield(parameters,'PPL')
+                    obj.PPL = parameters.PPL;
                 end
 
-                if isfield(parameter,'NO_SAMPLES')
-                    obj.NO_SAMPLES = parameter.NO_SAMPLES;
+                if isfield(parameters,'NO_SAMPLES')
+                    obj.NO_SAMPLES = parameters.NO_SAMPLES;
                 end
 
-                if isfield(parameter,'NO_VIEWS')
-                    obj.NO_VIEWS = parameter.NO_VIEWS;
+                if isfield(parameters,'NO_VIEWS')
+                    obj.NO_VIEWS = parameters.NO_VIEWS;
                 end
 
-                if isfield(parameter,'NO_VIEWS_2')
-                    obj.NO_VIEWS_2 = parameter.NO_VIEWS_2;
+                if isfield(parameters,'NO_VIEWS_2')
+                    obj.NO_VIEWS_2 = parameters.NO_VIEWS_2;
                 end
 
-                if isfield(parameter,'EXPERIMENT_ARRAY')
-                    obj.EXPERIMENT_ARRAY = parameter.EXPERIMENT_ARRAY;
-                    obj.nr_repetitions = parameter.EXPERIMENT_ARRAY;
+                if isfield(parameters,'EXPERIMENT_ARRAY')
+                    obj.EXPERIMENT_ARRAY = parameters.EXPERIMENT_ARRAY;
+                    obj.nr_repetitions = parameters.EXPERIMENT_ARRAY;
                 end
 
-                if isfield(parameter,'NO_AVERAGES')
-                    obj.NO_AVERAGES = parameter.NO_AVERAGES;
+                if isfield(parameters,'NO_AVERAGES')
+                    obj.NO_AVERAGES = parameters.NO_AVERAGES;
                 end
 
-                if isfield(parameter,'NO_SLICES')
-                    obj.NO_SLICES = parameter.NO_SLICES;
-                    obj.SQLnumberOfSlices = parameter.NO_SLICES;
+                if isfield(parameters,'NO_SLICES')
+                    obj.NO_SLICES = parameters.NO_SLICES;
+                    obj.SQLnumberOfSlices = parameters.NO_SLICES;
                 end
 
-                if isfield(parameter,'SLICE_THICKNESS')
-                    obj.SLICE_THICKNESS= parameter.SLICE_THICKNESS;
+                if isfield(parameters,'SLICE_THICKNESS')
+                    obj.SLICE_THICKNESS= parameters.SLICE_THICKNESS;
                 end
 
-                if isfield(parameter,'SLICE_SEPARATION')
-                    obj.SLICE_SEPARATION = parameter.SLICE_SEPARATION;
+                if isfield(parameters,'SLICE_SEPARATION')
+                    obj.SLICE_SEPARATION = parameters.SLICE_SEPARATION;
                 end
 
-                if isfield(parameter,'SLICE_INTERLEAVE')
-                    obj.SLICE_INTERLEAVE = parameter.SLICE_INTERLEAVE;
+                if isfield(parameters,'SLICE_INTERLEAVE')
+                    obj.SLICE_INTERLEAVE = parameters.SLICE_INTERLEAVE;
                 end
 
-                if isfield(parameter,'r_angle_var')
-                    obj.r_angle_var = parameter.r_angle_var;
+                if isfield(parameters,'r_angle_var')
+                    obj.r_angle_var = parameters.r_angle_var;
                 end
 
-                if isfield(parameter,'p_angle_var')
-                    obj.p_angle_var = parameter.p_angle_var;
+                if isfield(parameters,'p_angle_var')
+                    obj.p_angle_var = parameters.p_angle_var;
                 end
 
-                if isfield(parameter,'s_angle_var')
-                    obj.s_angle_var = parameter.s_angle_var;
+                if isfield(parameters,'s_angle_var')
+                    obj.s_angle_var = parameters.s_angle_var;
                 end
 
-                if isfield(parameter,'nr_coils')
-                    obj.nr_coils = parameter.nr_coils;
+                if isfield(parameters,'nr_coils')
+                    obj.nr_coils = parameters.nr_coils;
                     if obj.nr_coils > 1
                         obj.multiCoilFlag = true;
                     else
@@ -373,141 +373,142 @@ classdef retro
                     end
                 end
 
-                if isfield(parameter,'FOV')
-                    obj.FOV = parameter.FOV;
+                if isfield(parameters,'FOV')
+                    obj.FOV = parameters.FOV;
                 end
 
-                if isfield(parameter,'PHASE_ORIENTATION')
-                    obj.PHASE_ORIENTATION = parameter.PHASE_ORIENTATION;
+                if isfield(parameters,'PHASE_ORIENTATION')
+                    obj.PHASE_ORIENTATION = parameters.PHASE_ORIENTATION;
                 end
 
-                if isfield(parameter,'FOVf')
-                    obj.FOVf = parameter.FOVf;
+                if isfield(parameters,'FOVf')
+                    obj.FOVf = parameters.FOVf;
                 end
 
                 obj.aspectratio = obj.FOVf/8;
                 obj.aspectratioOriginal = obj.aspectratio;
 
-                if isfield(parameter,'alpha')
-                    obj.alpha = parameter.alpha;
+                if isfield(parameters,'alpha')
+                    obj.alpha = parameters.alpha;
                 end
 
-                if isfield(parameter,'te')
-                    obj.te = parameter.te;
+                if isfield(parameters,'te')
+                    obj.te = parameters.te;
                 end
 
-                if isfield(parameter,'te_us')
-                    obj.te_us = parameter.te_us;
+                if isfield(parameters,'te_us')
+                    obj.te_us = parameters.te_us;
                 end
 
                 obj.TE = obj.te + obj.te_us/1000;
-
-                if isfield(parameter,'tr')
-                    obj.tr = parameter.tr;
+                obj.TE(obj.TE==0) = 2;
+             
+                if isfield(parameters,'tr')
+                    obj.tr = parameters.tr;
                 end
 
-                if isfield(parameter,'tr_extra_us')
-                    obj.tr_extra_us = parameter.tr_extra_us;
+                if isfield(parameters,'tr_extra_us')
+                    obj.tr_extra_us = parameters.tr_extra_us;
                 end
 
                 obj.TR = obj.tr + obj.tr_extra_us/1000;
 
-                if isfield(parameter,'pe1_order')
-                    obj.pe1_order = parameter.pe1_order;
+                if isfield(parameters,'pe1_order')
+                    obj.pe1_order = parameters.pe1_order;
                 end
 
-                if isfield(parameter,'pe2_centric_on')
-                    obj.pe2_centric_on = parameter.pe2_centric_on;
+                if isfield(parameters,'pe2_centric_on')
+                    obj.pe2_centric_on = parameters.pe2_centric_on;
                 end
 
-                if isfield(parameter,'ti')
-                    obj.ti = parameter.ti;
+                if isfield(parameters,'ti')
+                    obj.ti = parameters.ti;
                 end
 
-                if isfield(parameter,'VFA_angles')
-                    obj.VFA_angles = parameter.VFA_angles;
+                if isfield(parameters,'VFA_angles')
+                    obj.VFA_angles = parameters.VFA_angles;
                 end
 
-                if isfield(parameter,'VFA_size')
-                    obj.VFA_size = parameter.VFA_size;
+                if isfield(parameters,'VFA_size')
+                    obj.VFA_size = parameters.VFA_size;
                 end
 
-                if isfield(parameter,'frame_loop_on')
-                    obj.frame_loop_on = parameter.frame_loop_on;
+                if isfield(parameters,'frame_loop_on')
+                    obj.frame_loop_on = parameters.frame_loop_on;
                 end
 
-                if isfield(parameter,'radial_on')
-                    obj.radial_on = parameter.radial_on;
+                if isfield(parameters,'radial_on')
+                    obj.radial_on = parameters.radial_on;
                 end
 
-                if isfield(parameter,'spoke_increment')
-                    obj.spoke_increment = parameter.spoke_increment/10;
+                if isfield(parameters,'spoke_increment')
+                    obj.spoke_increment = parameters.spoke_increment/10;
                 end
 
-                if isfield(parameter,'slice_nav')
-                    obj.slice_nav = parameter.slice_nav;
+                if isfield(parameters,'slice_nav')
+                    obj.slice_nav = parameters.slice_nav;
                 end
 
-                if isfield(parameter,'no_samples_nav')
-                    obj.no_samples_nav = parameter.no_samples_nav;
+                if isfield(parameters,'no_samples_nav')
+                    obj.no_samples_nav = parameters.no_samples_nav;
                 end
 
-                if isfield(parameter,'gp_var_mul')
-                    obj.gp_var_mul = parameter.gp_var_mul;
+                if isfield(parameters,'gp_var_mul')
+                    obj.gp_var_mul = parameters.gp_var_mul;
                 end
 
-                if isfield(parameter,'date')
-                    obj.date = parameter.date;
+                if isfield(parameters,'date')
+                    obj.date = parameters.date;
                 end
 
-                if isfield(parameter,'coil_scaling')
-                    obj.coil_scaling = parameter.coil_scaling;
+                if isfield(parameters,'coil_scaling')
+                    obj.coil_scaling = parameters.coil_scaling;
                 end
 
-                if isfield(parameter,'pixelshift1')
-                    obj.pixelshift1 = parameter.pixelshift1;
-                    obj.SQLoffsetY = parameter.pixelshift1;
+                if isfield(parameters,'pixelshift1')
+                    obj.pixelshift1 = parameters.pixelshift1;
+                    obj.SQLoffsetY = parameters.pixelshift1;
                 end
 
-                if isfield(parameter,'pixelshift2')
-                    obj.pixelshift2 = parameter.pixelshift2;
-                    obj.SQLoffsetZ = parameter.pixelshift2;
+                if isfield(parameters,'pixelshift2')
+                    obj.pixelshift2 = parameters.pixelshift2;
+                    obj.SQLoffsetZ = parameters.pixelshift2;
                 end
 
-                if isfield(parameter,'pe2_traj')
-                    obj.pe2_traj = parameter.pe2_traj;
+                if isfield(parameters,'pe2_traj')
+                    obj.pe2_traj = parameters.pe2_traj;
                 end
 
-                if isfield(parameter,'scanner')
-                    obj.scanner = parameter.scanner;
+                if isfield(parameters,'scanner')
+                    obj.scanner = parameters.scanner;
                 end
 
-                if isfield(parameter,'fov_read_off')
-                    obj.fov_read_off = parameter.fov_read_off;
+                if isfield(parameters,'fov_read_off')
+                    obj.fov_read_off = parameters.fov_read_off;
                 end
 
-                if isfield(parameter,'fov_phase_off')
-                    obj.fov_phase_off = parameter.fov_phase_off;
+                if isfield(parameters,'fov_phase_off')
+                    obj.fov_phase_off = parameters.fov_phase_off;
                 end
 
-                if isfield(parameter,'fov_slice_off')
-                    obj.fov_slice_off = parameter.fov_slice_off;
+                if isfield(parameters,'fov_slice_off')
+                    obj.fov_slice_off = parameters.fov_slice_off;
                 end
 
-                if isfield(parameter,'FOV_OFFSETS')
-                    obj.fov_offsets = parameter.FOV_OFFSETS;
+                if isfield(parameters,'FOV_OFFSETS')
+                    obj.fov_offsets = parameters.FOV_OFFSETS;
                 end
 
-                if isfield(parameter,'SAMPLE_PERIOD')
-                    obj.SAMPLE_PERIOD = parameter.SAMPLE_PERIOD;
+                if isfield(parameters,'SAMPLE_PERIOD')
+                    obj.SAMPLE_PERIOD = parameters.SAMPLE_PERIOD;
                 end
 
-                if isfield(parameter,'oversample')
-                    obj.oversample = parameter.oversample;
+                if isfield(parameters,'oversample')
+                    obj.oversample = parameters.oversample;
                 end
 
-                if isfield(parameter,'slab_ratio')
-                    obj.slab_ratio = parameter.slab_ratio;
+                if isfield(parameters,'slab_ratio')
+                    obj.slab_ratio = parameters.slab_ratio;
                 end
 
             end
@@ -1285,8 +1286,8 @@ classdef retro
             elseif isfield(info2.pvm,'encvalues1')
                 parameters.gp_var_mul = round(pm1 * info2.pvm.encvalues1 * (parameters.NO_VIEWS / 2 - 0.5));
                 if isfield(info2.pvm,'enczf') && isfield(info2.pvm,'encpft')
-                    % * info2.pvm.enczf(2)
-                    parameters.gp_var_mul = round(pm1 * info2.pvm.encvalues1 * info2.pvm.encpft(2) * (parameters.NO_VIEWS / 2 - 0.5));
+                    % * info2.pvm.enczf(2) * info2.pvm.encpft(2)
+                    parameters.gp_var_mul = round(pm1 * info2.pvm.encvalues1 * info2.pvm.enczf(2) * (parameters.NO_VIEWS / 2 - 0.5));
                 else
                     parameters.gp_var_mul = round(pm1 * info2.pvm.encvalues1 * (parameters.NO_VIEWS / 2 - 0.5));
                 end
@@ -1333,7 +1334,7 @@ classdef retro
 
             % Phase offset
             if isfield(info1.acq,'phase1_offset')
-                parameters.pixelshift1 = round(pm1 * parameters.NO_VIEWS * info1.acq.phase1_offset / parameters.FOV);
+                parameters.pixelshift1 = round(pm1 * 2^nextpow2(parameters.NO_VIEWS) * info1.acq.phase1_offset / parameters.FOV);
             end
 
             % 2D data
@@ -4560,9 +4561,9 @@ classdef retro
 
             % Applies a bandwidth filter on the navigator data
 
-            sf = 1000/obj.TR;                   % Sampling frequency in Hz = 1/TR[ms]
+            sf = 1000/obj.TR;                       % Sampling frequency in Hz = 1/TR[ms]
             respHarmonics = 2;                      % Number of higher order harmonics for respiratory frequency, 2 = main + 1 harmonic
-            order = obj.physioFilterSettings(5); % Butterworth filter order
+            order = obj.physioFilterSettings(5);    % Butterworth filter order
 
             if obj.nr_coils > 1
 
@@ -4572,9 +4573,8 @@ classdef retro
                 end
 
                 % Take the principal component of the data
-                %[coeff,~,~] = pca(dataNav);
                 [coeff,~,~] = svdecon(dataNav);
-                dataPCA = dataNav*coeff;
+                dataPCA = -dataNav*coeff;
 
                 % Take the principal component of the data
                 amplitude = dataPCA(:,1);
@@ -4613,7 +4613,7 @@ classdef retro
                 else
                     for i = 1:respHarmonics
                         [b, a] = butter(order,[i*rrf-0.5*bwr,i*rrf+0.5*bwr]/(sf/2),'bandpass');      % Butterworth bandpass filter
-                        respOutputData = respOutputData + (1/i^2.75)*filtfilt(b,a,amplitude);        % Apply zero-phase shift filtering
+                        respOutputData = respOutputData + (1/i^2.75)*filtfilt(b,a,amplitude);        % Apply zero-phase shift filtering including higher harmonics
                     end
                 end
 
@@ -4632,6 +4632,9 @@ classdef retro
 
             % Detrend and normalize envelope
             respOutputData = detrend(respOutputData);
+
+            % Shift the respiration window by value from app
+            respOutputData = circshift(respOutputData,obj.physioFilterSettings(6));
 
             % Normalize envelope
             factor = round(150/rrf);  % Adapt the envelope setting to match the expected respiration rate frequency
@@ -4993,7 +4996,7 @@ classdef retro
                     % Calculate coil sensitivity maps with ecalib bart function
                     kSpacePicsSum = sum(kSpacePics,[11,12]);
                     for slice = 1:dimZ
-                        sensitivities(1,:,:,:,:,:,:,:,:,:,:,:,:,slice) = bart(app,'ecalib -S -I -a -m2', kSpacePicsSum(:,:,:,:,:,:,:,:,:,:,:,:,:,slice));      % Ecalib with softsense
+                        sensitivities(1,:,:,:,:,:,:,:,:,:,:,:,:,slice) = bart(app,'ecalib -S -I -W -t0.05 -m2', kSpacePicsSum(:,:,:,:,:,:,:,:,:,:,:,:,:,slice));      % Ecalib with softsense
                     end
         
                 else
@@ -5004,7 +5007,7 @@ classdef retro
                 end
 
                 % PICS command
-                picsCommand = 'pics ';
+                picsCommand = 'pics -S ';
                 if Wavelet>0
                     picsCommand = [picsCommand,' -RW:6:0:',num2str(Wavelet)];
                 end
@@ -5026,10 +5029,10 @@ classdef retro
 
                 % BART reconstruction
                 imageReco = bart(app, picsCommand, kSpacePics, sensitivities);
-
+         
                 % Combination of the two ESPIRiT images using root of sum of squares
                 if ESPIRiT && dimC>1
-                    imageReco = bart(app,'rss 16', imageReco);
+                    imageReco = bart(app,'rss 24', imageReco);
                 end
 
                 % Absolute value image

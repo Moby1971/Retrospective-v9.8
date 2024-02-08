@@ -3,7 +3,7 @@ function folderName = retroExportDicomMat(app)
 % ---------------------------------------------------------------
 % DICOM Export for Retrospective app, DICOM info not available
 % Gustav Strijkers
-% Dec 2023
+% Feb 2024
 %
 % ---------------------------------------------------------------
 
@@ -13,7 +13,7 @@ function folderName = retroExportDicomMat(app)
 StudyID = rprFind(app.r.rprFile,':IM_TEXT_DCM_StudyID');
 SeriesNumber = rprFind(app.r.rprFile,':IM_TEXT_DCM_SeriesNumber');
 StudyInstanceUID = rprFind(app.r.rprFile,':IM_TEXT_DCM_StudyInstanceUID');
-SeriesInstanceUID = rprFind(app.r.rprFile,':IM_TEXT_DCM_SeriesInstanceUID');
+seriesInstanceID = dicomuid;
 PatientID = rprFind(app.r.rprFile,':IM_TEXT_DCM_PatientID');
 PatientsName = rprFind(app.r.rprFile,':IM_TEXT_DCM_PatientsName');
 
@@ -173,6 +173,7 @@ end
 
             TR = 1000*(60/heartRate)/nrFrames;    % time between cardiac frames in ms
             TD = 1000*app.acqDur/nrDynamics;                % time between dynamics
+            TE = app.r.TE;
 
             dcmHead.Filename = fname;
             dcmHead.FileModDate = app.r.date;
@@ -266,7 +267,7 @@ end
             dcmHead.SliceThickness = sliceThickness/dimz;
             dcmHead.KVP = 0;
             dcmHead.RepetitionTime = TR;     % time between frames
-            dcmHead.EchoTime = 2;         % approximately correct
+            dcmHead.EchoTime = TE;         
             dcmHead.InversionTime = 0;
             dcmHead.NumberOfAverages = app.r.NO_AVERAGES;
             dcmHead.ImagedNucleus = '1H';
@@ -311,11 +312,6 @@ end
             else
                 dcmHead.StudyInstanceUID = dcmid(1:18);
             end
-            if ~isempty(SeriesInstanceUID)
-                dcmHead.SeriesInstanceUID = SeriesInstanceUID;
-            else
-                dcmHead.SeriesInstanceUID = [dcmid(1:18),'.',num2str(studyName)];
-            end
             if ~isempty(StudyID)
                 dcmHead.StudyID = StudyID;
             else
@@ -357,6 +353,7 @@ end
             dcmHead.HeartRate = heartRate;
             dcmHead.NumberOfSlices = dimz;
             dcmHead.CardiacNumberOfImages = nrFrames;
+            dcmHead.SeriesInstanceUID = seriesInstanceID;
 
         else
 
@@ -371,6 +368,7 @@ end
                 TR = 1000*(60/heartRate)/nrFrames;      % time between frames in ms
                 heartRespRate = heartRate;
             end
+            TE = app.r.TE;
 
             dcmHead.Filename = fname;
             dcmHead.FileModDate = app.r.date;
@@ -464,7 +462,7 @@ end
             dcmHead.SliceThickness = sliceThickness/dimz;
             dcmHead.KVP = 0;
             dcmHead.RepetitionTime = TR;     % time between frames
-            dcmHead.EchoTime = 2;         % approximately correct
+            dcmHead.EchoTime = TE;         
             dcmHead.InversionTime = 0;
             dcmHead.NumberOfAverages = app.r.NO_AVERAGES;
             dcmHead.ImagedNucleus = '1H';
@@ -509,11 +507,6 @@ end
             else
                 dcmHead.StudyInstanceUID = dcmid(1:18);
             end
-            if ~isempty(SeriesInstanceUID)
-                dcmHead.SeriesInstanceUID = SeriesInstanceUID;
-            else
-                dcmHead.SeriesInstanceUID = [dcmid(1:18),'.',num2str(studyName)];
-            end
             if ~isempty(StudyID)
                 dcmHead.StudyID = StudyID;
             else
@@ -553,6 +546,7 @@ end
             dcmHead.HeartRate = heartRespRate;
             dcmHead.NumberOfSlices = dimz;
             dcmHead.CardiacNumberOfImages = nrFrames;
+            dcmHead.SeriesInstanceUID = seriesInstanceID;
 
         end
 
