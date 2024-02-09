@@ -194,6 +194,9 @@ end
             dcmHead.NumberOfSlices = dimz;
             dcmHead.CardiacNumberOfImages = nrFrames;
             dcmHead.SeriesInstanceUID = seriesInstanceID;
+            dcmHead.SequenceVariant = 'NONE';
+            dcmHead.ScanOptions = 'CG';
+            dcmHead.MRAcquisitionType = '2D';
 
         else
 
@@ -259,6 +262,9 @@ end
             dcmHead.NumberOfSlices = dimz;
             dcmHead.CardiacNumberOfImages = nrFrames;
             dcmHead.SeriesInstanceUID = seriesInstanceID;
+            dcmHead.SequenceVariant = 'NONE';
+            dcmHead.ScanOptions = 'CG';
+            dcmHead.MRAcquisitionType = '2D';
 
         end
 
