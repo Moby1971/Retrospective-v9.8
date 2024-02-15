@@ -6,7 +6,7 @@ classdef retro
     %
     % Gustav Strijkers
     % g.j.strijkers@amsterdamumc.nl
-    % Jan 2024
+    % Feb 2024
     %
     % ---------------------------------------------------------
 
@@ -290,6 +290,7 @@ classdef retro
         totalVariation = 'T'                                    % Total variation (T) or total generalized variation (G)
         maxImageValue = 32767                                   % Maximum image value
         maxKspaceValue = 32767                                  % Max k-space value
+        recoPars = '';                                          % Reconstruction parameters
 
     end % properties
 
@@ -2147,7 +2148,7 @@ classdef retro
 
             % Write the reconstruction information to a txt file
 
-            pars = strcat(...
+            obj.recoPars = strcat(...
                 "------------------------- \n\n", ...
                 "RETROSPECTIVE ", app.appVersion,"\n\n", ...
                 "Gustav Strijkers\n", ...
@@ -2198,7 +2199,7 @@ classdef retro
                 );
 
             if strcmp(obj.dataType,'3Dute')
-                pars = strcat(pars, ...
+                obj.recoPars = strcat(obj.recoPars, ...
                     "\n3D UTE\n\n", ...
                     "Gx delay = ",num2str(app.GxDelayEditField.Value),"\n",...
                     "Gy delay = ",num2str(app.GyDelayEditField.Value),"\n",...
@@ -2208,7 +2209,7 @@ classdef retro
             end
 
             if strcmp(obj.dataType,'3Dp2roud')
-                pars = strcat(pars, ...
+                obj.recoPars = strcat(obj.recoPars, ...
                     "\n3D P2ROUD\n\n", ...
                     "trajectory = ",obj.trajectoryFileName,"\n" ...
                     );
@@ -2220,7 +2221,7 @@ classdef retro
                 if app.FullCircleRadialButton.Value == 1    trajType = 2; end
                 if app.UserDefinedRadialButton.Value == 1   trajType = 3; end
 
-                pars = strcat(pars,...
+                obj.recoPars = strcat(obj.recoPars,...
                     "\n2D radial\n\n", ...
                     "Gx delay = ",num2str(app.GxDelayEditField.Value),"\n",...
                     "Gy delay = ",num2str(app.GyDelayEditField.Value),"\n",...
@@ -2230,7 +2231,7 @@ classdef retro
             end
 
             fid = fopen(strcat(obj.exportDir,filesep,'recoparameters_',app.tag,'.txt'),'wt');
-            fprintf(fid,pars);
+            fprintf(fid,obj.recoPars);
             fclose(fid);
 
         end % ExportRecoParametersFcn
@@ -4562,7 +4563,7 @@ classdef retro
             % Applies a bandwidth filter on the navigator data
 
             sf = 1000/obj.TR;                       % Sampling frequency in Hz = 1/TR[ms]
-            respHarmonics = 2;                      % Number of higher order harmonics for respiratory frequency, 2 = main + 1 harmonic
+            respHarmonics = 4;                      % Number of higher order harmonics for respiratory frequency
             order = obj.physioFilterSettings(5);    % Butterworth filter order
 
             if obj.nr_coils > 1
@@ -4611,7 +4612,7 @@ classdef retro
                     [b, a] = butter(order,(rrf+0.5*bwr)/(sf/2),'low');    % Butterworth lowpass filter for low frequencies
                     respOutputData = filtfilt(b,a,amplitude);
                 else
-                    for i = 1:respHarmonics
+                    for i = 1:respHarmonics+1
                         [b, a] = butter(order,[i*rrf-0.5*bwr,i*rrf+0.5*bwr]/(sf/2),'bandpass');      % Butterworth bandpass filter
                         respOutputData = respOutputData + (1/i^2.75)*filtfilt(b,a,amplitude);        % Apply zero-phase shift filtering including higher harmonics
                     end
@@ -4936,7 +4937,7 @@ classdef retro
                 kSpaceIn = obj.kSpace;
                 Wavelet = app.WVxyzEditField.Value;
                 TVxy = app.TVxyzEditField.Value;
-                LR = app.LLRxyzEditField.Value;
+                LRxy = app.LLRxyzEditField.Value;
                 TVt = app.TVcineEditField.Value;
                 TVd = app.TVdynEditField.Value;
                 ESPIRiT = app.ESPIRiTCheckBox.Value;
@@ -5014,11 +5015,11 @@ classdef retro
                 if TVxy>0
                     picsCommand = [picsCommand,' -R',obj.totalVariation,':6:0:',num2str(TVxy)];
                 end
-                if LR>0
+                if LRxy>0
                     % Locally low-rank in the spatial domain
                     blocksize = round(dimX/16);  % Block size
                     blocksize(blocksize < 8) = 8;
-                    picsCommand = [picsCommand,' -RL:6:6:',num2str(LR),' -b',num2str(blocksize)];
+                    picsCommand = [picsCommand,' -RL:6:6:',num2str(LRxy),' -b',num2str(blocksize)];
                 end
                 if TVt>0
                     picsCommand = [picsCommand,' -R',obj.totalVariation,':1024:0:',num2str(TVt)];
