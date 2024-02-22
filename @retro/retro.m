@@ -11,7 +11,7 @@ classdef retro
     % ---------------------------------------------------------
 
 
-    %%
+    %% 
 
     % Methods
     % -------
@@ -105,10 +105,9 @@ classdef retro
     % ifft2Dmri(X)
     % image2Dshift(im, xShift, yShift)
 
+    % ---------------------------------------------------------
 
-
-
-    %%
+    %% 
 
 
 
@@ -185,6 +184,7 @@ classdef retro
         fov_slice_off = 0                                       % slice-offset idem
         fov_offsets = [0 0 0]                                   % fov offsets
         SAMPLE_PERIOD                                           % sample period
+        flashShiftVersion = 939                                 % version of FLASH sequence with built-in off-center correction for P2ROUD                
 
         % K-space trajectory related
         pe1_order = 3                                           % phase-encoding order
@@ -1974,13 +1974,13 @@ classdef retro
             obj.yShift = shiftInY;
             obj.zShift = shiftInZ;
 
-            % Readout shift already taken care of in PPL sequence
+            % Readout shift already taken care of in all FLASH sequence versions
             if strcmp(obj.dataType,'3Dp2roud')
                 obj.xShift = 0;
             end
 
             % Textmessage
-            app.TextMessage(sprintf('Image shift ΔX = %.2f, ΔY = %.2f pixels, ΔZ = %.2f pixels ...',obj.xShift,obj.yShift,obj.zShift));
+            app.TextMessage(sprintf('Image shift ΔX=%.1f, ΔY=%.1f pixels, ΔZ=%.1f pixels ...',obj.xShift,obj.yShift,obj.zShift));
 
         end % get3DimageShift
 
@@ -2148,6 +2148,10 @@ classdef retro
 
             % Write the reconstruction information to a txt file
 
+            [~,name,ext] = fileparts(strrep(obj.PPL,'\',filesep));
+            sequence = strcat(name,ext);
+            disp(sequence)
+
             obj.recoPars = strcat(...
                 "------------------------- \n\n", ...
                 "RETROSPECTIVE ", app.appVersion,"\n\n", ...
@@ -2157,6 +2161,7 @@ classdef retro
                 "------------------------- \n", ...
                 "\nDATA \n\n", ...
                 "file = ", app.mrdFileName, "\n", ...
+                "sequence = ", sequence, "\n", ...
                 "\nNAVIGATOR \n\n", ...
                 "primary = ", num2str(app.NavigatorEndEditField.Value), "\n", ...
                 "#points = ", num2str(app.NavigatorNRPointsEditField.Value), "\n", ...
@@ -2167,6 +2172,7 @@ classdef retro
                 "respiration = ", num2str(app.RespirationEditField.Value), " bpm\n", ...
                 "respiration width = ", num2str(app.RespirationWidthEditField.Value), " bpm\n", ...
                 "respiration window = ", num2str(app.RespirationWindowEditField.Value), " %%\n", ...
+                "respiration shift = ", num2str(app.RespShiftEditField.Value), " samples\n", ...
                 "expiration (0) / inspiration (1) = ",num2str(app.RespirationToggleCheckBox.Value), " \n", ...
                 "ignore respiration = ",num2str(app.IgnoreRespirationToggleCheckBox.Value), " \n", ...
                 "\nCINE\n\n", ...
@@ -6606,43 +6612,79 @@ classdef retro
         % ---------------------------------------------------------------------------------
         function obj = shiftImages3D(obj, app)
 
-            % Retrieve the in-plane image shifts
-            obj = obj.get3DimageShift(obj.movieExp, app);
+            % Shift is standard true
+            shiftImages = true;
 
-            % Apply the shift on sub-pixel level
-            for frame = 1:size(obj.movieExp,1)
-                for slice = 1:size(obj.movieExp,4)
-                    for dynamic = 1:size(obj.movieExp,5)
-                        obj.movieExp(frame,:,:,slice,dynamic) = retro.image2Dshift(squeeze(obj.movieExp(frame,:,:,slice,dynamic)),obj.yShift(1),obj.xShift(1));
-                    end
+            % Check FLASH sequence PPL version
+            try
+
+                if contains(lower(obj.PPL),"flash")
+
+                    [~,sequence,~] = fileparts(strrep(obj.PPL,'\',filesep));
+                    version = regexp(sequence,'\d*','Match');
+                    version = str2num(cell2mat(version(end)));
+                    shiftImages = version < obj.flashShiftVersion;
+                                    
+                    app.TextMessage(strcat("FLASH sequence version = ",num2str(version)," ..."));
+                    
                 end
+
+            catch ME
+
+                app.TextMessage(ME.message);
+
             end
 
-            for frame = 1:size(obj.movieExp,1)
-                for readout = 1:size(obj.movieExp,2)
-                    for dynamic = 1:size(obj.movieExp,5)
-                        obj.movieExp(frame,readout,:,:,dynamic) = retro.image2Dshift(squeeze(obj.movieExp(frame,readout,:,:,dynamic)),obj.zShift(1),0);
+            % Apply the shift if needed
+            try
+
+                if shiftImages
+
+                    % Retrieve the in-plane image shifts
+                    obj = obj.get3DimageShift(obj.movieExp, app);
+
+                    % Apply the shift on sub-pixel level
+                    for frame = 1:size(obj.movieExp,1)
+                        for slice = 1:size(obj.movieExp,4)
+                            for dynamic = 1:size(obj.movieExp,5)
+                                obj.movieExp(frame,:,:,slice,dynamic) = retro.image2Dshift(squeeze(obj.movieExp(frame,:,:,slice,dynamic)),obj.yShift(1),obj.xShift(1));
+                            end
+                        end
                     end
+
+                    for frame = 1:size(obj.movieExp,1)
+                        for readout = 1:size(obj.movieExp,2)
+                            for dynamic = 1:size(obj.movieExp,5)
+                                obj.movieExp(frame,readout,:,:,dynamic) = retro.image2Dshift(squeeze(obj.movieExp(frame,readout,:,:,dynamic)),obj.zShift(1),0);
+                            end
+                        end
+                    end
+
+                    for slice = 1:size(obj.senseMap,3)
+                        for map1 = 1:size(obj.senseMap,4)
+                            for map2 = 1:size(obj.senseMap,5)
+                                obj.senseMap(:,:,slice,map1,map2) = retro.image2Dshift(squeeze(obj.senseMap(:,:,slice,map1,map2)),obj.yShift(1),obj.xShift(1));
+                            end
+                        end
+                    end
+
+                    for readout = 1:size(obj.senseMap,1)
+                        for map1 = 1:size(obj.senseMap,4)
+                            for map2 = 1:size(obj.senseMap,5)
+                                obj.senseMap(readout,:,:,map1,map2) = retro.image2Dshift(squeeze(obj.senseMap(readout,:,:,map1,map2)),obj.zShift(1),0);
+                            end
+                        end
+                    end
+
                 end
+
+            catch ME
+
+                app.TextMessage(ME.message);
+
             end
 
-            for slice = 1:size(obj.senseMap,3)
-                for map1 = 1:size(obj.senseMap,4)
-                    for map2 = 1:size(obj.senseMap,5)
-                        obj.senseMap(:,:,slice,map1,map2) = retro.image2Dshift(squeeze(obj.senseMap(:,:,slice,map1,map2)),obj.yShift(1),obj.xShift(1));
-                    end
-                end
-            end
-
-            for readout = 1:size(obj.senseMap,1)
-                for map1 = 1:size(obj.senseMap,4)
-                    for map2 = 1:size(obj.senseMap,5)
-                        obj.senseMap(readout,:,:,map1,map2) = retro.image2Dshift(squeeze(obj.senseMap(readout,:,:,map1,map2)),obj.zShift(1),0);
-                    end
-                end
-            end
-
-        end
+        end % shiftImages3D
 
 
         % ---------------------------------------------------------------------------------
