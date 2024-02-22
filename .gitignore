@@ -2,3 +2,6 @@
 .DS_Store
 .DS_Store
 @retro/retro.m
+functions/export/retroExportDicomDcm.m
+functions/export/retroExportDicomMat.m
+functions/export/retroExportGifFcn.m
