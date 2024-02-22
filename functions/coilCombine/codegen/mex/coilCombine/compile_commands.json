@@ -1,0 +1,110 @@
+[
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  coilCombine_data.c -o build/maca64/coilCombine_data.o",
+    "file": "coilCombine_data.c",
+    "output": "build/maca64/coilCombine_data.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  rt_nonfinite.c -o build/maca64/rt_nonfinite.o",
+    "file": "rt_nonfinite.c",
+    "output": "build/maca64/rt_nonfinite.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  coilCombine_initialize.c -o build/maca64/coilCombine_initialize.o",
+    "file": "coilCombine_initialize.c",
+    "output": "build/maca64/coilCombine_initialize.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  coilCombine_terminate.c -o build/maca64/coilCombine_terminate.o",
+    "file": "coilCombine_terminate.c",
+    "output": "build/maca64/coilCombine_terminate.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  coilCombine.c -o build/maca64/coilCombine.o",
+    "file": "coilCombine.c",
+    "output": "build/maca64/coilCombine.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  permute.c -o build/maca64/permute.o",
+    "file": "permute.c",
+    "output": "build/maca64/permute.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  reshapeSizeChecks.c -o build/maca64/reshapeSizeChecks.o",
+    "file": "reshapeSizeChecks.c",
+    "output": "build/maca64/reshapeSizeChecks.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  filter2.c -o build/maca64/filter2.o",
+    "file": "filter2.c",
+    "output": "build/maca64/filter2.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  anyNonFinite.c -o build/maca64/anyNonFinite.o",
+    "file": "anyNonFinite.c",
+    "output": "build/maca64/anyNonFinite.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  squeeze.c -o build/maca64/squeeze.o",
+    "file": "squeeze.c",
+    "output": "build/maca64/squeeze.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  svd.c -o build/maca64/svd.o",
+    "file": "svd.c",
+    "output": "build/maca64/svd.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  interface/_coder_coilCombine_api.c -o build/maca64/_coder_coilCombine_api.o",
+    "file": "interface/_coder_coilCombine_api.c",
+    "output": "build/maca64/_coder_coilCombine_api.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  interface/_coder_coilCombine_mex.c -o build/maca64/_coder_coilCombine_mex.o",
+    "file": "interface/_coder_coilCombine_mex.c",
+    "output": "build/maca64/_coder_coilCombine_mex.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  eml_int_forloop_overflow_check.c -o build/maca64/eml_int_forloop_overflow_check.o",
+    "file": "eml_int_forloop_overflow_check.c",
+    "output": "build/maca64/eml_int_forloop_overflow_check.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  conv2AXPYSameCMP.c -o build/maca64/conv2AXPYSameCMP.o",
+    "file": "conv2AXPYSameCMP.c",
+    "output": "build/maca64/conv2AXPYSameCMP.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  coilCombine_emxutil.c -o build/maca64/coilCombine_emxutil.o",
+    "file": "coilCombine_emxutil.c",
+    "output": "build/maca64/coilCombine_emxutil.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  interface/_coder_coilCombine_info.c -o build/maca64/_coder_coilCombine_info.o",
+    "file": "interface/_coder_coilCombine_info.c",
+    "output": "build/maca64/_coder_coilCombine_info.o"
+  },
+  {
+    "directory": "/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine/codegen/mex/coilCombine",
+    "command": "/usr/bin/xcrun -sdk macosx13.3 clang -fno-common -arch arm64 -mmacosx-version-min=11.0 -fexceptions -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk -fwrapv -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I \".\" -I \"/Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/Functions/coilCombine\" -I \"./interface\" -I \"/Applications/MATLAB_R2023b.app/extern/include\" -I \".\" -DHAVE_LAPACK_CONFIG_H -DLAPACK_COMPLEX_STRUCTURE -DMW_HAVE_LAPACK_DECLS -DMODEL=coilCombine_mex -c -fPIC -Xpreprocessor -fopenmp -I \"/Applications/MATLAB_R2023b.app/toolbox/eml/externalDependency/omp/maca64/include\" -DOpenMP_omp_LIBRARY=\"/Applications/MATLAB_R2023b.app/sys/os/maca64/libiomp5.dylib\"  /Applications/MATLAB_R2023b.app/extern/version/c_mexapi_version.c -o build/maca64/c_mexapi_version.o",
+    "file": "/Applications/MATLAB_R2023b.app/extern/version/c_mexapi_version.c",
+    "output": "build/maca64/c_mexapi_version.o"
+  }
+]

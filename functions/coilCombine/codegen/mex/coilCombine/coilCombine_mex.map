@@ -1,0 +1,13 @@
+_mexFunction
+_mexfilerequiredapiversion
+_emlrtMexFcnProperties
+_coilCombine
+_coilCombine_initialize
+_coilCombine_terminate
+_coilCombine_atexit
+_emxEnsureCapacity_real_T
+_emxFree_real_T
+_emxInit_real_T
+_emxFree_creal_T
+_emxInit_creal_T
+_emxEnsureCapacity_creal_T
