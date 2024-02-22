@@ -7,3 +7,4 @@ manuals/Retrospective9 - manual.pages
 manuals/SOP_Cardiac MRI_Body coil v2.docx
 functions/coilCombine/coilCombine.m
 functions/coilCombine/coilCombine.prj
+functions/PCAdenoise/denoise.m
