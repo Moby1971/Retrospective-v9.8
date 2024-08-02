@@ -1,0 +1,4 @@
+Checkpoint,T,Mask,Metric,Score,Data,Number of gaps,Temporal gaps,Dynamics,4d sorted,Number of bins
+4000,8,mask,nrmse,0.27152177691459656,Original data,0,N/A,120,False,32
+4000,8,mask,ssim,0.8678428,Original data,0,N/A,120,False,32
+4000,8,mask,psnr,34.34721233750015,Original data,0,N/A,120,False,32

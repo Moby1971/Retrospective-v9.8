@@ -1,0 +1,51 @@
+INFO  - 24-06-24 15:06:55 [__main__       ] Storing train run in /home/fsvanstijn/scratch/deepdynamicmri-mainV3/-133/-2
+INFO  - 24-06-24 15:06:55 [__main__       ] lr: 0.001
+INFO  - 24-06-24 15:06:55 [__main__       ] milestones: 3 30 100 180
+INFO  - 24-06-24 15:06:55 [__main__       ] gamma: 0.5
+INFO  - 24-06-24 15:06:55 [__main__       ] nepoch: 500
+INFO  - 24-06-24 15:06:55 [__main__       ] truncate: 4
+INFO  - 24-06-24 15:06:55 [__main__       ] print-freq: 1
+INFO  - 24-06-24 15:06:55 [__main__       ] checkpoint-freq: 1
+INFO  - 24-06-24 15:06:55 [__main__       ] batch-size: 2
+INFO  - 24-06-24 15:06:55 [__main__       ] time-limit: 48
+INFO  - 24-06-24 15:06:55 [__main__       ] nfeature: 128
+INFO  - 24-06-24 15:06:55 [__main__       ] kernel: 313 None None
+INFO  - 24-06-24 15:06:55 [__main__       ] temporal-rnn: on
+INFO  - 24-06-24 15:06:55 [__main__       ] ndynamic: 32
+INFO  - 24-06-24 15:06:55 [__main__       ] acceleration: 2
+INFO  - 24-06-24 15:06:55 [__main__       ] center-scale: 0.015
+INFO  - 24-06-24 15:06:55 [__main__       ] crop: 100
+INFO  - 24-06-24 15:06:55 [__main__       ] fwhms: 0.6
+INFO  - 24-06-24 15:06:55 [__main__       ] partial-fourier: 0.6
+INFO  - 24-06-24 15:06:55 [__main__       ] autocast: off
+INFO  - 24-06-24 15:06:55 [__main__       ] independent-sample-dims: auto
+INFO  - 24-06-24 15:06:55 [__main__       ] fourier-dim: -1
+INFO  - 24-06-24 15:06:55 [__main__       ] volume-slices: 
+INFO  - 24-06-24 15:06:55 [__main__       ] bin-slices: 
+INFO  - 24-06-24 15:06:55 [__main__       ] train-dir: /home/fsvanstijn/scratch/deepdynamicmri-mainV3/-133/-2
+INFO  - 24-06-24 15:06:55 [__main__       ] niteration: 8
+INFO  - 24-06-24 15:06:55 [__main__       ] data-dir: /home/fsvanstijn/scratch/Rat/Control/Targets/
+INFO  - 24-06-24 15:06:55 [__main__       ] undersampled_data_dir: /home/fsvanstijn/scratch/Rat/Control/Undersampled_15/
+INFO  - 24-06-24 15:06:55 [__main__       ] num-workers: 3
+INFO  - 24-06-24 15:06:55 [__main__       ] device: cuda
+INFO  - 24-06-24 15:06:55 [LatticeRecurrentUnit] LatticeRecurrentUnit with temporal convolutionsinitialized with input size 128, hidden size 128, containing 590720 parameters.
+INFO  - 24-06-24 15:06:55 [LatticeRecurrentUnit] LatticeRecurrentUnit with temporal convolutionsinitialized with input size 128, hidden size 128, containing 590720 parameters.
+INFO  - 24-06-24 15:06:55 [RecurrentInferenceMachine] Initialized a recurrent inference machine of 1336066 parameters. Convolutional blocks are conv_in: Sequential(
+  (0): CyclicPad1d: (1, 1, 0, 0, 0, 0)
+  (1): ReplicationPad3d((1, 1, 0, 0, 0, 0))
+  (2): Conv3d(4, 128, kernel_size=(3, 1, 3), stride=(1, 1, 1))
+  (3): ReLU(inplace=True)
+), conv_between: Sequential(
+  (0): CyclicPad1d: (1, 1, 0, 0, 0, 0)
+  (1): ReplicationPad3d((1, 1, 0, 0, 0, 0))
+  (2): Conv3d(128, 128, kernel_size=(3, 1, 3), stride=(1, 1, 1))
+  (3): ReLU(inplace=True)
+), and conv_out: Sequential(
+  (0): CyclicPad1d: (1, 1, 0, 0, 0, 0)
+  (1): ReplicationPad3d((1, 1, 0, 0, 0, 0))
+  (2): Conv3d(128, 2, kernel_size=(3, 1, 3), stride=(1, 1, 1))
+).
+INFO  - 24-06-24 15:06:55 [InitRim        ] InitRim initialized, containing 203872 parameters.
+INFO  - 24-06-24 15:07:00 [data_sampler   ] Subjects included in training:
+INFO  - 24-06-24 15:07:00 [data_sampler   ] retroData_1_15_23021_000_0_f99.mat
+INFO  - 24-06-24 15:07:01 [data_sampler   ] Finished pre-processing subjects.

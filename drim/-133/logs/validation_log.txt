@@ -1,0 +1,31 @@
+INFO  - 24-07-04 13:02:52 [__main__       ] batch-size: 2
+INFO  - 24-07-04 13:02:52 [__main__       ] checkpoint-freq: 4000
+INFO  - 24-07-04 13:02:52 [__main__       ] metrics: nrmse ssim psnr
+INFO  - 24-07-04 13:02:52 [__main__       ] test: 
+INFO  - 24-07-04 13:02:52 [__main__       ] min-max-checkpoint: 4000
+INFO  - 24-07-04 13:02:52 [__main__       ] acceleration: 10.0
+INFO  - 24-07-04 13:02:52 [__main__       ] fwhm: 0.7
+INFO  - 24-07-04 13:02:52 [__main__       ] center-scale: 0.02
+INFO  - 24-07-04 13:02:52 [__main__       ] partial-fourier: 0.666
+INFO  - 24-07-04 13:02:52 [__main__       ] ndynamic: 
+INFO  - 24-07-04 13:02:52 [__main__       ] perslicescore: no
+INFO  - 24-07-04 13:02:52 [__main__       ] volume-slices: 
+INFO  - 24-07-04 13:02:52 [__main__       ] bin-slices: 
+INFO  - 24-07-04 13:02:52 [__main__       ] randomize-bins: off
+INFO  - 24-07-04 13:02:52 [__main__       ] sorted: off
+INFO  - 24-07-04 13:02:52 [__main__       ] nbin: 32
+INFO  - 24-07-04 13:02:52 [__main__       ] ssim-win-size: 7
+INFO  - 24-07-04 13:02:52 [__main__       ] crop: 100
+INFO  - 24-07-04 13:02:52 [__main__       ] niteration: 8
+INFO  - 24-07-04 13:02:52 [__main__       ] data-dir: /home/fsvanstijn/scratch/MouseCardiacScans_h5/Original data
+INFO  - 24-07-04 13:02:52 [__main__       ] undersampled_data_dir: /home/fsvanstijn/scratch/MouseCardiacScans_h5/Original data undersampled/
+INFO  - 24-07-04 13:02:52 [__main__       ] train-dir: /home/fsvanstijn/scratch/deepdynamicmri-mainV3/-133/
+INFO  - 24-07-04 13:02:52 [__main__       ] num-workers: 3
+INFO  - 24-07-04 13:02:52 [__main__       ] device: cuda
+INFO  - 24-07-04 13:02:52 [validate       ] Writing results to /home/fsvanstijn/scratch/deepdynamicmri-mainV3/-133/logs/validation.csv
+INFO  - 24-07-04 13:02:52 [data_sampler   ] Subjects included in training:
+INFO  - 24-07-04 13:02:52 [data_sampler   ] retroData_1_32_14217_000_0_f100.mat
+INFO  - 24-07-04 13:02:57 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-07-04 13:03:09 [validate       ] Checkpoint 4000 Original data mask nrmse with 0 gaps and 32 bins; N/A: 0.27152177691459656
+INFO  - 24-07-04 13:03:09 [validate       ] Checkpoint 4000 Original data mask ssim with 0 gaps and 32 bins; N/A: 0.8678427934646606
+INFO  - 24-07-04 13:03:09 [validate       ] Checkpoint 4000 Original data mask psnr with 0 gaps and 32 bins; N/A: 34.34721233750015

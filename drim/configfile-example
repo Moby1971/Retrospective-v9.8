@@ -1,0 +1,26 @@
+[DEFAULT]
+
+# Number of iterations to use for the RIM network
+niteration = 8
+
+# Path to data set. Folder should contain subfolder train containing folders with subjects to train on. When validating, this path should point directly to the subject tested on.
+# Overruled during reconstruction in the app
+# data-dir = /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/
+
+# Path to folder to create for training, or path to trained network when validating
+# Overruled during reconstruction in the app
+# train-dir = /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-133/
+
+# Number of cpu threads to use for preparing data batches
+num-workers = 8 
+
+# Device to use, expected one of cpu, cuda, ipu, xpu, mkldnn, opengl, opencl, ideep, hip, ve, fpga, maia, xla, lazy, vulkan, mps, meta, hpu, mtia
+device = mps
+
+[reconstruct]
+# checkpoint overruled in reconstruction
+# checkpoint = 27000
+# checkpoint = 4000
+wdir = wdir/
+batch-size = 1
+crop = 100
