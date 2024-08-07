@@ -50,7 +50,7 @@ def load_model(config, train_config, checkpoint):
             sys.argv[2],
             'network-parameters',
             f"checkpoint{checkpoint}.pt"
-        ),
+        ),weights_only=True,
         map_location=lambda storage, loc: storage.cpu()
     )
     network.load_state_dict(load['rim'])

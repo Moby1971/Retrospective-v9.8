@@ -1,0 +1,16 @@
+[DEFAULT]
+
+# Number of iterations to use for the RIM network
+niteration = 8
+
+# Number of cpu threads to use for preparing data batches
+num-workers = 8 
+
+# Device to use, expected one of cpu, cuda, ipu, xpu, mkldnn, opengl, opencl, ideep, hip, ve, fpga, maia, xla, lazy, vulkan, mps, meta, hpu, mtia
+device = cpu
+
+[reconstruct]
+# checkpoint overruled in reconstruction
+wdir = wdir/
+batch-size = 1
+crop = 100

@@ -15,6 +15,7 @@ from reconstruct import reconstruct
 # sys.argv[2] = train directory
 # sys.argv[3] = temporary directory where mat files are located
 # sys.argv[4] = checkpoint 
+# sys.argv[5] = configfile  (drim/configfile-example)
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,7 @@ if __name__ == "__main__":
             "For more details, specify which program you need help with.")
     config = configparser.ConfigParser()
     config.read('drim/configfile-example')
+    config.read(sys.argv[5])
     if sys.argv[1] == "train" or sys.argv[1] == 'validate' or (
         sys.argv[1] == 'reconstruct' or sys.argv[1] == 'time'):
         for arg in sys.argv:

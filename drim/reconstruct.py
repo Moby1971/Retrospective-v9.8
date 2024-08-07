@@ -33,17 +33,15 @@ logger = logging.getLogger(__name__)
 # sys.argv[2] = train directory
 # sys.argv[3] = temporary directory where mat files are located
 # sys.argv[4] = checkpoint 
-# sys.argv[5] = 
+# sys.argv[5] = drim config file
 
 def reconstruct(config):
 
     train_config = configparser.ConfigParser()
-    #train_config.read(os.path.join(config['train-dir'], 'config.ini'))
     train_config.read(os.path.join(sys.argv[2], 'config.ini'))
 
     train_config = train_config['train']
 
-    #checkpoint = int(config['checkpoint'])
     checkpoint = int(sys.argv[4])
        
     ndynamic = None
@@ -140,7 +138,6 @@ def reconstruct_data(
     
     for batch in dataloader:
 
-        #if config.getboolean('save-target'):
         target = torch.view_as_real(batch['target'].to(
             device=config['device'], dtype=torch.cfloat))
         estimate = torch.view_as_real(batch['estimate'].to(
@@ -184,25 +181,12 @@ def reconstruct_data(
                 estimate[:, inv_idx, i] = newestimate
 
         recons.append(estimate)
-        # targets.append(target)
         if config.getboolean('save-target'):
             targets.append(target)
     if config.getboolean('save-target'):
         target = torch.cat(targets, 0).moveaxis(0, 3) # [T, D, H, W, 2]
-    # target = torch.cat(targets, 0).moveaxis(0, 3) # [T, D, H, W, 2]
     reconstruction = torch.cat(recons, 0).moveaxis(0, 3) # [T, D, H, W, 2]
-
-    # print(reconstruction.shape)
-    # print(target.shape)
-
-    # target = y.squeeze().cpu().numpy()
-    # recon = x.squeeze().cpu().numpy() 
-
-    # ssim = measure.structural_similarity(target.cpu().numpy(), reconstruction.cpu().numpy(), channel_axis=-1,
-    #     data_range=target.max(), win_size=7)
-    
-    # print(ssim)
-
+ 
     reconstruction = torch.view_as_complex(reconstruction).cpu().numpy()
     reconstruction = reconstruction.transpose((0, 3, 2, 1))
     print(reconstruction.shape)
@@ -210,18 +194,8 @@ def reconstruct_data(
     mat_file = sys.argv[3] + file_name + '.mat'
     mat = loadmat(mat_file)
     print(np.array(mat['kData']).shape)
-    # mat_reconstruction = fft.fftshift(fft.ifft2(fft.ifftshift(reconstruction, axes=(-2, -1)), axes=(-2, -1)), axes=(-2, -1))
-    # mat_reconstruction = np.expand_dims(mat_reconstruction, axis=0)
-    # print(mat_reconstruction.shape)
-    # mat_reconstruction = mat_reconstruction.transpose((0, 1, 3, 4, 2))
-    #reconstruction = np.abs(reconstruction.transpose((0, 2, 3, 1)))
     print(reconstruction.shape)
 
-    # plt.imshow(np.abs(reconstruction[0, :, :, 0]), cmap='gray')
-    # plt.show()
-    # exit()
-    # print(mat_reconstruction.shape)
-    # mat_reconstruction = np.flip(mat_reconstruction, (-3, -2))
     new_data = {'dData': np.abs(reconstruction)}
     mat.update(new_data)
     file_name = 'retroAItemp_DRIM'
@@ -249,10 +223,6 @@ def reconstruct_data(
                 image_space_normalized = cv2.normalize(timeframe_slice, None, 0, 255, cv2.NORM_MINMAX)
                 frames.append(image_space_normalized)
             imageio.mimsave(gif_name, frames, fps = frame_duration, loop=0)
-
-    # print(reconstruction.shape)
-    # plt.imshow(np.abs(reconstruction[0, 0, :, 503:674]), cmap='gray')
-    # plt.show()
     
     logger.info("Finished reconstruction.")
     exit()
