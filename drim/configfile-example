@@ -19,8 +19,6 @@ device = mps
 
 [reconstruct]
 # checkpoint overruled in reconstruction
-# checkpoint = 27000
-# checkpoint = 4000
 wdir = wdir/
 batch-size = 1
 crop = 100

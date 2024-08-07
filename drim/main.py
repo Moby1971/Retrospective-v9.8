@@ -11,6 +11,11 @@ from validate import validate_model
 from timer import time_model
 from reconstruct import reconstruct
 
+# sys.argv[1] = reconstruct
+# sys.argv[2] = train directory
+# sys.argv[3] = temporary directory where mat files are located
+# sys.argv[4] = checkpoint 
+
 logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":

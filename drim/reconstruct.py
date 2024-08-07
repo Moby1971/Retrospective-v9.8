@@ -29,6 +29,12 @@ logger = logging.getLogger(__name__)
 #print(torch.backends.mps.is_available())
 #print(torch.backends.mps.is_built())
 
+# sys.argv[1] = reconstruct
+# sys.argv[2] = train directory
+# sys.argv[3] = temporary directory where mat files are located
+# sys.argv[4] = checkpoint 
+# sys.argv[5] = 
+
 def reconstruct(config):
 
     train_config = configparser.ConfigParser()
