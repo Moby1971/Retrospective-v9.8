@@ -8,3 +8,10 @@ manuals/SOP_Cardiac MRI_Body coil v2.docx
 functions/coilCombine/coilCombine.m
 functions/coilCombine/coilCombine.prj
 functions/PCAdenoise/denoise.m
+functions/export/niftii/dicm2nii.m
+functions/export/niftii/dicm_dict.m
+functions/export/niftii/dicm_hdr.m
+functions/export/niftii/dicm_img.m
+functions/export/niftii/dicm_save.m
+functions/export/niftii/nii_tool.m
+functions/export/retroExportNiftiFcn.m
