@@ -678,3 +678,96 @@ INFO  - 24-08-06 11:27:26 [data_sampler   ] Subject included in training:
 INFO  - 24-08-06 11:27:26 [data_sampler   ] retroAItemp.mat
 INFO  - 24-08-06 11:27:26 [data_sampler   ] Finished pre-processing subjects.
 INFO  - 24-08-06 11:27:26 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint27000.pt.
+INFO  - 24-10-28 14:13:47 [__main__       ] Reconstructing...
+INFO  - 24-10-28 14:13:47 [data_sampler   ] Subject included in training:
+INFO  - 24-10-28 14:13:47 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-28 14:13:47 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-28 14:13:47 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint49000.pt.
+INFO  - 24-10-28 14:16:47 [__main__       ] Reconstructing...
+INFO  - 24-10-28 14:16:47 [data_sampler   ] Subject included in training:
+INFO  - 24-10-28 14:16:47 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-28 14:16:47 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-28 14:16:47 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint49000.pt.
+INFO  - 24-10-28 14:19:44 [__main__       ] Reconstructing...
+INFO  - 24-10-28 14:19:44 [data_sampler   ] Subject included in training:
+INFO  - 24-10-28 14:19:44 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-28 14:19:44 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-28 14:19:44 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint49000.pt.
+INFO  - 24-10-28 14:27:09 [__main__       ] Reconstructing...
+INFO  - 24-10-28 14:27:09 [data_sampler   ] Subject included in training:
+INFO  - 24-10-28 14:27:09 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-28 14:27:09 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-28 14:27:09 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint49000.pt.
+INFO  - 24-10-29 10:22:01 [__main__       ] Reconstructing...
+INFO  - 24-10-29 10:22:01 [data_sampler   ] Subject included in training:
+INFO  - 24-10-29 10:22:01 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-29 10:22:01 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-29 10:22:01 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint26000.pt.
+INFO  - 24-10-29 10:24:55 [__main__       ] Reconstructing...
+INFO  - 24-10-29 10:24:55 [data_sampler   ] Subject included in training:
+INFO  - 24-10-29 10:24:55 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-29 10:24:55 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-29 10:24:55 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint26000.pt.
+INFO  - 24-10-29 10:28:42 [__main__       ] Reconstructing...
+INFO  - 24-10-29 10:28:42 [data_sampler   ] Subject included in training:
+INFO  - 24-10-29 10:28:42 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-29 10:28:42 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-29 10:28:42 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint26000.pt.
+INFO  - 24-10-29 10:35:03 [__main__       ] Reconstructing...
+INFO  - 24-10-29 10:35:03 [data_sampler   ] Subject included in training:
+INFO  - 24-10-29 10:35:03 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-29 10:35:03 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-29 10:35:03 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint26000.pt.
+INFO  - 24-10-29 12:40:30 [__main__       ] Reconstructing...
+INFO  - 24-10-29 12:40:30 [data_sampler   ] Subject included in training:
+INFO  - 24-10-29 12:40:30 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-29 12:40:30 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-29 12:40:30 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint26000.pt.
+INFO  - 24-10-29 12:47:33 [__main__       ] Reconstructing...
+INFO  - 24-10-29 12:47:33 [data_sampler   ] Subject included in training:
+INFO  - 24-10-29 12:47:33 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-29 12:47:33 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-29 12:47:33 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint26000.pt.
+INFO  - 24-10-29 12:50:01 [__main__       ] Reconstructing...
+INFO  - 24-10-29 12:50:01 [data_sampler   ] Subject included in training:
+INFO  - 24-10-29 12:50:01 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-29 12:50:01 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-29 12:50:02 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint26000.pt.
+INFO  - 24-10-29 12:52:09 [__main__       ] Reconstructing...
+INFO  - 24-10-29 12:52:09 [data_sampler   ] Subject included in training:
+INFO  - 24-10-29 12:52:09 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-29 12:52:09 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-29 12:52:21 [__main__       ] Reconstructing...
+INFO  - 24-10-29 12:52:21 [data_sampler   ] Subject included in training:
+INFO  - 24-10-29 12:52:21 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-29 12:52:21 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-29 12:52:21 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint26000.pt.
+INFO  - 24-10-29 12:58:10 [__main__       ] Reconstructing...
+INFO  - 24-10-29 12:58:10 [data_sampler   ] Subject included in training:
+INFO  - 24-10-29 12:58:10 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-29 12:58:10 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-29 12:58:10 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint26000.pt.
+INFO  - 24-10-29 13:07:18 [__main__       ] Reconstructing...
+INFO  - 24-10-29 13:07:18 [data_sampler   ] Subject included in training:
+INFO  - 24-10-29 13:07:18 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-29 13:07:18 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-29 13:07:18 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint26000.pt.
+INFO  - 24-10-29 13:17:34 [__main__       ] Reconstructing...
+INFO  - 24-10-29 13:17:34 [data_sampler   ] Subject included in training:
+INFO  - 24-10-29 13:17:34 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-29 13:17:34 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-29 13:17:34 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint26000.pt.
+INFO  - 24-10-29 14:05:24 [__main__       ] Reconstructing...
+INFO  - 24-10-29 14:05:24 [data_sampler   ] Subject included in training:
+INFO  - 24-10-29 14:05:24 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-29 14:05:25 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-29 14:05:25 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint26000.pt.
+INFO  - 24-10-29 14:19:49 [__main__       ] Reconstructing...
+INFO  - 24-10-29 14:20:16 [__main__       ] Reconstructing...
+INFO  - 24-10-29 14:22:16 [__main__       ] Reconstructing...
+INFO  - 24-10-29 14:22:35 [__main__       ] Reconstructing...
+INFO  - 24-10-29 14:23:02 [__main__       ] Reconstructing...
+INFO  - 24-10-29 14:23:02 [data_sampler   ] Subject included in training:
+INFO  - 24-10-29 14:23:02 [data_sampler   ] retroAItemp.mat
+INFO  - 24-10-29 14:23:03 [data_sampler   ] Finished pre-processing subjects.
+INFO  - 24-10-29 14:23:03 [reconstruct    ] Loaded network parameters from /Users/gustav/Library/CloudStorage/Dropbox/Reconstruction_and_analysis_tools/Matlab/MRI-apps/Retrospective9/drim/-139/network-parameters/checkpoint26000.pt.

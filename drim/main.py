@@ -15,7 +15,7 @@ from reconstruct import reconstruct
 # sys.argv[2] = train directory
 # sys.argv[3] = temporary directory where mat files are located
 # sys.argv[4] = checkpoint 
-# sys.argv[5] = configfile  (drim/configfile-example)
+# sys.argv[5] = configfile configfile-cpu / configfile-mps
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ if __name__ == "__main__":
             "\t4) reconstruct: reconstruct data using a pre-trained network."
             "For more details, specify which program you need help with.")
     config = configparser.ConfigParser()
-    config.read('drim/configfile-example')
+#    config.read('drim/configfile-example')
     config.read(sys.argv[5])
     if sys.argv[1] == "train" or sys.argv[1] == 'validate' or (
         sys.argv[1] == 'reconstruct' or sys.argv[1] == 'time'):
