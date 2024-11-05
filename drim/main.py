@@ -29,8 +29,8 @@ if __name__ == "__main__":
             "\t4) reconstruct: reconstruct data using a pre-trained network."
             "For more details, specify which program you need help with.")
     config = configparser.ConfigParser()
-#    config.read('drim/configfile-example')
     config.read(sys.argv[5])
+
     if sys.argv[1] == "train" or sys.argv[1] == 'validate' or (
         sys.argv[1] == 'reconstruct' or sys.argv[1] == 'time'):
         for arg in sys.argv:
@@ -106,13 +106,5 @@ if __name__ == "__main__":
         if '-h' in sys.argv or '--help' in sys.argv:
             pass
         config = config['reconstruct']
-        if os.path.exists(config['wdir']):
-            raise ValueError(f'wdir {config["wdir"]} already exists.')
-        else:
-            log_setup(
-                True,
-                os.path.join(sys.argv[2],
-                         'logs', 'reconstruction_log.txt'),
-                log_level=logging.INFO)
-            logger.info('Reconstructing...')
-            reconstruct(config)
+        logger.info('Reconstructing...')
+        reconstruct(config)

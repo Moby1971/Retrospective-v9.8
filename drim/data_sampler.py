@@ -10,20 +10,21 @@ import matplotlib.pyplot as plt
 import numpy.fft as fft
 import imageio
 import cv2
+import math
 
 
 logger = logging.getLogger(__name__)
 
 class MRData(Dataset):
 
-    def __init__(self, data_path, crop, train):
+    def __init__(self, data_path):
 
-        self.train = train
         self.data_path = data_path
-        self.subjects = ['retroAItemp.mat']    # os.listdir(self.data_path)
+        self.subjects = ['retroAItemp.mat']    
+        #self.subjects = ['retroData_1_12_24043_000_0_f54.mat']
         logger.info('Subject included:')
 
-        self.crop = crop
+        self.crop = 100
         
         lengths = []
         self.data = dict()
@@ -36,7 +37,7 @@ class MRData(Dataset):
             mat_contents = loadmat(self.data_path + '/' + subject)
             kspace = np.array(mat_contents['kData'])
             undersampled_kspace_mask = np.array(mat_contents['fData'])
-                    
+        
             if len(kspace.shape) == 4:
                 kspace = kspace[0, :, :, :]
                 undersampled_kspace_mask = np.expand_dims(undersampled_kspace_mask, axis=0)
@@ -44,21 +45,19 @@ class MRData(Dataset):
 
             if len(kspace.shape) == 5:
                 kspace = kspace[0, :, :, :, :]
-                undersampled_kspace_mask = undersampled_kspace_mask.transpose(3, 0, 1, 2)
+                undersampled_kspace_mask = undersampled_kspace_mask.transpose(3, 0, 2, 1)
                 kspace = kspace.transpose(3, 0, 1, 2)
-
+      
             print(f'Undersampled kspace mask shape: {undersampled_kspace_mask.shape}')
             print(f'Kspace shape: {kspace.shape}')
-            print('Matlab')
-
+         
             self.data[subject]['kspace'] = kspace
             self.data[subject]['mask'] = undersampled_kspace_mask
             self.data[subject]['sense'] = np.ones_like(kspace)
             
             lengths.append(kspace.shape[2])
 
-        logger.info(
-            f'Finished pre-processing subject{"s" if self.train else ""}.')
+        logger.info('Finished pre-processing subject ...')
 
         self.lengths = np.cumsum(lengths)
 
@@ -76,8 +75,8 @@ class MRData(Dataset):
             index -= self.lengths[idx - 1]
         subject = self.subjects[idx]
 
-        kspace = self.data[subject]['kspace'] # [D, dyn, H, W]
-        imspace = fft.ifftshift(fft.ifft2(kspace,), axes = (2,3)) # axes 2,3
+        imspace = fft.ifftshift(fft.ifft2(self.data[subject]['kspace'],), axes = (2,3))
+        imspace = cv2.normalize(np.abs(imspace), None, 0, 1, cv2.NORM_MINMAX)
         kspace_undersampled_mask = self.data[subject]['mask']
         sense = self.data[subject]['sense'] # [C, D, H, W]
 
@@ -96,8 +95,14 @@ class MRData(Dataset):
         kspace = np.fft.fft(sense * imspace, axis=-1)
         estimate = np.sum(np.fft.ifft(kspace, axis=-1) * sense.conj(), 0)
 
+        # print(estimate[0,0,:])
+
+        #print(f'sense shape: {sense.shape}')
+        #print(f'mask shape: {kspace_undersampled_mask[np.newaxis, ..., np.newaxis].shape}')
+        #print(f'measurement shape: {kspace.shape}')
+        #print(f'estimate shape: {kspace.shape}')
+
         data = {
-            'target': np.ascontiguousarray(imspace), # [T, D, W]
             'sense': np.ascontiguousarray(sense), # [C, T, D, W]
             'mask': kspace_undersampled_mask[np.newaxis, ..., np.newaxis], # [1, T, D, W, 1]
             'measurements': kspace, # [C, T, D, W]

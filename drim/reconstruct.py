@@ -49,7 +49,7 @@ def reconstruct(config):
     train_config = train_config['train']
     checkpoint = int(sys.argv[4])
   
-    dataset = MRData(sys.argv[3],int(config['crop']),False)
+    dataset = MRData(sys.argv[3])
 
     dataloader = data.DataLoader(
         dataset, int(config['batch-size']), drop_last=False, 
@@ -59,6 +59,7 @@ def reconstruct(config):
     config['saved-model'] = os.path.join(
         sys.argv[2], 'network-parameters',
         'checkpoint' + sys.argv[4] + '.pt')
+
     network, initrim, gradrim = load_model(config, train_config, checkpoint)
     logger.info(f"Loaded network parameters from {config['saved-model']}.")
 
@@ -68,8 +69,12 @@ def reconstruct(config):
 
 
 
-def reconstruct_data(config, train_config, dataloader, network, initrim, gradrim, temp_dir = None):
+def reconstruct_data(config, train_config, dataloader, network, initrim, gradrim, temp_dir):
     start_time = time.time()
+
+  # for param in network.parameters():
+  #      print(param)
+  #      break
          
     recons = []
     
@@ -79,25 +84,21 @@ def reconstruct_data(config, train_config, dataloader, network, initrim, gradrim
         measurements = torch.view_as_real(batch['measurements'].to(device=config['device'], dtype=torch.cfloat))
         sense = torch.view_as_real(batch['sense'].to(device=config['device'], dtype=torch.cfloat))
         mask = batch['mask'].to(device=config['device'], dtype=torch.bool)
+       
+        #print(f'sense shape: {sense.shape}')
+        #print(f'mask shape: {mask.shape}')
+        #print(f'measurement shape: {measurements.shape}')
+        #print(f'estimate shape: {estimate.shape}')
 
-        print(int(config['niteration']))
+        #print(estimate[0,0,0,:,0])
 
-        if train_config.getboolean('autocast'):
-            with autocast():
-                hidden = initrim(estimate.moveaxis(-1, 1))
-        else:
-            hidden = initrim(estimate.moveaxis(-1, 1))
+        hidden = initrim(estimate.moveaxis(-1, 1))
         for _ in range(int(config['niteration'])):
             gradient = gradrim(estimate, measurements, sense, mask)
-            network_input = torch.cat(
-                (estimate.moveaxis(-1, 1), gradient), 1) # [B, 4, T, D, W]
-            if train_config.getboolean('autocast'):
-                with autocast():
-                    estimate_step, hidden = network(network_input, hidden)
-            else:
-                estimate_step, hidden = network(network_input, hidden)
+            network_input = torch.cat((estimate.moveaxis(-1, 1), gradient), 1) # [B, 4, T, D, W]
+            estimate_step, hidden = network(network_input, hidden)
             estimate = estimate + estimate_step.moveaxis(1, -1) # [B, T, D, W, 2]
- 
+     
         recons.append(estimate)
 
 
@@ -109,10 +110,10 @@ def reconstruct_data(config, train_config, dataloader, network, initrim, gradrim
     mat_file = sys.argv[3] + file_name + '.mat'
     mat = loadmat(mat_file)
 
-    new_data = {'dData': np.abs(reconstruction)}
+    new_data = {'aiData': np.abs(reconstruction)}
     mat.update(new_data)
     print(reconstruction.shape)
-    print(np.array(mat['dData']).shape)
+    print(np.array(mat['aiData']).shape)
 
     file_name = 'retroAItemp_DRIM'
     mat_file = sys.argv[3] + file_name + '.mat'
@@ -120,6 +121,6 @@ def reconstruct_data(config, train_config, dataloader, network, initrim, gradrim
 
     end_time = time.time()
     print(end_time - start_time)
-    
+   
     logger.info("Finished reconstruction.")
     exit()
